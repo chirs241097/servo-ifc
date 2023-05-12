@@ -15,6 +15,8 @@ use servo_url::ServoUrl;
 use std::fmt::{Debug, Error, Formatter};
 use std::time::Duration;
 use style_traits::DevicePixel;
+use secret_structs::secret::secret::SecretBlockSafe;
+use secret_structs::secret::secret::{DynamicSecretLabel, DynamicSecret};
 
 use webrender_api::units::DevicePoint;
 use webrender_api::units::{DeviceIntPoint, DeviceIntRect, DeviceIntSize};
@@ -35,6 +37,13 @@ pub enum WebRenderDebugOption {
     TextureCacheDebug,
     RenderTargetDebug,
 }
+
+#[derive(Clone)]
+pub struct SecKeyboardEvent {
+    pub ke: KeyboardEvent
+}
+
+unsafe impl SecretBlockSafe for SecKeyboardEvent {}
 
 /// Events that the windowing system sends to Servo.
 #[derive(Clone)]
@@ -79,7 +88,7 @@ pub enum WindowEvent {
     /// Sent when the user exits from fullscreen mode
     ExitFullScreen(TopLevelBrowsingContextId),
     /// Sent when a key input state changes
-    Keyboard(KeyboardEvent),
+    Keyboard(DynamicSecret<SecKeyboardEvent,DynamicSecretLabel>),
     /// Sent when Ctr+R/Apple+R is called to reload the current page.
     Reload(TopLevelBrowsingContextId),
     /// Create a new top level browsing context
