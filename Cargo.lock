@@ -5754,7 +5754,6 @@ dependencies = [
  "libc",
  "libservo",
  "log",
- "secret_structs",
  "servo-media",
  "shellwords",
  "sig",

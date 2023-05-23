@@ -1,3 +1,17 @@
+# Carapace: IFC library-specific setup
+
+Switch to the `dynamic-difc` branch.
+
+Init and update the `info-flow-library` submodule:
+```
+git submodule init
+git submodule update
+```
+
+Follow build instructions below.
+
+The Visual Studio Code instructions in `HACKING_QUICKSTART.md` are useful for getting the build working in VSCode.
+
 # The Servo Parallel Browser Engine Project
 
 Servo is a prototype web browser engine written in the
