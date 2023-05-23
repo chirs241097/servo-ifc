@@ -181,6 +181,12 @@ use style_traits::CSSPixel;
 use webgpu::{self, WebGPU, WebGPURequest};
 use webrender_traits::WebrenderExternalImageRegistry;
 
+use keyboard_wrapper::SecKeyboardEvent;
+use secret_structs::lattice::ternary_lattice as sec_lat;
+use secret_structs::lattice::integrity_lattice as int_lat;
+use secret_structs::secret::secret::SecretBlockSafe;
+use secret_structs::secret::secret::{StaticDynamicAll,DynamicSecretLabel, DynamicIntegrityLabel};
+
 type PendingApprovalNavigations = HashMap<PipelineId, (LoadData, HistoryEntryReplacement)>;
 
 #[derive(Debug)]
@@ -4052,7 +4058,7 @@ where
         }
     }
 
-    fn handle_key_msg(&mut self, event: KeyboardEvent) {
+    fn handle_key_msg(&mut self, event: StaticDynamicAll<SecKeyboardEvent,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>) {
         // Send to the focused browsing contexts' current pipeline.  If it
         // doesn't exist, fall back to sending to the compositor.
         let focused_browsing_context_id = self

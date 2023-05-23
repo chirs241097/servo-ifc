@@ -7,6 +7,7 @@
 use embedder_traits::{EmbedderProxy, EventLoopWaker};
 use euclid::Scale;
 use keyboard_types::KeyboardEvent;
+use keyboard_wrapper::SecKeyboardEvent;
 use msg::constellation_msg::{PipelineId, TopLevelBrowsingContextId, TraversalDirection};
 use script_traits::{MediaSessionActionType, MouseButton, TouchEventType, TouchId, WheelDelta};
 use servo_geometry::DeviceIndependentPixel;
@@ -15,8 +16,10 @@ use servo_url::ServoUrl;
 use std::fmt::{Debug, Error, Formatter};
 use std::time::Duration;
 use style_traits::DevicePixel;
+use secret_structs::lattice::ternary_lattice as sec_lat;
+use secret_structs::lattice::integrity_lattice as int_lat;
 use secret_structs::secret::secret::SecretBlockSafe;
-use secret_structs::secret::secret::{DynamicSecretLabel, DynamicSecret};
+use secret_structs::secret::secret::{StaticDynamicAll,DynamicSecretLabel, DynamicIntegrityLabel};
 
 use webrender_api::units::DevicePoint;
 use webrender_api::units::{DeviceIntPoint, DeviceIntRect, DeviceIntSize};
@@ -38,12 +41,6 @@ pub enum WebRenderDebugOption {
     RenderTargetDebug,
 }
 
-#[derive(Clone)]
-pub struct SecKeyboardEvent {
-    pub ke: KeyboardEvent
-}
-
-unsafe impl SecretBlockSafe for SecKeyboardEvent {}
 
 /// Events that the windowing system sends to Servo.
 #[derive(Clone)]
@@ -88,7 +85,7 @@ pub enum WindowEvent {
     /// Sent when the user exits from fullscreen mode
     ExitFullScreen(TopLevelBrowsingContextId),
     /// Sent when a key input state changes
-    Keyboard(DynamicSecret<SecKeyboardEvent,DynamicSecretLabel>),
+    Keyboard(StaticDynamicAll<SecKeyboardEvent,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>),
     /// Sent when Ctr+R/Apple+R is called to reload the current page.
     Reload(TopLevelBrowsingContextId),
     /// Create a new top level browsing context

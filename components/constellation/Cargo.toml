@@ -46,5 +46,8 @@ webrender_api = { git = "https://github.com/servo/webrender" }
 webrender_traits = { path = "../webrender_traits" }
 webxr-api = { git = "https://github.com/servo/webxr", features = ["ipc"] }
 
+keyboard_wrapper = { path = "../keyboard_wrapper" }
+secret_structs = { path = "../../info-flow-library/ifc_library/secret_structs/", package="secret_structs" }
+
 [target.'cfg(any(target_os="macos", all(not(target_os = "windows"), not(target_os = "ios"), not(target_os="android"), not(target_arch="arm"), not(target_arch="aarch64"))))'.dependencies]
 gaol = "0.2.1"

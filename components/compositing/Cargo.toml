@@ -25,6 +25,7 @@ gleam = { version = "0.12", optional = true }
 image = "0.24"
 ipc-channel = "0.14"
 keyboard-types = "0.6"
+keyboard_wrapper = {path = "../keyboard_wrapper"}
 libc = "0.2"
 log = "0.4"
 msg = { path = "../msg" }

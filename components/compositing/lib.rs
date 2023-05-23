@@ -15,6 +15,7 @@ use embedder_traits::Cursor;
 use gfx_traits::Epoch;
 use ipc_channel::ipc::IpcSender;
 use keyboard_types::KeyboardEvent;
+use keyboard_wrapper::SecKeyboardEvent;
 use msg::constellation_msg::PipelineId;
 use msg::constellation_msg::TopLevelBrowsingContextId;
 use msg::constellation_msg::{BrowsingContextId, TraversalDirection};
@@ -28,6 +29,11 @@ use servo_url::ServoUrl;
 use std::collections::HashMap;
 use std::fmt;
 use std::time::Duration;
+
+use secret_structs::lattice::ternary_lattice as sec_lat;
+use secret_structs::lattice::integrity_lattice as int_lat;
+use secret_structs::secret::secret::SecretBlockSafe;
+use secret_structs::secret::secret::{StaticDynamicAll,DynamicSecretLabel, DynamicIntegrityLabel};
 
 mod compositor;
 pub mod compositor_thread;
@@ -66,7 +72,7 @@ pub enum ConstellationMsg {
     /// Query the constellation to see if the current compositor output is stable
     IsReadyToSaveImage(HashMap<PipelineId, Epoch>),
     /// Inform the constellation of a key event.
-    Keyboard(KeyboardEvent),
+    Keyboard(StaticDynamicAll<SecKeyboardEvent,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>),
     /// Whether to allow script to navigate.
     AllowNavigationResponse(PipelineId, bool),
     /// Request to load a page.

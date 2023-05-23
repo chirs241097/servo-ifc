@@ -892,6 +892,7 @@ dependencies = [
  "image 0.24.6",
  "ipc-channel",
  "keyboard-types",
+ "keyboard_wrapper",
  "libc",
  "log",
  "msg",
@@ -939,6 +940,7 @@ dependencies = [
  "http",
  "ipc-channel",
  "keyboard-types",
+ "keyboard_wrapper",
  "layout_traits",
  "log",
  "media",
@@ -948,6 +950,7 @@ dependencies = [
  "net_traits",
  "profile_traits",
  "script_traits",
+ "secret_structs",
  "serde",
  "servo_config",
  "servo_rand",
@@ -1509,11 +1512,13 @@ dependencies = [
  "crossbeam-channel 0.4.4",
  "ipc-channel",
  "keyboard-types",
+ "keyboard_wrapper",
  "lazy_static",
  "log",
  "msg",
  "num-derive",
  "num-traits",
+ "secret_structs",
  "serde",
  "servo_url",
  "webrender_api",
@@ -3128,6 +3133,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "keyboard_wrapper"
+version = "0.0.1"
+dependencies = [
+ "keyboard-types",
+ "secret_structs",
+ "toml",
+]
+
+[[package]]
 name = "khronos_api"
 version = "3.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3453,6 +3467,7 @@ dependencies = [
  "gstreamer",
  "ipc-channel",
  "keyboard-types",
+ "keyboard_wrapper",
  "layout_thread_2013",
  "layout_thread_2020",
  "log",
@@ -3466,6 +3481,7 @@ dependencies = [
  "script",
  "script_layout_interface",
  "script_traits",
+ "secret_structs",
  "servo-media",
  "servo-media-dummy",
  "servo-media-gstreamer",

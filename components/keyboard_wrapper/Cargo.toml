@@ -1,0 +1,22 @@
+[package]
+name = "keyboard_wrapper"
+version = "0.0.1"
+authors = ["PLaSSticity"]
+license = "MPL-2.0"
+edition = "2018"
+publish = false
+
+[lib]
+name = "keyboard_wrapper"
+path = "lib.rs"
+
+[features]
+default = []
+
+
+[dependencies]
+keyboard-types = "0.6"
+secret_structs = { path = "../../info-flow-library/ifc_library/secret_structs/", package="secret_structs" }
+
+[build-dependencies]
+toml = "0.5"

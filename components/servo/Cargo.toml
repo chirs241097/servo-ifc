@@ -57,6 +57,7 @@ gleam = "0.12"
 gstreamer = { version = "0.15", features = ["v1_16"], optional = true }
 ipc-channel = "0.14"
 keyboard-types = "0.6"
+keyboard_wrapper = { path = "../keyboard_wrapper" }
 layout_thread_2013 = { path = "../layout_thread", optional = true }
 layout_thread_2020 = { path = "../layout_thread_2020", optional = true }
 log = "0.4"
@@ -87,6 +88,8 @@ webrender_surfman = { path = "../webrender_surfman" }
 webrender_traits = { path = "../webrender_traits" }
 webxr = { git = "https://github.com/servo/webxr" }
 webxr-api = { git = "https://github.com/servo/webxr" }
+
+secret_structs = { path = "../../info-flow-library/ifc_library/secret_structs/", package="secret_structs" }
 
 [target.'cfg(all(not(target_os = "windows"), not(target_os = "ios"), not(target_os = "android"), not(target_arch = "arm"), not(target_arch = "aarch64")))'.dependencies]
 gaol = "0.2.1"
