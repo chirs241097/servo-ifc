@@ -3138,6 +3138,7 @@ version = "0.0.1"
 dependencies = [
  "keyboard-types",
  "secret_structs",
+ "serde",
  "toml",
 ]
 
@@ -5642,6 +5643,7 @@ name = "secret_structs"
 version = "0.1.0"
 dependencies = [
  "secret_macros",
+ "serde",
 ]
 
 [[package]]
