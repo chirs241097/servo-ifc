@@ -4409,7 +4409,10 @@ where
                 for event in cmd {
                     let event = match event {
                         WebDriverInputEvent::Keyboard(event) => {
-                            CompositorEvent::KeyboardEvent(event)
+                            // Chris: Ignore this for now, WebDriver isn't important for our purpose
+                            // Generate a dummy event instead
+                            // CompositorEvent::KeyboardEvent(event)
+                            CompositorEvent::IMEDismissedEvent
                         },
                         WebDriverInputEvent::Composition(event) => {
                             CompositorEvent::CompositionEvent(event)
@@ -4435,9 +4438,11 @@ where
                     Some(pipeline) => pipeline.event_loop.clone(),
                     None => return warn!("Pipeline {} KeyboardAction after closure.", pipeline_id),
                 };
+                // Chris: ignoring -- see last case for rationale
                 let control_msg = ConstellationControlMsg::SendEvent(
                     pipeline_id,
-                    CompositorEvent::KeyboardEvent(event),
+                    //CompositorEvent::KeyboardEvent(event),
+                    CompositorEvent::IMEDismissedEvent
                 );
                 if let Err(e) = event_loop.send(control_msg) {
                     return self.handle_send_error(pipeline_id, e);

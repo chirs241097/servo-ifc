@@ -77,6 +77,11 @@ use webrender_api::{
     ImageKey, ScrollClamping,
 };
 use webrender_api::{BuiltDisplayListDescriptor, HitTestFlags};
+use keyboard_wrapper::SecKeyboardEvent;
+use secret_structs::lattice::ternary_lattice as sec_lat;
+use secret_structs::lattice::integrity_lattice as int_lat;
+use secret_structs::secret::secret::SecretBlockSafe;
+use secret_structs::secret::secret::{StaticDynamicAll,DynamicSecretLabel, DynamicIntegrityLabel};
 
 pub use crate::script_msg::{
     DOMMessage, HistoryEntryReplacement, Job, JobError, JobResult, JobResultValue, JobType,
@@ -571,7 +576,7 @@ pub enum CompositorEvent {
     /// A wheel event was generated with a delta in the X, Y, and/or Z directions
     WheelEvent(WheelDelta, Point2D<f32>, Option<UntrustedNodeAddress>),
     /// A key was pressed.
-    KeyboardEvent(KeyboardEvent),
+    KeyboardEvent(StaticDynamicAll<SecKeyboardEvent,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>),
     /// An event from the IME is dispatched.
     CompositionEvent(CompositionEvent),
     /// Virtual keyboard was dismissed
