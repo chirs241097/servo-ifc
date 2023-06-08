@@ -18,6 +18,15 @@ use dom_struct::dom_struct;
 use keyboard_types::{Key, Modifiers};
 use std::cell::Cell;
 
+use keyboard_wrapper::SecKeyboardEvent;
+use secret_structs::lattice::ternary_lattice as sec_lat;
+use secret_structs::lattice::integrity_lattice as int_lat;
+use secret_structs::info_flow_block_dynamic_all;
+use secret_structs::secret::secret::SecretBlockSafe;
+use secret_structs::secret::secret::{StaticDynamicAll,DynamicSecretLabel, DynamicIntegrityLabel, *};
+use secret_macros::info_leak_free_full;
+use secret_macros::SecretBlockSafeDerive;
+
 unsafe_no_jsmanaged_fields!(Key);
 unsafe_no_jsmanaged_fields!(Modifiers);
 
@@ -33,6 +42,19 @@ pub struct KeyboardEvent {
     is_composing: Cell<bool>,
     char_code: Cell<u32>,
     key_code: Cell<u32>,
+}
+
+#[derive(SecretBlockSafeDerive)]
+pub struct SecurePart {
+    type_: DOMString, //this
+    key: Key, //this
+    code: DOMString, //this
+    location: u32, //this
+    repeat: bool, //this
+    is_composing: bool, //this
+    modifiers: Modifiers, //this
+    char_code: u32, //this
+    key_code: u32, //this
 }
 
 impl KeyboardEvent {
@@ -54,34 +76,37 @@ impl KeyboardEvent {
     pub fn new_uninitialized(window: &Window) -> DomRoot<KeyboardEvent> {
         reflect_dom_object(Box::new(KeyboardEvent::new_inherited()), window)
     }
-
+    //#[info_leak_free_full]
     pub fn new(
         window: &Window,
-        type_: DOMString,
+        //type_: DOMString, //this
         can_bubble: bool,
         cancelable: bool,
         view: Option<&Window>,
         _detail: i32,
-        key: Key,
-        code: DOMString,
-        location: u32,
-        repeat: bool,
-        is_composing: bool,
-        modifiers: Modifiers,
-        char_code: u32,
-        key_code: u32,
-    ) -> DomRoot<KeyboardEvent> {
+        //key: Key, //this
+        //code: DOMString, //this
+        //location: u32, //this
+        //repeat: bool, //this
+        //is_composing: bool, //this
+        //modifiers: Modifiers, //this
+        //char_code: u32, //this
+        //key_code: u32, //this
+        secure: StaticDynamicAll<SecurePart,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>
+        //keyboard_event_2: StaticDynamicAll<SecurePart,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>
+    ) -> DomRoot<KeyboardEvent> { 
         let ev = KeyboardEvent::new_uninitialized(window);
         ev.InitKeyboardEvent(
-            type_,
+            type_, //this
             can_bubble,
             cancelable,
             view,
-            DOMString::from(key.to_string()),
-            location,
+            DOMString::from(key.to_string()), //this
+            location, //this
             DOMString::new(),
-            repeat,
+            repeat, //this
             DOMString::new(),
+            //keyboard_event_1
         );
         *ev.typed_key.borrow_mut() = key;
         *ev.code.borrow_mut() = code;
@@ -89,6 +114,7 @@ impl KeyboardEvent {
         ev.is_composing.set(is_composing);
         ev.char_code.set(char_code);
         ev.key_code.set(key_code);
+        //ev.secure_part = keyboard_event_2
         ev
     }
 

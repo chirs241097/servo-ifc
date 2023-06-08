@@ -175,6 +175,14 @@ use url::Host;
 use uuid::Uuid;
 use webrender_api::units::DeviceIntRect;
 
+use keyboard_wrapper::SecKeyboardEvent;
+use secret_structs::lattice::ternary_lattice as sec_lat;
+use secret_structs::lattice::integrity_lattice as int_lat;
+use secret_structs::{info_flow_block_dynamic_all, info_flow_block_declassify_dynamic_all};
+use secret_structs::secret::secret::SecretBlockSafe;
+use secret_structs::secret::secret::{StaticDynamicAll,DynamicSecretLabel, DynamicIntegrityLabel, *};
+use crate::dom::keyboardevent::SecurePart;
+
 /// The number of times we are allowed to see spurious `requestAnimationFrame()` calls before
 /// falling back to fake ones.
 ///
@@ -1722,7 +1730,13 @@ impl Document {
     }
 
     /// The entry point for all key processing for web content
-    pub fn dispatch_key_event(&self, keyboard_event: ::keyboard_types::KeyboardEvent) {
+    pub fn dispatch_key_event(&self, keyboard_event: StaticDynamicAll<SecKeyboardEvent,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>) {
+        //let keyboard_event_2 = keyboard_event.clone();
+        //let key_event: ::keyboard_types::KeyboardEvent = info_flow_block_declassify_dynamic_all!(sec_lat::None, int_lat::All {
+        //    remove_label_wrapper(keyboard_event)
+        //}).ke;
+
+
         let focused = self.get_focused_element();
         let body = self.GetBody();
 
@@ -1732,30 +1746,49 @@ impl Document {
             (&None, &None) => self.window.upcast(),
         };
 
+        //let keyevent_wrapped = info_flow_block_dynamic_all!(sec_lat::None, int_lat::All {
+        //    let event_unwrapped = u(&keyboard_event);
+        //});
+        let secure_1 = info_flow_block_dynamic_all!(sec_lat::None, int_lat::All {
+            let unwrapped = u(&keyboard_event);
+            let k = unwrapped.ke;
+            let result = SecurePart{type_: DOMString::from(k.state.to_string()),
+                key: k.key.clone(),
+                code: DOMString::from(k.code.to_string()),
+                location: k.location as u32,
+                repeat: k.repeat,
+                is_composing: k.is_composing,
+                modifiers: k.modifiers,
+                char_code: 0,
+                key_code: k.key.legacy_keycode()
+            };
+            sec(result);
+        });
         let keyevent = KeyboardEvent::new(
             &self.window,
-            DOMString::from(keyboard_event.state.to_string()),
+            //DOMString::from(key_event.state.to_string()),
             true,
             true,
             Some(&self.window),
             0,
-            keyboard_event.key.clone(),
-            DOMString::from(keyboard_event.code.to_string()),
-            keyboard_event.location as u32,
-            keyboard_event.repeat,
-            keyboard_event.is_composing,
-            keyboard_event.modifiers,
-            0,
-            keyboard_event.key.legacy_keycode(),
+            //key_event.key.clone(),
+            //DOMString::from(key_event.code.to_string()),
+            //key_event.location as u32,
+            //key_event.repeat,
+            //key_event.is_composing,
+            //key_event.modifiers,
+            //0,
+            //key_event.key.legacy_keycode(),
+            secure_1
         );
         let event = keyevent.upcast::<Event>();
         event.fire(target);
         let mut cancel_state = event.get_cancel_state();
 
         // https://w3c.github.io/uievents/#keys-cancelable-keys
-        if keyboard_event.state == KeyState::Down &&
-            is_character_value_key(&(keyboard_event.key)) &&
-            !keyboard_event.is_composing &&
+        if key_event.state == KeyState::Down &&
+            is_character_value_key(&(key_event.key)) &&
+            !key_event.is_composing &&
             cancel_state != EventDefault::Prevented
         {
             // https://w3c.github.io/uievents/#keypress-event-order
@@ -1766,13 +1799,13 @@ impl Document {
                 true,
                 Some(&self.window),
                 0,
-                keyboard_event.key.clone(),
-                DOMString::from(keyboard_event.code.to_string()),
-                keyboard_event.location as u32,
-                keyboard_event.repeat,
-                keyboard_event.is_composing,
-                keyboard_event.modifiers,
-                keyboard_event.key.legacy_charcode(),
+                key_event.key.clone(),
+                DOMString::from(key_event.code.to_string()),
+                key_event.location as u32,
+                key_event.repeat,
+                key_event.is_composing,
+                key_event.modifiers,
+                key_event.key.legacy_charcode(),
                 0,
             );
             let ev = event.upcast::<Event>();
@@ -1789,8 +1822,8 @@ impl Document {
             // however *when* we do it is up to us.
             // Here, we're dispatching it after the key event so the script has a chance to cancel it
             // https://www.w3.org/Bugs/Public/show_bug.cgi?id=27337
-            if (keyboard_event.key == Key::Enter || keyboard_event.code == Code::Space) &&
-                keyboard_event.state == KeyState::Up
+            if (key_event.key == Key::Enter || key_event.code == Code::Space) &&
+                key_event.state == KeyState::Up
             {
                 if let Some(elem) = target.downcast::<Element>() {
                     elem.upcast::<Node>()

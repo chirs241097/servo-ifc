@@ -29,6 +29,12 @@ use std::thread;
 use std::time::Duration;
 use tinyfiledialogs::{self, MessageBoxIcon, OkCancel, YesNo};
 
+use keyboard_wrapper::SecKeyboardEvent;
+use secret_structs::lattice::ternary_lattice as sec_lat;
+use secret_structs::lattice::integrity_lattice as int_lat;
+use secret_structs::{info_flow_block_dynamic_all, info_flow_block_declassify_dynamic_all};
+use secret_structs::secret::secret::SecretBlockSafe;
+use secret_structs::secret::secret::{StaticDynamicAll,DynamicSecretLabel, DynamicIntegrityLabel, *};
 pub struct Browser<Window: WindowPortsMethods + ?Sized> {
     current_url: Option<ServoUrl>,
     /// id of the top level browsing context. It is unique as tabs
@@ -94,7 +100,7 @@ where
     }
 
     /// Handle key events before sending them to Servo.
-    fn handle_key_from_window(&mut self, key_event: KeyboardEvent) {
+    fn handle_key_from_window(&mut self, key_event: StaticDynamicAll<SecKeyboardEvent,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>) {
         ShortcutMatcher::from_event(key_event.clone())
             .shortcut(CMD_OR_CONTROL, 'R', || {
                 if let Some(id) = self.browser_id {
@@ -179,7 +185,7 @@ where
     }
 
     #[cfg(not(target_os = "win"))]
-    fn platform_handle_key(&mut self, key_event: KeyboardEvent) {
+    fn platform_handle_key(&mut self, key_event: StaticDynamicAll<SecKeyboardEvent,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>) {
         if let Some(id) = self.browser_id {
             if let Some(event) = ShortcutMatcher::from_event(key_event.clone())
                 .shortcut(CMD_OR_CONTROL, '[', || {
@@ -199,7 +205,7 @@ where
     fn platform_handle_key(&mut self, _key_event: KeyboardEvent) {}
 
     /// Handle key events after they have been handled by Servo.
-    fn handle_key_from_servo(&mut self, _: Option<BrowserId>, event: KeyboardEvent) {
+    fn handle_key_from_servo(&mut self, _: Option<BrowserId>, event: StaticDynamicAll<SecKeyboardEvent,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>) {
         ShortcutMatcher::from_event(event)
             .shortcut(CMD_OR_CONTROL, '=', || {
                 self.event_queue.push(WindowEvent::Zoom(1.1))

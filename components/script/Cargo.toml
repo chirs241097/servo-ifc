@@ -121,5 +121,9 @@ webrender_api = { git = "https://github.com/servo/webrender" }
 webxr-api = { git = "https://github.com/servo/webxr", features = ["ipc"] }
 xml5ever = "0.17"
 
+keyboard_wrapper = { path = "../keyboard_wrapper" }
+secret_structs = { path = "../../info-flow-library/ifc_library/secret_structs/", package="secret_structs" }
+secret_macros = {path = "../../info-flow-library/ifc_library/macros/", package="secret_macros"}
+
 [target.'cfg(not(target_os = "ios"))'.dependencies]
 mozangle = { version = "0.3", features = ["egl", "build_dlls"] }

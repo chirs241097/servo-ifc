@@ -17,6 +17,7 @@ default = []
 [dependencies]
 keyboard-types = "0.6"
 secret_structs = { path = "../../info-flow-library/ifc_library/secret_structs/", package="secret_structs" }
+secret_macros = { path = "../../info-flow-library/ifc_library/macros/", package="secret_macros" }
 serde = { version = "1.0", features = ["derive"] }
 
 [build-dependencies]
