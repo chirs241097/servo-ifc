@@ -175,13 +175,14 @@ use url::Host;
 use uuid::Uuid;
 use webrender_api::units::DeviceIntRect;
 
-use keyboard_wrapper::SecKeyboardEvent;
+//Vincent: Added imports
+use keyboard_wrapper::*;
+use secret_macros::info_leak_free_full;
 use secret_structs::lattice::ternary_lattice as sec_lat;
 use secret_structs::lattice::integrity_lattice as int_lat;
 use secret_structs::{info_flow_block_dynamic_all, info_flow_block_declassify_dynamic_all};
 use secret_structs::secret::secret::SecretBlockSafe;
 use secret_structs::secret::secret::{StaticDynamicAll,DynamicSecretLabel, DynamicIntegrityLabel, *};
-use crate::dom::keyboardevent::SecurePart;
 
 /// The number of times we are allowed to see spurious `requestAnimationFrame()` calls before
 /// falling back to fake ones.
@@ -1731,11 +1732,6 @@ impl Document {
 
     /// The entry point for all key processing for web content
     pub fn dispatch_key_event(&self, keyboard_event: StaticDynamicAll<SecKeyboardEvent,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>) {
-        //let keyboard_event_2 = keyboard_event.clone();
-        //let key_event: ::keyboard_types::KeyboardEvent = info_flow_block_declassify_dynamic_all!(sec_lat::None, int_lat::All {
-        //    remove_label_wrapper(keyboard_event)
-        //}).ke;
-
 
         let focused = self.get_focused_element();
         let body = self.GetBody();
@@ -1746,15 +1742,13 @@ impl Document {
             (&None, &None) => self.window.upcast(),
         };
 
-        //let keyevent_wrapped = info_flow_block_dynamic_all!(sec_lat::None, int_lat::All {
-        //    let event_unwrapped = u(&keyboard_event);
-        //});
         let secure_1 = info_flow_block_dynamic_all!(sec_lat::None, int_lat::All {
             let unwrapped = u(&keyboard_event);
             let k = unwrapped.ke;
-            let result = SecurePart{type_: DOMString::from(k.state.to_string()),
+            let result = SecurePart{
+                type_: PreDOMString{s: k.state.to_string()},
                 key: k.key.clone(),
-                code: DOMString::from(k.code.to_string()),
+                code: PreDOMString{s: k.code.to_string()},
                 location: k.location as u32,
                 repeat: k.repeat,
                 is_composing: k.is_composing,
@@ -1764,6 +1758,26 @@ impl Document {
             };
             sec(result);
         });
+
+
+        let secure_2 = info_flow_block_dynamic_all!(sec_lat::None, int_lat::All {
+            let unwrapped = u(&keyboard_event);
+            let k = unwrapped.ke;
+            let result = SecurePart{
+                type_: PreDOMString{s: k.state.to_string()},
+                key: k.key.clone(),
+                code: PreDOMString{s: k.code.to_string()},
+                location: k.location as u32,
+                repeat: k.repeat,
+                is_composing: k.is_composing,
+                modifiers: k.modifiers,
+                char_code: k.key.legacy_charcode(),
+                key_code: 0
+            };
+            sec(result);
+        });
+
+        //Vincent: Changed below function signature to preserve secrecy
         let keyevent = KeyboardEvent::new(
             &self.window,
             //DOMString::from(key_event.state.to_string()),
@@ -1771,42 +1785,52 @@ impl Document {
             true,
             Some(&self.window),
             0,
-            //key_event.key.clone(),
+            //keyboard_event.key.clone(),
             //DOMString::from(key_event.code.to_string()),
-            //key_event.location as u32,
-            //key_event.repeat,
-            //key_event.is_composing,
-            //key_event.modifiers,
+            //keyboard_event.location as u32,
+            //keyboard_event.repeat,
+            //keyboard_event.is_composing,
+            //keyboard_event.modifiers,
             //0,
-            //key_event.key.legacy_keycode(),
+            //keyboard_event.key.legacy_keycode(),
             secure_1
         );
         let event = keyevent.upcast::<Event>();
         event.fire(target);
         let mut cancel_state = event.get_cancel_state();
 
+        let conditional = info_flow_block_declassify_dynamic_all!(sec_lat::None, int_lat::All {
+            let cond = info_flow_block_dynamic_all!(sec_lat::None, int_lat::All {
+                let unwrapped = u(&keyboard_event);
+                let k = unwrapped.ke;
+                sec(k.state == KeyState::Down &&
+                is_character_value_key(&(k.key)) &&
+                !k.is_composing &&
+                cancel_state != EventDefault::Prevented)
+            });
+            remove_label_wrapper(cond)
+        });
         // https://w3c.github.io/uievents/#keys-cancelable-keys
-        if key_event.state == KeyState::Down &&
-            is_character_value_key(&(key_event.key)) &&
-            !key_event.is_composing &&
-            cancel_state != EventDefault::Prevented
+        if conditional //Vincent: Computed conditional in above block and used it here. 
         {
             // https://w3c.github.io/uievents/#keypress-event-order
+            //Vincent: Changed below function signature to preserve secrecy
             let event = KeyboardEvent::new(
                 &self.window,
-                DOMString::from("keypress"),
+                //DOMString::from("keypress"),
                 true,
                 true,
                 Some(&self.window),
                 0,
-                key_event.key.clone(),
-                DOMString::from(key_event.code.to_string()),
-                key_event.location as u32,
-                key_event.repeat,
-                key_event.is_composing,
-                key_event.modifiers,
-                key_event.key.legacy_charcode(),
-                0,
+                //keyboard_event.key.clone(),
+                //DOMString::from(keyboard_event.code.to_string()),
+                //keyboard_event.location as u32,
+                //keyboard_event.repeat,
+                //keyboard_event.is_composing,
+                //keyboard_event.modifiers,
+                //keyboard_event.key.legacy_charcode(),
+                //0,
+                secure_2
             );
             let ev = event.upcast::<Event>();
             ev.fire(target);
@@ -1822,8 +1846,15 @@ impl Document {
             // however *when* we do it is up to us.
             // Here, we're dispatching it after the key event so the script has a chance to cancel it
             // https://www.w3.org/Bugs/Public/show_bug.cgi?id=27337
-            if (key_event.key == Key::Enter || key_event.code == Code::Space) &&
-                key_event.state == KeyState::Up
+            let conditional2 = info_flow_block_declassify_dynamic_all!(sec_lat::None, int_lat::All {
+                let cond = info_flow_block_dynamic_all!(sec_lat::None, int_lat::All {
+                    let unwrapped = u(&keyboard_event);
+                    let k = unwrapped.ke;
+                    sec((k.key == Key::Enter || k.code == Code::Space) && k.state == KeyState::Up)
+                });
+                remove_label_wrapper(cond)
+            });
+            if conditional2 //Vincent: Computed conditional in above block and used it here
             {
                 if let Some(elem) = target.downcast::<Element>() {
                     elem.upcast::<Node>()
@@ -2906,6 +2937,8 @@ impl Document {
     }
 }
 
+//Vincent: Tagged this function as info_leak_free_full
+#[info_leak_free_full]
 fn is_character_value_key(key: &Key) -> bool {
     match key {
         Key::Character(_) | Key::Enter => true,

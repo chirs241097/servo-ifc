@@ -12,6 +12,7 @@
 #![allow(deprecated)] // FIXME: Can we make `allow` only apply to the `plugin` crate attribute?
 #![plugin(script_plugins)]
 #![register_tool(unrooted_must_root_lint)]
+#![feature(negative_impls)] //Vincent: Added so we can use SecretBlockSafeDerive
 
 #[macro_use]
 extern crate bitflags;

@@ -18,10 +18,12 @@ use dom_struct::dom_struct;
 use keyboard_types::{Key, Modifiers};
 use std::cell::Cell;
 
-use keyboard_wrapper::SecKeyboardEvent;
+//Vincent: Added imports
+use keyboard_wrapper::*;
 use secret_structs::lattice::ternary_lattice as sec_lat;
 use secret_structs::lattice::integrity_lattice as int_lat;
 use secret_structs::info_flow_block_dynamic_all;
+use secret_structs::info_flow_block_no_return_dynamic_all;
 use secret_structs::secret::secret::SecretBlockSafe;
 use secret_structs::secret::secret::{StaticDynamicAll,DynamicSecretLabel, DynamicIntegrityLabel, *};
 use secret_macros::info_leak_free_full;
@@ -45,16 +47,11 @@ pub struct KeyboardEvent {
 }
 
 #[derive(SecretBlockSafeDerive)]
-pub struct SecurePart {
-    type_: DOMString, //this
-    key: Key, //this
-    code: DOMString, //this
-    location: u32, //this
-    repeat: bool, //this
-    is_composing: bool, //this
-    modifiers: Modifiers, //this
-    char_code: u32, //this
-    key_code: u32, //this
+pub struct Secure2 {
+    type_arg: PreDOMString,
+    key_arg: PreDOMString,
+    location_arg: u32,
+    repeat: bool
 }
 
 impl KeyboardEvent {
@@ -95,25 +92,50 @@ impl KeyboardEvent {
         secure: StaticDynamicAll<SecurePart,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>
         //keyboard_event_2: StaticDynamicAll<SecurePart,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>
     ) -> DomRoot<KeyboardEvent> { 
+        let secure_2 = info_flow_block_dynamic_all!(sec_lat::None, int_lat::All {
+            let unwrapped = u(&secure);
+            let result = Secure2 {
+                type_arg: unwrapped.type_,
+                key_arg: PreDOMString{s: unwrapped.key.to_string()},
+                location_arg: unwrapped.location,
+                repeat: unwrapped.repeat
+            };
+            sec(result);
+        });
         let ev = KeyboardEvent::new_uninitialized(window);
         ev.InitKeyboardEvent(
-            type_, //this
+            //type_, //this
             can_bubble,
             cancelable,
             view,
-            DOMString::from(key.to_string()), //this
-            location, //this
+            //DOMString::from(key.to_string()), //this
+            //location, //this
             DOMString::new(),
-            repeat, //this
+            //repeat, //this
             DOMString::new(),
-            //keyboard_event_1
+            secure_2
         );
-        *ev.typed_key.borrow_mut() = key;
-        *ev.code.borrow_mut() = code;
-        ev.modifiers.set(modifiers);
-        ev.is_composing.set(is_composing);
-        ev.char_code.set(char_code);
-        ev.key_code.set(key_code);
+        info_flow_block_no_return_dynamic_all!(sec_lat::None, int_lat::All {
+            let unwrapped = u(&secure);
+            *ev.typed_key.borrow_mut() = unwrapped.key;
+            *ev.code.borrow_mut() = unwrapped.code;
+            ev.modifiers.set(unwrapped.modifiers);
+            ev.is_composing.set(unwrapped.is_composing);
+            ev.char_code.set(unwrapped.char_code);
+            ev.key_code.set(unwrapped.key_code);
+            let result = Secure2 {
+                type_arg: unwrapped.type_,
+                key_arg: PreDOMString{s: unwrapped.key.to_string()},
+                location_arg: unwrapped.location,
+                repeat: unwrapped.repeat
+            };
+        });
+        //*ev.typed_key.borrow_mut() = key;
+        //*ev.code.borrow_mut() = code;
+        //ev.modifiers.set(modifiers);
+        //ev.is_composing.set(is_composing);
+        //ev.char_code.set(char_code);
+        //ev.key_code.set(key_code);
         //ev.secure_part = keyboard_event_2
         ev
     }
@@ -129,21 +151,37 @@ impl KeyboardEvent {
         modifiers.set(Modifiers::ALT, init.parent.altKey);
         modifiers.set(Modifiers::SHIFT, init.parent.shiftKey);
         modifiers.set(Modifiers::META, init.parent.metaKey);
+        //Vincent: Created new SecurePart in order to compensate for the modified funciton signature.
+        let secure_1 = info_flow_block_dynamic_all!(sec_lat::None, int_lat::All {
+            let result = SecurePart{
+                type_: PreDOMString{s: String::from(*type_)},
+                key: Key::Unidentified,
+                code: PreDOMString{s: String::from(*(init.code))},
+                location: init.location,
+                repeat: init.repeat,
+                is_composing: init.isComposing,
+                modifiers: modifiers,
+                char_code: 0,
+                key_code: 0
+            };
+            sec(result);
+        });
         let event = KeyboardEvent::new(
             window,
-            type_,
+            //type_,
             init.parent.parent.parent.bubbles,
             init.parent.parent.parent.cancelable,
             init.parent.parent.view.as_deref(),
             init.parent.parent.detail,
-            Key::Unidentified,
-            init.code.clone(),
-            init.location,
-            init.repeat,
-            init.isComposing,
-            modifiers,
-            0,
-            0,
+            secure_1
+            //Key::Unidentified,
+            //init.code.clone(),
+            //init.location,
+            //init.repeat,
+            //init.isComposing,
+            //modifiers,
+            //0,
+            //0,
         );
         *event.key.borrow_mut() = init.key.clone();
         Ok(event)
@@ -164,15 +202,16 @@ impl KeyboardEventMethods for KeyboardEvent {
     // https://w3c.github.io/uievents/#widl-KeyboardEvent-initKeyboardEvent
     fn InitKeyboardEvent(
         &self,
-        type_arg: DOMString,
+        //type_arg: DOMString,
         can_bubble_arg: bool,
         cancelable_arg: bool,
         view_arg: Option<&Window>,
-        key_arg: DOMString,
-        location_arg: u32,
+        //key_arg: DOMString,
+        //location_arg: u32,
         _modifiers_list_arg: DOMString,
-        repeat: bool,
+        //repeat: bool,
         _locale: DOMString,
+        secure2: Secure2
     ) {
         if self.upcast::<Event>().dispatching() {
             return;
