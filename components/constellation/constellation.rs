@@ -4058,7 +4058,7 @@ where
         }
     }
 
-    fn handle_key_msg(&mut self, event: StaticDynamicAll<SecKeyboardEvent,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>) {
+    fn handle_key_msg(&mut self, event: SecKeyboardEvent) {
         // Send to the focused browsing contexts' current pipeline.  If it
         // doesn't exist, fall back to sending to the compositor.
         let focused_browsing_context_id = self

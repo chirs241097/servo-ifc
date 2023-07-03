@@ -178,6 +178,21 @@ use webgpu::{
 use webrender_api::{DocumentId, ExternalImageId, ImageKey};
 use webxr_api::{Finger, Hand, Ray, View};
 
+//Vincent: Added import
+use secret_structs::secret::secret::InfoFlowStruct;
+use secret_structs::secret::secret::SecretValueSafe;
+use secret_structs::secret::secret::DynSecretField;
+use secret_structs::secret::secret::DynIntegrityField;
+use secret_structs::lattice::ternary_lattice::Label;
+use secret_structs::secret::secret::StaticDynamicAll;
+use keyboard_wrapper::PreDOMString;
+use keyboard_wrapper::KeyWrapper;
+use keyboard_wrapper::ModifiersWrapper;
+use secret_structs::lattice::ternary_lattice as sec_lat;
+use secret_structs::lattice::integrity_lattice as int_lat;
+use secret_structs::secret::secret::DynamicSecretLabel;
+use secret_structs::secret::secret::DynamicIntegrityLabel;
+
 unsafe_no_jsmanaged_fields!(Tm);
 unsafe_no_jsmanaged_fields!(JoinHandle<()>);
 
@@ -315,6 +330,42 @@ unsafe impl<T: JSTraceable> JSTraceable for [T] {
         for e in self.iter() {
             e.trace(trc);
         }
+    }
+}
+
+//Vincent: Added the following specific implementations
+unsafe impl<L1, L2> JSTraceable for DomRefCell<StaticDynamicAll<PreDOMString,L1,L2,DynamicSecretLabel,DynamicIntegrityLabel>> 
+    where L1: Label, L2: Label {
+    unsafe fn trace(&self, trc: *mut JSTracer) {
+        unsafe {self.borrow().clone().unwrap_unsafe_dynamic_all::<L1, L2>()}.s.trace(trc);
+    }
+}
+
+unsafe impl<L1, L2> JSTraceable for DomRefCell<StaticDynamicAll<KeyWrapper,L1,L2,DynamicSecretLabel,DynamicIntegrityLabel>> 
+    where L1: Label, L2: Label {
+    unsafe fn trace(&self, trc: *mut JSTracer) {
+        unsafe {self.borrow().clone().unwrap_unsafe_dynamic_all::<L1, L2>()}.k.trace(trc);
+    }
+}
+
+unsafe impl<L1, L2> JSTraceable for Cell<StaticDynamicAll<u32,L1,L2,DynamicSecretLabel,DynamicIntegrityLabel>>
+    where L1: Label, L2: Label {
+    unsafe fn trace(&self, trc: *mut JSTracer) {
+        self.clone().into_inner().unwrap_unsafe_dynamic_all::<L1, L2>().trace(trc);
+    }
+}
+
+unsafe impl<L1, L2> JSTraceable for Cell<StaticDynamicAll<ModifiersWrapper,L1,L2,DynamicSecretLabel,DynamicIntegrityLabel>>
+    where L1: Label, L2: Label {
+    unsafe fn trace(&self, trc: *mut JSTracer) {
+        self.clone().into_inner().unwrap_unsafe_dynamic_all::<L1, L2>().m.trace(trc);
+    }
+}
+
+unsafe impl<L1, L2> JSTraceable for Cell<StaticDynamicAll<bool,L1,L2,DynamicSecretLabel,DynamicIntegrityLabel>>
+    where L1: Label, L2: Label {
+    unsafe fn trace(&self, trc: *mut JSTracer) {
+        self.clone().into_inner().unwrap_unsafe_dynamic_all::<L1, L2>().trace(trc);
     }
 }
 

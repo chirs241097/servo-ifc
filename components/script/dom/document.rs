@@ -1731,7 +1731,7 @@ impl Document {
     }
 
     /// The entry point for all key processing for web content
-    pub fn dispatch_key_event(&self, keyboard_event: StaticDynamicAll<SecKeyboardEvent,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>) {
+    pub fn dispatch_key_event(&self, keyboard_event: SecKeyboardEvent) {
 
         let focused = self.get_focused_element();
         let body = self.GetBody();
@@ -1743,35 +1743,45 @@ impl Document {
         };
 
         let secure_1 = info_flow_block_dynamic_all!(sec_lat::None, int_lat::All {
-            let unwrapped = u(&keyboard_event);
-            let k = unwrapped.ke;
+            let unwrapped_state = u(&(keyboard_event.state));
+            let unwrapped_key = u(&(keyboard_event.key));
+            let unwrapped_code = u(&(keyboard_event.code));
+            let unwrapped_location = u(&(keyboard_event.location));
+            let unwrapped_repeat = u(&(keyboard_event.repeat));
+            let unwrapped_is_composing = u(&(keyboard_event.is_composing));
+            let unwrapped_modifiers = u(&(keyboard_event.modifiers));
             let result = SecurePart{
-                type_: PreDOMString{s: k.state.to_string()},
-                key: k.key.clone(),
-                code: PreDOMString{s: k.code.to_string()},
-                location: k.location as u32,
-                repeat: k.repeat,
-                is_composing: k.is_composing,
-                modifiers: k.modifiers,
+                type_: PreDOMString{s: unwrapped_state.k.to_string()},
+                key: unwrapped_key.k.clone(),
+                code: PreDOMString{s: unwrapped_code.c.to_string()},
+                location: unwrapped_location.l as u32,
+                repeat: unwrapped_repeat.r,
+                is_composing: *unwrapped_is_composing,
+                modifiers: unwrapped_modifiers.m,
                 char_code: 0,
-                key_code: k.key.legacy_keycode()
+                key_code: unwrapped_key.k.legacy_keycode()
             };
             sec(result);
         });
 
 
         let secure_2 = info_flow_block_dynamic_all!(sec_lat::None, int_lat::All {
-            let unwrapped = u(&keyboard_event);
-            let k = unwrapped.ke;
+            let unwrapped_state = u(&(keyboard_event.state));
+            let unwrapped_key = u(&(keyboard_event.key));
+            let unwrapped_code = u(&(keyboard_event.code));
+            let unwrapped_location = u(&(keyboard_event.location));
+            let unwrapped_repeat = u(&(keyboard_event.repeat));
+            let unwrapped_is_composing = u(&(keyboard_event.is_composing));
+            let unwrapped_modifiers = u(&(keyboard_event.modifiers));
             let result = SecurePart{
-                type_: PreDOMString{s: k.state.to_string()},
-                key: k.key.clone(),
-                code: PreDOMString{s: k.code.to_string()},
-                location: k.location as u32,
-                repeat: k.repeat,
-                is_composing: k.is_composing,
-                modifiers: k.modifiers,
-                char_code: k.key.legacy_charcode(),
+                type_: PreDOMString{s: unwrapped_state.k.to_string()},
+                key: unwrapped_key.k.clone(),
+                code: PreDOMString{s: unwrapped_code.c.to_string()},
+                location: unwrapped_location.l as u32,
+                repeat: unwrapped_repeat.r,
+                is_composing: *unwrapped_is_composing,
+                modifiers: unwrapped_modifiers.m,
+                char_code: unwrapped_key.k.legacy_charcode(),
                 key_code: 0
             };
             sec(result);

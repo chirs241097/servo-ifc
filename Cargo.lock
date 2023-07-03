@@ -3137,6 +3137,8 @@ name = "keyboard_wrapper"
 version = "0.0.1"
 dependencies = [
  "keyboard-types",
+ "malloc_size_of",
+ "malloc_size_of_derive",
  "secret_macros",
  "secret_structs",
  "serde",
@@ -5648,6 +5650,8 @@ dependencies = [
 name = "secret_structs"
 version = "0.1.0"
 dependencies = [
+ "malloc_size_of",
+ "malloc_size_of_derive",
  "secret_macros",
  "serde",
 ]

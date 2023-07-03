@@ -35,15 +35,15 @@ unsafe_no_jsmanaged_fields!(Modifiers);
 #[dom_struct]
 pub struct KeyboardEvent {
     uievent: UIEvent,
-    key: DomRefCell<DOMString>,
-    typed_key: DomRefCell<Key>,
-    code: DomRefCell<DOMString>,
-    location: Cell<u32>,
-    modifiers: Cell<Modifiers>,
-    repeat: Cell<bool>,
-    is_composing: Cell<bool>,
-    char_code: Cell<u32>,
-    key_code: Cell<u32>,
+    key: DomRefCell<StaticDynamicAll<PreDOMString,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>>,
+    typed_key: DomRefCell<StaticDynamicAll<KeyWrapper,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>>,
+    code: DomRefCell<StaticDynamicAll<PreDOMString,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>>,
+    location: Cell<StaticDynamicAll<u32,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>>,
+    modifiers: Cell<StaticDynamicAll<ModifiersWrapper,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>>,
+    repeat: Cell<StaticDynamicAll<bool,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>>,
+    is_composing: Cell<StaticDynamicAll<bool,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>>,
+    char_code: Cell<StaticDynamicAll<u32,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>>,
+    key_code: Cell<StaticDynamicAll<u32,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>>,
 }
 
 #[derive(SecretBlockSafeDerive)]
@@ -58,15 +58,15 @@ impl KeyboardEvent {
     fn new_inherited() -> KeyboardEvent {
         KeyboardEvent {
             uievent: UIEvent::new_inherited(),
-            key: DomRefCell::new(DOMString::new()),
-            typed_key: DomRefCell::new(Key::Unidentified),
-            code: DomRefCell::new(DOMString::new()),
-            location: Cell::new(0),
-            modifiers: Cell::new(Modifiers::empty()),
-            repeat: Cell::new(false),
-            is_composing: Cell::new(false),
-            char_code: Cell::new(0),
-            key_code: Cell::new(0),
+            key: DomRefCell::new(StaticDynamicAll::<PreDOMString,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>::new_info_flow_struct(PreDOMString{s: String::new()}, DynamicSecretLabel{policies: vec![]}, DynamicIntegrityLabel{policies: vec![]})),
+            typed_key: DomRefCell::new(StaticDynamicAll::<KeyWrapper,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>::new_info_flow_struct(KeyWrapper{k: Key::Unidentified}, DynamicSecretLabel{policies: vec![]}, DynamicIntegrityLabel{policies: vec![]})),
+            code: DomRefCell::new(StaticDynamicAll::<PreDOMString,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>::new_info_flow_struct(PreDOMString{s: String::new()}, DynamicSecretLabel{policies: vec![]}, DynamicIntegrityLabel{policies: vec![]})),
+            location: Cell::new(StaticDynamicAll::<u32,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>::new_info_flow_struct(0, DynamicSecretLabel{policies: vec![]}, DynamicIntegrityLabel{policies: vec![]})),
+            modifiers: Cell::new(StaticDynamicAll::<ModifiersWrapper,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>::new_info_flow_struct(ModifiersWrapper{m: Modifiers::empty()}, DynamicSecretLabel{policies: vec![]}, DynamicIntegrityLabel{policies: vec![]})),
+            repeat: Cell::new(StaticDynamicAll::<bool,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>::new_info_flow_struct(false, DynamicSecretLabel{policies: vec![]}, DynamicIntegrityLabel{policies: vec![]})),
+            is_composing: Cell::new(StaticDynamicAll::<bool,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>::new_info_flow_struct(false, DynamicSecretLabel{policies: vec![]}, DynamicIntegrityLabel{policies: vec![]})),
+            char_code: Cell::new(StaticDynamicAll::<u32,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>::new_info_flow_struct(0, DynamicSecretLabel{policies: vec![]}, DynamicIntegrityLabel{policies: vec![]})),
+            key_code: Cell::new(StaticDynamicAll::<u32,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>::new_info_flow_struct(0, DynamicSecretLabel{policies: vec![]}, DynamicIntegrityLabel{policies: vec![]})),
         }
     }
 
@@ -103,7 +103,7 @@ impl KeyboardEvent {
             sec(result);
         });
         let ev = KeyboardEvent::new_uninitialized(window);
-        ev.InitKeyboardEvent(
+        ev.InitKeyboardEvent2(
             //type_, //this
             can_bubble,
             cancelable,
@@ -115,28 +115,13 @@ impl KeyboardEvent {
             DOMString::new(),
             secure_2
         );
-        info_flow_block_no_return_dynamic_all!(sec_lat::None, int_lat::All {
-            let unwrapped = u(&secure);
-            *ev.typed_key.borrow_mut() = unwrapped.key;
-            *ev.code.borrow_mut() = unwrapped.code;
-            ev.modifiers.set(unwrapped.modifiers);
-            ev.is_composing.set(unwrapped.is_composing);
-            ev.char_code.set(unwrapped.char_code);
-            ev.key_code.set(unwrapped.key_code);
-            let result = Secure2 {
-                type_arg: unwrapped.type_,
-                key_arg: PreDOMString{s: unwrapped.key.to_string()},
-                location_arg: unwrapped.location,
-                repeat: unwrapped.repeat
-            };
-        });
-        //*ev.typed_key.borrow_mut() = key;
-        //*ev.code.borrow_mut() = code;
-        //ev.modifiers.set(modifiers);
-        //ev.is_composing.set(is_composing);
-        //ev.char_code.set(char_code);
-        //ev.key_code.set(key_code);
-        //ev.secure_part = keyboard_event_2
+        *ev.typed_key.borrow_mut() = key;
+        *ev.code.borrow_mut() = code;
+        ev.modifiers.set(modifiers);
+        ev.is_composing.set(is_composing);
+        ev.char_code.set(char_code);
+        ev.key_code.set(key_code);
+        ev.secure_part = keyboard_event_2;
         ev
     }
 
@@ -154,9 +139,9 @@ impl KeyboardEvent {
         //Vincent: Created new SecurePart in order to compensate for the modified funciton signature.
         let secure_1 = info_flow_block_dynamic_all!(sec_lat::None, int_lat::All {
             let result = SecurePart{
-                type_: PreDOMString{s: String::from(*type_)},
+                type_: PreDOMString{s: String::from(type_)},
                 key: Key::Unidentified,
-                code: PreDOMString{s: String::from(*(init.code))},
+                code: PreDOMString{s: String::from(init.code)},
                 location: init.location,
                 repeat: init.repeat,
                 is_composing: init.isComposing,
@@ -196,11 +181,8 @@ impl KeyboardEvent {
     pub fn modifiers(&self) -> Modifiers {
         self.modifiers.get()
     }
-}
-
-impl KeyboardEventMethods for KeyboardEvent {
-    // https://w3c.github.io/uievents/#widl-KeyboardEvent-initKeyboardEvent
-    fn InitKeyboardEvent(
+    //Added secondary impl to get around the bindings problem.
+    fn InitKeyboardEvent2(
         &self,
         //type_arg: DOMString,
         can_bubble_arg: bool,
@@ -211,7 +193,37 @@ impl KeyboardEventMethods for KeyboardEvent {
         _modifiers_list_arg: DOMString,
         //repeat: bool,
         _locale: DOMString,
-        secure2: Secure2
+        secure2: StaticDynamicAll<Secure2,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>
+    ) {
+        if self.upcast::<Event>().dispatching() {
+            return;
+        }
+        let type_arg = info_flow_block_dynamic_all!(sec_lat::None, int_lat::All {
+            let unwrapped = u(&secure2);
+            sec(unwrapped.type_arg)
+        });
+
+        self.upcast::<UIEvent>()
+            .InitUIEvent2(type_arg, can_bubble_arg, cancelable_arg, view_arg, 0);
+        *self.key.borrow_mut() = key_arg;
+        self.location.set(location_arg);
+        self.repeat.set(repeat);
+    }
+}
+
+impl KeyboardEventMethods for KeyboardEvent {
+    // https://w3c.github.io/uievents/#widl-KeyboardEvent-initKeyboardEvent
+    fn InitKeyboardEvent(
+        &self,
+        type_arg: DOMString,
+        can_bubble_arg: bool,
+        cancelable_arg: bool,
+        view_arg: Option<&Window>,
+        key_arg: DOMString,
+        location_arg: u32,
+        _modifiers_list_arg: DOMString,
+        repeat: bool,
+        _locale: DOMString,
     ) {
         if self.upcast::<Event>().dispatching() {
             return;
