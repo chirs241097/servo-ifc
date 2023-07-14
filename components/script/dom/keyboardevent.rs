@@ -16,17 +16,15 @@ use crate::dom::uievent::UIEvent;
 use crate::dom::window::Window;
 use dom_struct::dom_struct;
 use keyboard_types::{Key, Modifiers};
-use std::cell::Cell;
+//use std::cell::Cell;
 
 //Vincent: Added imports
 use keyboard_wrapper::*;
+use keyboard_wrapper::ServoSecure;
 use secret_structs::lattice::ternary_lattice as sec_lat;
 use secret_structs::lattice::integrity_lattice as int_lat;
 use secret_structs::info_flow_block_dynamic_all;
-use secret_structs::info_flow_block_no_return_dynamic_all;
-use secret_structs::secret::secret::SecretBlockSafe;
 use secret_structs::secret::secret::{StaticDynamicAll,DynamicSecretLabel, DynamicIntegrityLabel, *};
-use secret_macros::info_leak_free_full;
 use secret_macros::SecretBlockSafeDerive;
 
 unsafe_no_jsmanaged_fields!(Key);
@@ -34,16 +32,26 @@ unsafe_no_jsmanaged_fields!(Modifiers);
 
 #[dom_struct]
 pub struct KeyboardEvent {
+    //TODO: Make sure DomRefCell is the only option, and we can't in fact use Cell
     uievent: UIEvent,
-    key: DomRefCell<StaticDynamicAll<PreDOMString,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>>,
-    typed_key: DomRefCell<StaticDynamicAll<KeyWrapper,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>>,
-    code: DomRefCell<StaticDynamicAll<PreDOMString,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>>,
-    location: Cell<StaticDynamicAll<u32,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>>,
-    modifiers: Cell<StaticDynamicAll<ModifiersWrapper,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>>,
-    repeat: Cell<StaticDynamicAll<bool,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>>,
-    is_composing: Cell<StaticDynamicAll<bool,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>>,
-    char_code: Cell<StaticDynamicAll<u32,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>>,
-    key_code: Cell<StaticDynamicAll<u32,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>>,
+    key: DomRefCell</*StaticDynamicAll<PreDOMString, sec_lat::None, int_lat::All, DynamicSecretLabel, DynamicIntegrityLabel>*//**/ServoSecure<PreDOMString>/**/>,
+    typed_key: DomRefCell</*StaticDynamicAll<KeyWrapper, sec_lat::None, int_lat::All, DynamicSecretLabel, DynamicIntegrityLabel>*//**/ServoSecure<KeyWrapper>/**/>,
+    code: DomRefCell</*StaticDynamicAll<PreDOMString, sec_lat::None, int_lat::All, DynamicSecretLabel, DynamicIntegrityLabel>*//**/ServoSecure<PreDOMString>/**/>,
+    location: DomRefCell</*StaticDynamicAll<u32, sec_lat::None, int_lat::All, DynamicSecretLabel, DynamicIntegrityLabel>*//**/ServoSecure<u32>/**/>, //initially Cell
+    modifiers: DomRefCell</*StaticDynamicAll<ModifiersWrapper, sec_lat::None, int_lat::All, DynamicSecretLabel, DynamicIntegrityLabel>*//**/ServoSecure<ModifiersWrapper>/**/>, //initially Cell
+    repeat: DomRefCell</*StaticDynamicAll<bool, sec_lat::None, int_lat::All, DynamicSecretLabel, DynamicIntegrityLabel>*//**/ServoSecure<bool>/**/>, //initially Cell
+    is_composing: DomRefCell</*StaticDynamicAll<bool, sec_lat::None, int_lat::All, DynamicSecretLabel, DynamicIntegrityLabel>*//**/ServoSecure<bool>/**/>, //initially Cell
+    char_code: DomRefCell</*StaticDynamicAll<u32, sec_lat::None, int_lat::All, DynamicSecretLabel, DynamicIntegrityLabel>*//**/ServoSecure<u32>/**/>, //initially Cell
+    key_code: DomRefCell</*StaticDynamicAll<u32, sec_lat::None, int_lat::All, DynamicSecretLabel, DynamicIntegrityLabel>*//**/ServoSecure<u32>/**/>, //initially Cell
+}
+
+impl KeyboardEvent {
+    pub fn get_modifiers(&self) -> ServoSecure<ModifiersWrapper> {
+        self.modifiers.borrow().clone()
+    }
+    pub fn get_typed_key(&self) -> ServoSecure<KeyWrapper> {
+        self.typed_key.borrow().clone()
+    }
 }
 
 #[derive(SecretBlockSafeDerive)]
@@ -58,15 +66,15 @@ impl KeyboardEvent {
     fn new_inherited() -> KeyboardEvent {
         KeyboardEvent {
             uievent: UIEvent::new_inherited(),
-            key: DomRefCell::new(StaticDynamicAll::<PreDOMString,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>::new_info_flow_struct(PreDOMString{s: String::new()}, DynamicSecretLabel{policies: vec![]}, DynamicIntegrityLabel{policies: vec![]})),
-            typed_key: DomRefCell::new(StaticDynamicAll::<KeyWrapper,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>::new_info_flow_struct(KeyWrapper{k: Key::Unidentified}, DynamicSecretLabel{policies: vec![]}, DynamicIntegrityLabel{policies: vec![]})),
-            code: DomRefCell::new(StaticDynamicAll::<PreDOMString,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>::new_info_flow_struct(PreDOMString{s: String::new()}, DynamicSecretLabel{policies: vec![]}, DynamicIntegrityLabel{policies: vec![]})),
-            location: Cell::new(StaticDynamicAll::<u32,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>::new_info_flow_struct(0, DynamicSecretLabel{policies: vec![]}, DynamicIntegrityLabel{policies: vec![]})),
-            modifiers: Cell::new(StaticDynamicAll::<ModifiersWrapper,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>::new_info_flow_struct(ModifiersWrapper{m: Modifiers::empty()}, DynamicSecretLabel{policies: vec![]}, DynamicIntegrityLabel{policies: vec![]})),
-            repeat: Cell::new(StaticDynamicAll::<bool,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>::new_info_flow_struct(false, DynamicSecretLabel{policies: vec![]}, DynamicIntegrityLabel{policies: vec![]})),
-            is_composing: Cell::new(StaticDynamicAll::<bool,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>::new_info_flow_struct(false, DynamicSecretLabel{policies: vec![]}, DynamicIntegrityLabel{policies: vec![]})),
-            char_code: Cell::new(StaticDynamicAll::<u32,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>::new_info_flow_struct(0, DynamicSecretLabel{policies: vec![]}, DynamicIntegrityLabel{policies: vec![]})),
-            key_code: Cell::new(StaticDynamicAll::<u32,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>::new_info_flow_struct(0, DynamicSecretLabel{policies: vec![]}, DynamicIntegrityLabel{policies: vec![]})),
+            key: DomRefCell::new(ServoSecure::<PreDOMString>::new_info_flow_struct(PreDOMString{s: String::new()}, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]))),
+            typed_key: DomRefCell::new(ServoSecure::<KeyWrapper>::new_info_flow_struct(KeyWrapper{k: Key::Unidentified}, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]))),
+            code: DomRefCell::new(ServoSecure::<PreDOMString>::new_info_flow_struct(PreDOMString{s: String::new()}, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]))),
+            location: DomRefCell::new(ServoSecure::<u32>::new_info_flow_struct(0, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]))),
+            modifiers: DomRefCell::new(ServoSecure::<ModifiersWrapper>::new_info_flow_struct(ModifiersWrapper{m: Modifiers::empty()}, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]))),
+            repeat: DomRefCell::new(ServoSecure::<bool>::new_info_flow_struct(false, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]))),
+            is_composing: DomRefCell::new(ServoSecure::<bool>::new_info_flow_struct(false, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]))),
+            char_code: DomRefCell::new(ServoSecure::<u32>::new_info_flow_struct(0, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]))),
+            key_code: DomRefCell::new(ServoSecure::<u32>::new_info_flow_struct(0, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]))),
         }
     }
 
@@ -90,9 +98,45 @@ impl KeyboardEvent {
         //char_code: u32, //this
         //key_code: u32, //this
         secure: StaticDynamicAll<SecurePart,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>
-        //keyboard_event_2: StaticDynamicAll<SecurePart,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>
     ) -> DomRoot<KeyboardEvent> { 
-        let secure_2 = info_flow_block_dynamic_all!(sec_lat::None, int_lat::All {
+
+        let type_ = info_flow_block_dynamic_all!(sec_lat::None, int_lat::All, secure.get_dynamic_secret_label().generate_dynamic_secret(), secure.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+            let unwrapped = u(&secure);
+            sec(std::clone::Clone::clone(&unwrapped.type_))
+        });
+        let key: ServoSecure<KeyWrapper> = info_flow_block_dynamic_all!(sec_lat::None, int_lat::All, secure.get_dynamic_secret_label().generate_dynamic_secret(), secure.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+            let unwrapped = u(&secure);
+            sec(std::clone::Clone::clone(&unwrapped.key))
+        });
+        let code = info_flow_block_dynamic_all!(sec_lat::None, int_lat::All, secure.get_dynamic_secret_label().generate_dynamic_secret(), secure.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+            let unwrapped = u(&secure);
+            sec(std::clone::Clone::clone(&unwrapped.code))
+        });
+        let location = info_flow_block_dynamic_all!(sec_lat::None, int_lat::All, secure.get_dynamic_secret_label().generate_dynamic_secret(), secure.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+            let unwrapped = u(&secure);
+            sec(unwrapped.location)
+        });
+        let repeat = info_flow_block_dynamic_all!(sec_lat::None, int_lat::All, secure.get_dynamic_secret_label().generate_dynamic_secret(), secure.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+            let unwrapped = u(&secure);
+            sec(unwrapped.repeat)
+        });
+        let is_composing = info_flow_block_dynamic_all!(sec_lat::None, int_lat::All, secure.get_dynamic_secret_label().generate_dynamic_secret(), secure.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+            let unwrapped = u(&secure);
+            sec(unwrapped.is_composing)
+        });
+        let modifiers = info_flow_block_dynamic_all!(sec_lat::None, int_lat::All, secure.get_dynamic_secret_label().generate_dynamic_secret(), secure.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+            let unwrapped = u(&secure);
+            sec(std::clone::Clone::clone(&unwrapped.modifiers))
+        });
+        let char_code = info_flow_block_dynamic_all!(sec_lat::None, int_lat::All, secure.get_dynamic_secret_label().generate_dynamic_secret(), secure.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+            let unwrapped = u(&secure);
+            sec(unwrapped.char_code)
+        });
+        let key_code = info_flow_block_dynamic_all!(sec_lat::None, int_lat::All, secure.get_dynamic_secret_label().generate_dynamic_secret(), secure.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+            let unwrapped = u(&secure);
+            sec(unwrapped.key_code)
+        });
+        /*let secure_2 = info_flow_block_dynamic_all!(sec_lat::None, int_lat::All {
             let unwrapped = u(&secure);
             let result = Secure2 {
                 type_arg: unwrapped.type_,
@@ -101,30 +145,37 @@ impl KeyboardEvent {
                 repeat: unwrapped.repeat
             };
             sec(result);
+        });*/
+        let key_to_string: ServoSecure<PreDOMString> = info_flow_block_dynamic_all!(sec_lat::None, int_lat::All, secure.get_dynamic_secret_label().generate_dynamic_secret(), secure.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+            let unwrapped_s = u(&secure);
+            let a = keyboard_wrapper::to_string(&unwrapped_s.key);
+            sec(PreDOMString{s: a})
         });
         let ev = KeyboardEvent::new_uninitialized(window);
         ev.InitKeyboardEvent2(
-            //type_, //this
+            type_, //this
             can_bubble,
             cancelable,
             view,
-            //DOMString::from(key.to_string()), //this
-            //location, //this
+            key_to_string, //DOMString::from(key.to_string()), //this
+            location, //this
             DOMString::new(),
-            //repeat, //this
+            repeat, //this
             DOMString::new(),
-            secure_2
         );
         *ev.typed_key.borrow_mut() = key;
         *ev.code.borrow_mut() = code;
-        ev.modifiers.set(modifiers);
-        ev.is_composing.set(is_composing);
-        ev.char_code.set(char_code);
-        ev.key_code.set(key_code);
-        ev.secure_part = keyboard_event_2;
+        //Vincent: Changed below function calls to use DomRefCell API instead of Cell
+        *ev.modifiers.borrow_mut() = modifiers;
+        *ev.is_composing.borrow_mut() = is_composing;
+        *ev.char_code.borrow_mut() = char_code;
+        *ev.key_code.borrow_mut() = key_code;
         ev
     }
 
+
+    //Vincent: Removed this function to see what other compile errors come up because this function interacts with no other code I could find
+    
     #[allow(non_snake_case)]
     pub fn Constructor(
         window: &Window,
@@ -137,19 +188,21 @@ impl KeyboardEvent {
         modifiers.set(Modifiers::SHIFT, init.parent.shiftKey);
         modifiers.set(Modifiers::META, init.parent.metaKey);
         //Vincent: Created new SecurePart in order to compensate for the modified funciton signature.
-        let secure_1 = info_flow_block_dynamic_all!(sec_lat::None, int_lat::All {
-            let result = SecurePart{
-                type_: PreDOMString{s: String::from(type_)},
-                key: Key::Unidentified,
-                code: PreDOMString{s: String::from(init.code)},
-                location: init.location,
-                repeat: init.repeat,
-                is_composing: init.isComposing,
-                modifiers: modifiers,
-                char_code: 0,
-                key_code: 0
-            };
-            sec(result);
+        let result = SecurePart{
+            type_: PreDOMString{s: std::string::String::from(type_)},
+            key: KeyWrapper{k: Key::Unidentified},
+            code: PreDOMString{s: std::string::String::from(std::clone::Clone::clone(&init.code))},
+            location: init.location,
+            repeat: init.repeat,
+            is_composing: init.isComposing,
+            modifiers: ModifiersWrapper{m: modifiers},
+            char_code: 0,
+            key_code: 0
+        };
+        let s: DynamicSecretLabel = new_dynamic_secret_label(vec![]);
+        let i: DynamicIntegrityLabel = new_dynamic_integrity_label(vec![]);
+        let secure_1 = info_flow_block_dynamic_all!(sec_lat::None, int_lat::All, s, i,  {
+            sec(result)
         });
         let event = KeyboardEvent::new(
             window,
@@ -168,46 +221,35 @@ impl KeyboardEvent {
             //0,
             //0,
         );
-        *event.key.borrow_mut() = init.key.clone();
+        *event.key.borrow_mut() = ServoSecure::<PreDOMString>::new_info_flow_struct(PreDOMString{s: init.key.clone().to_string()}, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]));
         Ok(event)
     }
+    
 }
 
+//Vincent: Defined copy of function to get around binding limiting type signatures
 impl KeyboardEvent {
-    pub fn key(&self) -> Key {
-        self.typed_key.borrow().clone()
-    }
-
-    pub fn modifiers(&self) -> Modifiers {
-        self.modifiers.get()
-    }
-    //Added secondary impl to get around the bindings problem.
     fn InitKeyboardEvent2(
         &self,
-        //type_arg: DOMString,
+        type_arg: ServoSecure<PreDOMString>,
         can_bubble_arg: bool,
         cancelable_arg: bool,
         view_arg: Option<&Window>,
-        //key_arg: DOMString,
-        //location_arg: u32,
+        key_arg: ServoSecure<PreDOMString>,
+        location_arg: ServoSecure::<u32>,
         _modifiers_list_arg: DOMString,
-        //repeat: bool,
+        repeat: ServoSecure<bool>,
         _locale: DOMString,
-        secure2: StaticDynamicAll<Secure2,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>
     ) {
         if self.upcast::<Event>().dispatching() {
             return;
         }
-        let type_arg = info_flow_block_dynamic_all!(sec_lat::None, int_lat::All {
-            let unwrapped = u(&secure2);
-            sec(unwrapped.type_arg)
-        });
 
         self.upcast::<UIEvent>()
             .InitUIEvent2(type_arg, can_bubble_arg, cancelable_arg, view_arg, 0);
         *self.key.borrow_mut() = key_arg;
-        self.location.set(location_arg);
-        self.repeat.set(repeat);
+        *self.location.borrow_mut() = location_arg;
+        *self.repeat.borrow_mut() = repeat;
     }
 }
 
@@ -229,61 +271,87 @@ impl KeyboardEventMethods for KeyboardEvent {
             return;
         }
 
+        //Vincent: TODO UNDO
         self.upcast::<UIEvent>()
-            .InitUIEvent(type_arg, can_bubble_arg, cancelable_arg, view_arg, 0);
-        *self.key.borrow_mut() = key_arg;
-        self.location.set(location_arg);
-        self.repeat.set(repeat);
+        .InitUIEvent(type_arg, can_bubble_arg, cancelable_arg, view_arg, 0);
+        *self.key.borrow_mut() = ServoSecure::<PreDOMString>::new_info_flow_struct(PreDOMString{s: key_arg.to_string()}, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]));
+        *self.location.borrow_mut() = ServoSecure::<u32>::new_info_flow_struct(location_arg, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]));
+        *self.repeat.borrow_mut() = ServoSecure::<bool>::new_info_flow_struct(repeat, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]));
+        //self.upcast::<UIEvent>()
+        //    .InitUIEvent(type_arg, can_bubble_arg, cancelable_arg, view_arg, 0);
+        //*self.key.borrow_mut() = ServoSecure::<PreDOMString>::new_info_flow_struct(PreDOMString{s: key_arg.to_string()}, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]));
+        //*self.location.borrow_mut() = ServoSecure::<u32>::new_info_flow_struct(location_arg, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]));
+        //*self.repeat.borrow_mut() = ServoSecure::<bool>::new_info_flow_struct(repeat, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]));
     }
 
     // https://w3c.github.io/uievents/#widl-KeyboardEvent-key
     fn Key(&self) -> DOMString {
-        self.key.borrow().clone()
+        //Vincent: Replaced with a default value since it's secret.
+        panic!("Vincent: Can't call method Key");
+        /*self.key.borrow().clone()*/
     }
 
     // https://w3c.github.io/uievents/#widl-KeyboardEvent-code
     fn Code(&self) -> DOMString {
-        self.code.borrow().clone()
+        //Vincent: Replaced with a default value since it's secret.
+        panic!("Vincent: Can't call method Code");
+        /*self.code.borrow().clone()*/
     }
 
     // https://w3c.github.io/uievents/#widl-KeyboardEvent-location
     fn Location(&self) -> u32 {
-        self.location.get()
+        //Vincent: Replaced with a default value since it's secret.
+        panic!("Vincent: Can't call method Location");
+        /*self.location.get()*/
     }
 
     // https://w3c.github.io/uievents/#widl-KeyboardEvent-ctrlKey
     fn CtrlKey(&self) -> bool {
-        self.modifiers.get().contains(Modifiers::CONTROL)
+        //Vincent: Replaced with a default value since it's secret.
+        panic!("Vincent: Can't call method CtrlKey");
+        /*self.modifiers.get().contains(Modifiers::CONTROL)*/
     }
 
     // https://w3c.github.io/uievents/#widl-KeyboardEvent-shiftKey
     fn ShiftKey(&self) -> bool {
-        self.modifiers.get().contains(Modifiers::SHIFT)
+        //Vincent: Replaced with a default value since it's secret.
+        panic!("Vincent: Can't call method ShiftKey");
+        /*self.modifiers.get().contains(Modifiers::SHIFT)*/
     }
 
     // https://w3c.github.io/uievents/#widl-KeyboardEvent-altKey
     fn AltKey(&self) -> bool {
-        self.modifiers.get().contains(Modifiers::ALT)
+        //Vincent: Replaced with a default value since it's secret.
+        panic!("Vincent: Can't call method AltKey");
+        /*self.modifiers.get().contains(Modifiers::ALT)*/
     }
 
     // https://w3c.github.io/uievents/#widl-KeyboardEvent-metaKey
     fn MetaKey(&self) -> bool {
-        self.modifiers.get().contains(Modifiers::META)
+        //Vincent: Replaced with a default value since it's secret.
+        panic!("Vincent: Can't call method MetaKey");
+        /*self.modifiers.get().contains(Modifiers::META)*/
     }
 
     // https://w3c.github.io/uievents/#widl-KeyboardEvent-repeat
     fn Repeat(&self) -> bool {
-        self.repeat.get()
+        //Vincent: Replaced with a default value since it's secret.
+        panic!("Vincent: Can't call method Repeat");
+        /*self.repeat.get()*/
     }
 
     // https://w3c.github.io/uievents/#widl-KeyboardEvent-isComposing
     fn IsComposing(&self) -> bool {
-        self.is_composing.get()
+        //Vincent: Replaced with a default value since it's secret.
+        panic!("Vincent: Can't call method IsComposing");
+        /*self.is_composing.get()*/
     }
 
     // https://w3c.github.io/uievents/#dom-keyboardevent-getmodifierstate
     fn GetModifierState(&self, key_arg: DOMString) -> bool {
-        self.modifiers.get().contains(match &*key_arg {
+        //Vincent: Replaced with a default value since it's secret.
+        panic!("Vincent: Can't call method GetModifierState");
+        /*self.modifiers.get().contains(match &*key_arg {
             "Alt" => Modifiers::ALT,
             "AltGraph" => Modifiers::ALT_GRAPH,
             "CapsLock" => Modifiers::CAPS_LOCK,
@@ -297,26 +365,32 @@ impl KeyboardEventMethods for KeyboardEvent {
             "Symbol" => Modifiers::SYMBOL,
             "SymbolLock" => Modifiers::SYMBOL_LOCK,
             _ => return false,
-        })
+        })*/
     }
 
     // https://w3c.github.io/uievents/#widl-KeyboardEvent-charCode
     fn CharCode(&self) -> u32 {
-        self.char_code.get()
+        //Vincent: Replaced with a default value since it's secret.
+        panic!("Vincent: Can't call method CharCode");
+        /*self.char_code.get()*/
     }
 
     // https://w3c.github.io/uievents/#widl-KeyboardEvent-keyCode
     fn KeyCode(&self) -> u32 {
-        self.key_code.get()
+        //Vincent: Replaced with a default value since it's secret.
+        panic!("Vincent: Can't call method KeyCode");
+        /*self.key_code.get()*/
     }
 
     // https://w3c.github.io/uievents/#widl-KeyboardEvent-which
     fn Which(&self) -> u32 {
-        if self.char_code.get() != 0 {
+        //Vincent: Replaced with a default value since it's secret.
+        panic!("Vincent: Can't call method Which");
+        /*if self.char_code.get() != 0 {
             self.char_code.get()
         } else {
             self.key_code.get()
-        }
+        }*/
     }
 
     // https://dom.spec.whatwg.org/#dom-event-istrusted

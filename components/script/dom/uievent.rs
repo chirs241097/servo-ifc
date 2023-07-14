@@ -17,6 +17,12 @@ use servo_atoms::Atom;
 use std::cell::Cell;
 use std::default::Default;
 
+use keyboard_wrapper::*;
+use secret_structs::info_flow_block_declassify_dynamic_all;
+use secret_structs::secret::secret::*;
+use secret_structs::lattice::integrity_lattice as int_lat;
+use secret_structs::lattice::ternary_lattice as sec_lat;
+
 // https://w3c.github.io/uievents/#interface-uievent
 #[dom_struct]
 pub struct UIEvent {
@@ -74,6 +80,32 @@ impl UIEvent {
             init.detail,
         );
         Ok(event)
+    }
+}
+
+//Vincent: Defined copy of function to get around binding limiting type signatures
+impl UIEvent {
+    pub fn InitUIEvent2(
+        &self,
+        type_: ServoSecure<PreDOMString>,
+        can_bubble: bool,
+        cancelable: bool,
+        view: Option<&Window>,
+        detail: i32,
+    ) {
+        let event = self.upcast::<Event>();
+        if event.dispatching() {
+            return;
+        }
+        //Vincent: TODO UNDO
+        let new_type_pre_: PreDOMString = info_flow_block_declassify_dynamic_all!(sec_lat::None, int_lat::All, type_.get_dynamic_secret_label().generate_dynamic_secret(), type_.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+            remove_label_wrapper(type_)
+        });
+        let new_type_ = DOMString::from(new_type_pre_.s);
+        event.init_event(Atom::from(new_type_), can_bubble, cancelable);
+        //event.init_event(Atom::from(type_), can_bubble, cancelable);
+        self.view.set(view);
+        self.detail.set(detail);
     }
 }
 

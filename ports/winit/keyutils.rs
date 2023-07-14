@@ -250,18 +250,21 @@ fn get_modifiers(mods: ModifiersState) -> Modifiers {
     modifiers
 }
 
-pub fn keyboard_event_from_winit(input: KeyboardInput, state: ModifiersState) -> KeyboardEvent {
+pub fn keyboard_event_from_winit(input: KeyboardInput, state: ModifiersState) -> SecKeyboardEvent {
     info!("winit keyboard input: {:?}", input);
-    KeyboardEvent {
-        state: match input.state {
+    SecKeyboardEvent {
+        state: {let s = match input.state {
             ElementState::Pressed => KeyState::Down,
             ElementState::Released => KeyState::Up,
+            };
+            let s2 = KeyStateWrapper{k: s};
+            ServoSecure::<KeyStateWrapper>::new_info_flow_struct(s2, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]))
         },
-        key: get_servo_key_from_winit_key(input.virtual_keycode),
-        code: get_servo_code_from_scancode(input.scancode),
-        location: get_servo_location_from_winit_key(input.virtual_keycode),
-        modifiers: get_modifiers(state),
-        repeat: false,
-        is_composing: false,
+        key: ServoSecure::<KeyWrapper>::new_info_flow_struct(KeyWrapper{k: get_servo_key_from_winit_key(input.virtual_keycode)}, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![])),
+        code: ServoSecure::<CodeWrapper>::new_info_flow_struct(CodeWrapper{c: get_servo_code_from_scancode(input.scancode)}, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![])),
+        location: ServoSecure::<LocationWrapper>::new_info_flow_struct(LocationWrapper{l: get_servo_location_from_winit_key(input.virtual_keycode)}, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![])),
+        modifiers: ServoSecure::<ModifiersWrapper>::new_info_flow_struct(ModifiersWrapper{m: get_modifiers(state)}, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![])),
+        repeat: ServoSecure::<bool>::new_info_flow_struct(false, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![])),
+        is_composing: ServoSecure::<bool>::new_info_flow_struct(false, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![])),
     }
 }

@@ -16,6 +16,13 @@ use std::ops::{Add, AddAssign, Range};
 use std::usize;
 use unicode_segmentation::UnicodeSegmentation;
 
+
+use keyboard_wrapper::*;
+use secret_structs::info_flow_block_declassify_dynamic_all;
+use secret_structs::secret::secret::*;
+use secret_structs::lattice::integrity_lattice as int_lat;
+use secret_structs::lattice::ternary_lattice as sec_lat;
+
 #[derive(Clone, Copy, PartialEq)]
 pub enum Selection {
     Selected,
@@ -833,8 +840,19 @@ impl<T: ClipboardProvider> TextInput<T> {
 
     /// Process a given `KeyboardEvent` and return an action for the caller to execute.
     pub fn handle_keydown(&mut self, event: &KeyboardEvent) -> KeyReaction {
-        let key = event.key();
-        let mods = event.modifiers();
+        //Vincent: TODO UNDO
+        let key_stage_1 = event.get_typed_key();
+        let key_wrapper: KeyWrapper = info_flow_block_declassify_dynamic_all!(sec_lat::None, int_lat::All, key_stage_1.get_dynamic_secret_label().generate_dynamic_secret(), key_stage_1.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+            remove_label_wrapper(key_stage_1)
+        });
+        let key = key_wrapper.k;
+        let mods_stage_1 = event.get_modifiers();
+        let mods_wrapper: ModifiersWrapper = info_flow_block_declassify_dynamic_all!(sec_lat::None, int_lat::All, mods_stage_1.get_dynamic_secret_label().generate_dynamic_secret(), mods_stage_1.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+            remove_label_wrapper(mods_stage_1)
+        });
+        let mods = mods_wrapper.m;
+        //let key = event.key(); 
+        //let mods = event.modifiers();
         self.handle_keydown_aux(key, mods, cfg!(target_os = "macos"))
     }
 

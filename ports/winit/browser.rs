@@ -100,7 +100,7 @@ where
     }
 
     /// Handle key events before sending them to Servo.
-    fn handle_key_from_window(&mut self, key_event: StaticDynamicAll<SecKeyboardEvent,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>) {
+    fn handle_key_from_window(&mut self, key_event: SecKeyboardEvent) {
         ShortcutMatcher::from_event(key_event.clone())
             .shortcut(CMD_OR_CONTROL, 'R', || {
                 if let Some(id) = self.browser_id {
@@ -185,16 +185,42 @@ where
     }
 
     #[cfg(not(target_os = "win"))]
-    fn platform_handle_key(&mut self, key_event: StaticDynamicAll<SecKeyboardEvent,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>) {
+    fn platform_handle_key(&mut self, key_event: SecKeyboardEvent) {
         if let Some(id) = self.browser_id {
-            if let Some(event) = ShortcutMatcher::from_event(key_event.clone())
+            let state = info_flow_block_declassify_dynamic_all!(sec_lat::None, int_lat::All, key_event.state.get_dynamic_secret_label().generate_dynamic_secret(), key_event.state.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                remove_label_wrapper(key_event.state)
+            }).k.clone();
+            let key = info_flow_block_declassify_dynamic_all!(sec_lat::None, int_lat::All, key_event.key.get_dynamic_secret_label().generate_dynamic_secret(), key_event.key.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                remove_label_wrapper(key_event.key)
+            }).k.clone();
+            let code = info_flow_block_declassify_dynamic_all!(sec_lat::None, int_lat::All, key_event.code.get_dynamic_secret_label().generate_dynamic_secret(), key_event.code.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                remove_label_wrapper(key_event.code)
+            }).c.clone();
+            let location = info_flow_block_declassify_dynamic_all!(sec_lat::None, int_lat::All, key_event.location.get_dynamic_secret_label().generate_dynamic_secret(), key_event.location.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                remove_label_wrapper(key_event.location)
+            }).l.clone();
+            let modifiers = info_flow_block_declassify_dynamic_all!(sec_lat::None, int_lat::All, key_event.modifiers.get_dynamic_secret_label().generate_dynamic_secret(), key_event.modifiers.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                remove_label_wrapper(key_event.modifiers)
+            }).m.clone();
+            let repeat = info_flow_block_declassify_dynamic_all!(sec_lat::None, int_lat::All, key_event.repeat.get_dynamic_secret_label().generate_dynamic_secret(), key_event.repeat.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                remove_label_wrapper(key_event.repeat)
+            }).clone();
+            let is_composing = info_flow_block_declassify_dynamic_all!(sec_lat::None, int_lat::All, key_event.is_composing.get_dynamic_secret_label().generate_dynamic_secret(), key_event.is_composing.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                remove_label_wrapper(key_event.is_composing)
+            }).clone();
+            //Vincent: TODO UNDO
+            let k_event = KeyboardEvent {
+                state: state, key: key, code: code, location: location,
+                modifiers: modifiers, repeat: repeat, is_composing: is_composing,
+            };
+            if let Some(event) = ShortcutMatcher::from_event(k_event.clone())
                 .shortcut(CMD_OR_CONTROL, '[', || {
                     WindowEvent::Navigation(id, TraversalDirection::Back(1))
                 })
                 .shortcut(CMD_OR_CONTROL, ']', || {
                     WindowEvent::Navigation(id, TraversalDirection::Forward(1))
                 })
-                .otherwise(|| WindowEvent::Keyboard(key_event))
+                .otherwise(|| WindowEvent::Keyboard(k_event))
             {
                 self.event_queue.push(event)
             }
@@ -205,7 +231,7 @@ where
     fn platform_handle_key(&mut self, _key_event: KeyboardEvent) {}
 
     /// Handle key events after they have been handled by Servo.
-    fn handle_key_from_servo(&mut self, _: Option<BrowserId>, event: StaticDynamicAll<SecKeyboardEvent,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>) {
+    fn handle_key_from_servo(&mut self, _: Option<BrowserId>, event: SecKeyboardEvent) {
         ShortcutMatcher::from_event(event)
             .shortcut(CMD_OR_CONTROL, '=', || {
                 self.event_queue.push(WindowEvent::Zoom(1.1))

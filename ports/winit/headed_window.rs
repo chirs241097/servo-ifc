@@ -48,6 +48,9 @@ use winapi;
 use winit::dpi::{LogicalPosition, PhysicalPosition, PhysicalSize};
 use winit::event::ModifiersState;
 
+//Vincent: Add imports
+use keyboard_wrapper::SecKeyboardEvent;
+
 pub struct Window {
     winit_window: winit::window::Window,
     webrender_surfman: WebrenderSurfman,
@@ -58,7 +61,8 @@ pub struct Window {
     primary_monitor: winit::monitor::MonitorHandle,
     event_queue: RefCell<Vec<WindowEvent>>,
     mouse_pos: Cell<Point2D<i32, DevicePixel>>,
-    last_pressed: Cell<Option<(KeyboardEvent, Option<VirtualKeyCode>)>>,
+    //Vincent: Changed type signature
+    last_pressed: Cell<Option<(SecKeyboardEvent, Option<VirtualKeyCode>)>>,
     /// A map of winit's key codes to key values that are interpreted from
     /// winit's ReceivedChar events.
     keys_down: RefCell<HashMap<VirtualKeyCode, Key>>,
@@ -179,7 +183,8 @@ impl Window {
         } else {
             // For combined characters like the letter e with an acute accent
             // no keyboard event is emitted. A dummy event is created in this case.
-            (KeyboardEvent::default(), None)
+            //Vincent: changed return type
+            (SecKeyboardEvent::default(), None)
         };
         event.key = Key::Character(ch.to_string());
 
@@ -695,7 +700,7 @@ impl webxr::glwindow::GlWindow for XRWindow {
 }
 
 impl XRWindowPose {
-    fn handle_xr_translation(&self, input: &KeyboardEvent) {
+    fn handle_xr_translation(&self, input: &SecKeyboardEvent) {
         if input.state != KeyState::Down {
             return;
         }
