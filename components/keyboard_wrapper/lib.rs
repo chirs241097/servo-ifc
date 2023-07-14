@@ -41,6 +41,27 @@ pub struct SecKeyboardEvent {
     pub is_composing: /*ServoSecure<bool>,*/ StaticDynamicAll<bool,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>,
 }
 
+impl SecKeyboardEvent {
+    pub fn wrap(ke: KeyboardEvent, sl: DynamicSecretLabel, il: DynamicIntegrityLabel) -> Self {
+        SecKeyboardEvent {
+            state: StaticDynamicAll::<KeyStateWrapper,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>
+            ::new_info_flow_struct(KeyStateWrapper{k: ke.state}, sl, il),
+            key: StaticDynamicAll::<KeyWrapper,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>
+            ::new_info_flow_struct(KeyWrapper{k: ke.key}, sl, il),
+            code: StaticDynamicAll::<CodeWrapper,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>
+            ::new_info_flow_struct(CodeWrapper{c: ke.code}, sl, il),
+            location: StaticDynamicAll::<LocationWrapper,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>
+            ::new_info_flow_struct(LocationWrapper{l: ke.location}, sl, il),
+            modifiers: StaticDynamicAll::<ModifiersWrapper,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>
+            ::new_info_flow_struct(ModifiersWrapper{m: ke.modifiers}, sl, il),
+            repeat: StaticDynamicAll::<bool,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>
+            ::new_info_flow_struct(ke.repeat, sl, il),
+            is_composing: StaticDynamicAll::<bool,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>
+            ::new_info_flow_struct(ke.is_composing, sl, il)
+        }
+    }
+}
+
 #[derive(Clone, Default, Serialize, Deserialize)]
 pub struct KeyStateWrapper {
     pub k: KeyState

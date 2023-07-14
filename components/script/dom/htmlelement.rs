@@ -10,6 +10,7 @@ use crate::dom::bindings::codegen::Bindings::HTMLElementBinding::HTMLElementMeth
 use crate::dom::bindings::codegen::Bindings::HTMLLabelElementBinding::HTMLLabelElementMethods;
 use crate::dom::bindings::codegen::Bindings::NodeBinding::NodeBinding::NodeMethods;
 use crate::dom::bindings::codegen::Bindings::WindowBinding::WindowMethods;
+use crate::dom::bindings::codegen::Bindings::DocumentBinding::DocumentMethods;
 use crate::dom::bindings::error::{Error, ErrorResult};
 use crate::dom::bindings::inheritance::Castable;
 use crate::dom::bindings::inheritance::{ElementTypeId, HTMLElementTypeId, NodeTypeId};
@@ -88,6 +89,12 @@ impl HTMLElement {
             Box::new(HTMLElement::new_inherited(local_name, prefix, document)),
             document,
         )
+    }
+
+    pub fn get_domain(&self) -> DOMString {
+        let node = self.element.upcast::<Node>();
+        let doc = node.owner_doc();
+        doc.Domain()
     }
 
     fn is_body_or_frameset(&self) -> bool {
