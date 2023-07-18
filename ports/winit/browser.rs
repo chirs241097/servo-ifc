@@ -31,15 +31,11 @@ use tinyfiledialogs::{self, MessageBoxIcon, OkCancel, YesNo};
 use keyboard_wrapper::SecKeyboardEvent;
 use secret_structs::lattice::ternary_lattice as sec_lat;
 use secret_structs::lattice::integrity_lattice as int_lat;
-use secret_structs::secret::secret::{StaticDynamicAll, DynamicSecretLabel, DynamicIntegrityLabel};
+use secret_structs::secret::secret::*;
 use secret_structs::secret::secret::{get_new_secrecy_tag, get_new_integrity_tag, new_dynamic_secret_label, new_dynamic_integrity_label};
 
-use keyboard_wrapper::SecKeyboardEvent;
-use secret_structs::lattice::ternary_lattice as sec_lat;
-use secret_structs::lattice::integrity_lattice as int_lat;
-use secret_structs::{info_flow_block_dynamic_all, info_flow_block_declassify_dynamic_all};
-use secret_structs::secret::secret::SecretBlockSafe;
-use secret_structs::secret::secret::{StaticDynamicAll,DynamicSecretLabel, DynamicIntegrityLabel, *};
+use secret_structs::{/*info_flow_block_dynamic_all, */info_flow_block_declassify_dynamic_all};
+//use secret_structs::secret::secret::SecretBlockSafe;
 pub struct Browser<Window: WindowPortsMethods + ?Sized> {
     current_url: Option<ServoUrl>,
     /// id of the top level browsing context. It is unique as tabs
@@ -105,7 +101,7 @@ where
     }
 
     /// Handle key events before sending them to Servo.
-    fn handle_key_from_window(&mut self, key_event: SecKeyboardEvent) {
+    fn handle_key_from_window(&mut self, key_event: KeyboardEvent) {
         ShortcutMatcher::from_event(key_event.clone())
             .shortcut(CMD_OR_CONTROL, 'R', || {
                 if let Some(id) = self.browser_id {
@@ -190,9 +186,9 @@ where
     }
 
     #[cfg(not(target_os = "win"))]
-    fn platform_handle_key(&mut self, key_event: SecKeyboardEvent) {
+    fn platform_handle_key(&mut self, key_event: KeyboardEvent /*WindowEvent::Keyboard(key_event)*/) {
         if let Some(id) = self.browser_id {
-            let state = info_flow_block_declassify_dynamic_all!(sec_lat::None, int_lat::All, key_event.state.get_dynamic_secret_label().generate_dynamic_secret(), key_event.state.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+            /*let state = info_flow_block_declassify_dynamic_all!(sec_lat::None, int_lat::All, key_event.state.get_dynamic_secret_label().generate_dynamic_secret(), key_event.state.get_dynamic_integrity_label().generate_dynamic_integrity(), {
                 remove_label_wrapper(key_event.state)
             }).k.clone();
             let key = info_flow_block_declassify_dynamic_all!(sec_lat::None, int_lat::All, key_event.key.get_dynamic_secret_label().generate_dynamic_secret(), key_event.key.get_dynamic_integrity_label().generate_dynamic_integrity(), {
@@ -217,8 +213,8 @@ where
             let k_event = KeyboardEvent {
                 state: state, key: key, code: code, location: location,
                 modifiers: modifiers, repeat: repeat, is_composing: is_composing,
-            };
-            if let Some(event) = ShortcutMatcher::from_event(k_event.clone())
+            };*/
+            if let Some(event) = ShortcutMatcher::from_event(key_event.clone())
                 .shortcut(CMD_OR_CONTROL, '[', || {
                     WindowEvent::Navigation(id, TraversalDirection::Back(1))
                 })
@@ -229,8 +225,8 @@ where
                     // Chris: while I'm still trying to find a way to get the
                     // JavaScript window or document object in this context...
                     // let's use a new tag & label everytime as a placeholder.
-                    let A = new_secrecy_tag();
-                    let X = new_integrity_tag();
+                    let A = get_new_secrecy_tag();
+                    let X = get_new_integrity_tag();
                     let sl = new_dynamic_secret_label(vec![A.clone()]);
                     let il = new_dynamic_integrity_label(vec![X.clone()]);
                     WindowEvent::Keyboard(SecKeyboardEvent::wrap(key_event, sl, il))
