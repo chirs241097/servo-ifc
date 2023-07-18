@@ -173,7 +173,7 @@ pub enum EmbedderMsg {
     /// Wether or not to unload a document
     AllowUnload(IpcSender<bool>),
     /// Sends an unconsumed key event back to the embedder.
-    Keyboard(SecKeyboardEvent),
+    Keyboard(SecKeyboardEvent<sec_lat::None,int_lat::All>),
     /// Gets system clipboard contents
     GetClipboardContents(IpcSender<String>),
     /// Sets system clipboard contents

@@ -222,14 +222,13 @@ where
                     WindowEvent::Navigation(id, TraversalDirection::Forward(1))
                 })
                 .otherwise(|| {
-                    // Chris: while I'm still trying to find a way to get the
-                    // JavaScript window or document object in this context...
-                    // let's use a new tag & label everytime as a placeholder.
-                    let A = get_new_secrecy_tag();
-                    let X = get_new_integrity_tag();
-                    let sl = new_dynamic_secret_label(vec![A.clone()]);
-                    let il = new_dynamic_integrity_label(vec![X.clone()]);
-                    WindowEvent::Keyboard(SecKeyboardEvent::wrap(key_event, sl, il))
+                    //Chris: current resolution: mark the initial keystroke with a
+                    //static secrecy label (signifying it's user input), and relabel
+                    //with dynamic label corresponding to the current domain inside
+                    //the JS engine.
+                    let sl = new_dynamic_secret_label(vec![]);
+                    let il = new_dynamic_integrity_label(vec![]);
+                    WindowEvent::Keyboard(SecKeyboardEvent::<sec_lat::A,int_lat::All>::wrap(key_event, sl, il))
                 })
             {
                 self.event_queue.push(event)

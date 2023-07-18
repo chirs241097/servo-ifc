@@ -4058,7 +4058,8 @@ where
         }
     }
 
-    fn handle_key_msg(&mut self, event: SecKeyboardEvent) {
+    //Chris: (TODO) verify signature
+    fn handle_key_msg(&mut self, event: SecKeyboardEvent<sec_lat::A,int_lat::All>) {
         // Send to the focused browsing contexts' current pipeline.  If it
         // doesn't exist, fall back to sending to the compositor.
         let focused_browsing_context_id = self
