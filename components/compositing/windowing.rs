@@ -16,10 +16,10 @@ use servo_url::ServoUrl;
 use std::fmt::{Debug, Error, Formatter};
 use std::time::Duration;
 use style_traits::DevicePixel;
-use secret_structs::lattice::ternary_lattice as sec_lat;
-use secret_structs::lattice::integrity_lattice as int_lat;
-use secret_structs::secret::secret::SecretBlockSafe;
-use secret_structs::secret::secret::{StaticDynamicAll,DynamicSecretLabel, DynamicIntegrityLabel};
+//use secret_structs::lattice::ternary_lattice as sec_lat;
+//use secret_structs::lattice::integrity_lattice as int_lat;
+//use secret_structs::secret::secret::SecretBlockSafe;
+//use secret_structs::secret::secret::{StaticDynamicAll,DynamicSecretLabel, DynamicIntegrityLabel};
 
 use webrender_api::units::DevicePoint;
 use webrender_api::units::{DeviceIntPoint, DeviceIntRect, DeviceIntSize};
@@ -85,7 +85,7 @@ pub enum WindowEvent {
     /// Sent when the user exits from fullscreen mode
     ExitFullScreen(TopLevelBrowsingContextId),
     /// Sent when a key input state changes
-    Keyboard(SecKeyboardEvent),
+    Keyboard(KeyboardEvent),
     /// Sent when Ctr+R/Apple+R is called to reload the current page.
     Reload(TopLevelBrowsingContextId),
     /// Create a new top level browsing context

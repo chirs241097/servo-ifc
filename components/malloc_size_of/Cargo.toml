@@ -53,3 +53,6 @@ uuid = { version = "0.8", features = ["v4"], optional = true }
 void = "1.0.2"
 webrender_api = { git = "https://github.com/servo/webrender", optional = true }
 xml5ever = { version = "0.17", optional = true }
+
+secret_structs = { path = "../../info-flow-library/ifc_library/secret_structs/", package="secret_structs" }
+secret_macros = { path = "../../info-flow-library/ifc_library/macros/", package="secret_macros" }

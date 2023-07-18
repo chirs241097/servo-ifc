@@ -25,7 +25,7 @@ use secret_structs::lattice::ternary_lattice as sec_lat;
 use secret_structs::lattice::integrity_lattice as int_lat;
 use secret_structs::info_flow_block_dynamic_all;
 use secret_structs::secret::secret::{StaticDynamicAll,DynamicSecretLabel, DynamicIntegrityLabel, *};
-use secret_macros::SecretBlockSafeDerive;
+//use secret_macros::SecretBlockSafeDerive;
 
 unsafe_no_jsmanaged_fields!(Key);
 unsafe_no_jsmanaged_fields!(Modifiers);
@@ -54,13 +54,13 @@ impl KeyboardEvent {
     }
 }
 
-#[derive(SecretBlockSafeDerive)]
+/*#[derive(SecretBlockSafeDerive)]
 pub struct Secure2 {
     type_arg: PreDOMString,
     key_arg: PreDOMString,
     location_arg: u32,
     repeat: bool
-}
+}*/
 
 impl KeyboardEvent {
     fn new_inherited() -> KeyboardEvent {

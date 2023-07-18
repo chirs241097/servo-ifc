@@ -78,10 +78,10 @@ use webrender_api::{
 };
 use webrender_api::{BuiltDisplayListDescriptor, HitTestFlags};
 use keyboard_wrapper::SecKeyboardEvent;
-use secret_structs::lattice::ternary_lattice as sec_lat;
-use secret_structs::lattice::integrity_lattice as int_lat;
-use secret_structs::secret::secret::SecretBlockSafe;
-use secret_structs::secret::secret::{StaticDynamicAll,DynamicSecretLabel, DynamicIntegrityLabel};
+//use secret_structs::lattice::ternary_lattice as sec_lat;
+//use secret_structs::lattice::integrity_lattice as int_lat;
+//use secret_structs::secret::secret::SecretBlockSafe;
+//use secret_structs::secret::secret::{StaticDynamicAll,DynamicSecretLabel, DynamicIntegrityLabel};
 
 pub use crate::script_msg::{
     DOMMessage, HistoryEntryReplacement, Job, JobError, JobResult, JobResultValue, JobType,

@@ -5,6 +5,10 @@
 use winit::event::{ElementState, KeyboardInput, ModifiersState, VirtualKeyCode};
 use keyboard_types::{Code, Key, KeyState, KeyboardEvent, Location, Modifiers};
 
+//Vincent: Add imports
+use keyboard_wrapper::{SecKeyboardEvent, KeyStateWrapper, KeyWrapper, CodeWrapper, ModifiersWrapper, ServoSecure, LocationWrapper};
+use secret_structs::secret::secret::{new_dynamic_secret_label, new_dynamic_integrity_label};
+
 // Some shortcuts use Cmd on Mac and Control on other systems.
 #[cfg(target_os = "macos")]
 pub const CMD_OR_CONTROL: Modifiers = Modifiers::META;

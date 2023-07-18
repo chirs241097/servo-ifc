@@ -3618,6 +3618,8 @@ dependencies = [
  "http",
  "hyper_serde",
  "keyboard-types",
+ "secret_macros",
+ "secret_structs",
  "selectors",
  "serde",
  "serde_bytes",

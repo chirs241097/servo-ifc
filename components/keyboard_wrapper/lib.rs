@@ -7,13 +7,13 @@ use secret_structs::lattice::integrity_lattice as int_lat;
 use secret_structs::lattice::ternary_lattice as sec_lat;
 use secret_macros::SecretBlockSafeDerive;
 use secret_macros::info_leak_free_full;
-use serde::ser::{Serializer, SerializeStruct};
-use serde::{Serialize, Deserialize, Deserializer};
-use std::marker::PhantomData;
+//use serde::ser::{Serializer, SerializeStruct};
+use serde::{Serialize, Deserialize, /*Deserializer*/};
+//use std::marker::PhantomData;
 use keyboard_types::{Key, Modifiers, KeyState, Code, Location};
 use malloc_size_of_derive::MallocSizeOf;
-use malloc_size_of::MallocSizeOf;
-use malloc_size_of::MallocSizeOfOps;
+//use malloc_size_of::MallocSizeOf;
+//use malloc_size_of::MallocSizeOfOps;
 
 //#[derive(Clone, Default, Serialize, Deserialize)]
 //pub struct SecKeyboardEvent {
@@ -45,19 +45,19 @@ impl SecKeyboardEvent {
     pub fn wrap(ke: KeyboardEvent, sl: DynamicSecretLabel, il: DynamicIntegrityLabel) -> Self {
         SecKeyboardEvent {
             state: StaticDynamicAll::<KeyStateWrapper,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>
-            ::new_info_flow_struct(KeyStateWrapper{k: ke.state}, sl, il),
+            ::new_info_flow_struct(KeyStateWrapper{k: ke.state}, sl.clone(), il.clone()),
             key: StaticDynamicAll::<KeyWrapper,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>
-            ::new_info_flow_struct(KeyWrapper{k: ke.key}, sl, il),
+            ::new_info_flow_struct(KeyWrapper{k: ke.key}, sl.clone(), il.clone()),
             code: StaticDynamicAll::<CodeWrapper,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>
-            ::new_info_flow_struct(CodeWrapper{c: ke.code}, sl, il),
+            ::new_info_flow_struct(CodeWrapper{c: ke.code}, sl.clone(), il.clone()),
             location: StaticDynamicAll::<LocationWrapper,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>
-            ::new_info_flow_struct(LocationWrapper{l: ke.location}, sl, il),
+            ::new_info_flow_struct(LocationWrapper{l: ke.location}, sl.clone(), il.clone()),
             modifiers: StaticDynamicAll::<ModifiersWrapper,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>
-            ::new_info_flow_struct(ModifiersWrapper{m: ke.modifiers}, sl, il),
+            ::new_info_flow_struct(ModifiersWrapper{m: ke.modifiers}, sl.clone(), il.clone()),
             repeat: StaticDynamicAll::<bool,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>
-            ::new_info_flow_struct(ke.repeat, sl, il),
+            ::new_info_flow_struct(ke.repeat, sl.clone(), il.clone()),
             is_composing: StaticDynamicAll::<bool,sec_lat::None,int_lat::All,DynamicSecretLabel,DynamicIntegrityLabel>
-            ::new_info_flow_struct(ke.is_composing, sl, il)
+            ::new_info_flow_struct(ke.is_composing, sl.clone(), il.clone())
         }
     }
 }

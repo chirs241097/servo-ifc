@@ -30,10 +30,10 @@ use std::collections::HashMap;
 use std::fmt;
 use std::time::Duration;
 
-use secret_structs::lattice::ternary_lattice as sec_lat;
-use secret_structs::lattice::integrity_lattice as int_lat;
-use secret_structs::secret::secret::SecretBlockSafe;
-use secret_structs::secret::secret::{StaticDynamicAll,DynamicSecretLabel, DynamicIntegrityLabel};
+//use secret_structs::lattice::ternary_lattice as sec_lat;
+//use secret_structs::lattice::integrity_lattice as int_lat;
+//use secret_structs::secret::secret::SecretBlockSafe;
+//use secret_structs::secret::secret::{StaticDynamicAll,DynamicSecretLabel, DynamicIntegrityLabel};
 
 mod compositor;
 pub mod compositor_thread;

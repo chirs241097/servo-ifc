@@ -22,10 +22,10 @@ use std::fmt::{Debug, Error, Formatter};
 use webrender_api::units::{DeviceIntPoint, DeviceIntRect, DeviceIntSize};
 
 use keyboard_wrapper::SecKeyboardEvent;
-use secret_structs::lattice::ternary_lattice as sec_lat;
-use secret_structs::lattice::integrity_lattice as int_lat;
-use secret_structs::secret::secret::SecretBlockSafe;
-use secret_structs::secret::secret::{StaticDynamicAll,DynamicSecretLabel, DynamicIntegrityLabel};
+//use secret_structs::lattice::ternary_lattice as sec_lat;
+//use secret_structs::lattice::integrity_lattice as int_lat;
+//use secret_structs::secret::secret::SecretBlockSafe;
+//use secret_structs::secret::secret::{StaticDynamicAll,DynamicSecretLabel, DynamicIntegrityLabel};
 
 pub use webxr_api::MainThreadWaker as EventLoopWaker;
 

@@ -59,7 +59,10 @@ use std::os::raw::c_void;
 use uuid::Uuid;
 use void::Void;
 
-
+//Vincent: Add imports
+use secret_structs::secret::secret::*;
+use secret_structs::lattice::ternary_lattice::*;
+use secret_structs::lattice::integrity_lattice::*;
 
 /// A C function that takes a pointer to a heap allocation and returns its size.
 type VoidPtrToSizeFn = unsafe extern "C" fn(ptr: *const c_void) -> usize;
@@ -246,6 +249,176 @@ where
 {
     fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
         self.0.size_of(ops) + self.1.size_of(ops)
+    }
+}
+
+//Vincent: add impls for ifc structs
+impl<T, L1, L2, D1, D2> MallocSizeOf for InfoFlowStruct<T, L1, L2, D1, D2>
+    where T: SecretValueSafe + MallocSizeOf, L1: Label + MallocSizeOf, L2: Label + MallocSizeOf, D1: DynSecretField + MallocSizeOf, D2: DynIntegrityField + MallocSizeOf {
+    #[inline]
+    #[allow(unused_variables, unused_mut, unreachable_code)]
+    fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+        MallocSizeOf::size_of(unsafe{self.unwrap_unsafe_dynamic_all::<L1, L2>()}, ops) + MallocSizeOf::size_of(self.get_dynamic_secret_label(), ops) + MallocSizeOf::size_of(self.get_dynamic_integrity_label(), ops)
+    }
+}
+
+impl MallocSizeOf for DynamicSecretLabel {
+    #[inline]
+    #[allow(unused_variables, unused_mut, unreachable_code)]
+    fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+        MallocSizeOf::size_of(unsafe {self.policies_reference()}, ops)
+    }
+}
+
+impl MallocSizeOf for DynamicIntegrityLabel {
+    #[inline]
+    #[allow(unused_variables, unused_mut, unreachable_code)]
+    fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+        MallocSizeOf::size_of(unsafe {self.policies_reference()}, ops)
+    }
+}
+
+impl MallocSizeOf for DynamicSecretComponent {
+    #[inline]
+    #[allow(unused_variables, unused_mut, unreachable_code)]
+    fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+        MallocSizeOf::size_of(unsafe {self.policy_reference()}, ops)
+    }
+}
+
+impl MallocSizeOf for DynamicIntegrityComponent {
+    #[inline]
+    #[allow(unused_variables, unused_mut, unreachable_code)]
+    fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+        MallocSizeOf::size_of(unsafe {self.policy_reference()}, ops)
+    }
+}
+
+impl MallocSizeOf for A {
+    #[inline]
+    #[allow(unused_variables, unused_mut, unreachable_code)]
+    fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+        0
+    }
+}
+
+impl MallocSizeOf for B {
+    #[inline]
+    #[allow(unused_variables, unused_mut, unreachable_code)]
+    fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+        0
+    }
+}
+
+impl MallocSizeOf for C {
+    #[inline]
+    #[allow(unused_variables, unused_mut, unreachable_code)]
+    fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+        0
+    }
+}
+
+impl MallocSizeOf for AB {
+    #[inline]
+    #[allow(unused_variables, unused_mut, unreachable_code)]
+    fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+        0
+    }
+}
+
+impl MallocSizeOf for BC {
+    #[inline]
+    #[allow(unused_variables, unused_mut, unreachable_code)]
+    fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+        0
+    }
+}
+
+impl MallocSizeOf for AC {
+    #[inline]
+    #[allow(unused_variables, unused_mut, unreachable_code)]
+    fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+        0
+    }
+}
+
+impl MallocSizeOf for None {
+    #[inline]
+    #[allow(unused_variables, unused_mut, unreachable_code)]
+    fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+        0
+    }
+}
+
+impl MallocSizeOf for ABC {
+    #[inline]
+    #[allow(unused_variables, unused_mut, unreachable_code)]
+    fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+        0
+    }
+}
+
+impl MallocSizeOf for NotX {
+    #[inline]
+    #[allow(unused_variables, unused_mut, unreachable_code)]
+    fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+        0
+    }
+}
+
+impl MallocSizeOf for NotY {
+    #[inline]
+    #[allow(unused_variables, unused_mut, unreachable_code)]
+    fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+        0
+    }
+}
+
+impl MallocSizeOf for NotZ {
+    #[inline]
+    #[allow(unused_variables, unused_mut, unreachable_code)]
+    fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+        0
+    }
+}
+
+impl MallocSizeOf for NotXY {
+    #[inline]
+    #[allow(unused_variables, unused_mut, unreachable_code)]
+    fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+        0
+    }
+}
+
+impl MallocSizeOf for NotYZ {
+    #[inline]
+    #[allow(unused_variables, unused_mut, unreachable_code)]
+    fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+        0
+    }
+}
+
+impl MallocSizeOf for NotXZ {
+    #[inline]
+    #[allow(unused_variables, unused_mut, unreachable_code)]
+    fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+        0
+    }
+}
+
+impl MallocSizeOf for All {
+    #[inline]
+    #[allow(unused_variables, unused_mut, unreachable_code)]
+    fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+        0
+    }
+}
+
+impl MallocSizeOf for NotXYZ {
+    #[inline]
+    #[allow(unused_variables, unused_mut, unreachable_code)]
+    fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+        0
     }
 }
 
