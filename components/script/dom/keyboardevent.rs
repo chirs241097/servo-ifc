@@ -24,7 +24,7 @@ use keyboard_wrapper::ServoSecure;
 use secret_structs::lattice::ternary_lattice as sec_lat;
 use secret_structs::lattice::integrity_lattice as int_lat;
 use secret_structs::info_flow_block_dynamic_all;
-use secret_structs::secret::secret::{StaticDynamicAll,DynamicSecretLabel, DynamicIntegrityLabel, *};
+use secret_structs::secret::{StaticDynamicAll,DynamicSecretLabel, DynamicIntegrityLabel, *};
 //use secret_macros::SecretBlockSafeDerive;
 
 unsafe_no_jsmanaged_fields!(Key);

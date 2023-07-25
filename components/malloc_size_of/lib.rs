@@ -60,7 +60,7 @@ use uuid::Uuid;
 use void::Void;
 
 //Vincent: Add imports
-use secret_structs::secret::secret::*;
+use secret_structs::secret::*;
 use secret_structs::lattice::ternary_lattice::*;
 use secret_structs::lattice::integrity_lattice::*;
 

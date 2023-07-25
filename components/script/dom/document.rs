@@ -179,7 +179,7 @@ use webrender_api::units::DeviceIntRect;
 use keyboard_wrapper::*;
 use secret_macros::info_leak_free_full;
 use secret_structs::{info_flow_block_dynamic_all, info_flow_block_declassify_dynamic_all};
-use secret_structs::secret::secret::*;
+use secret_structs::secret::*;
 use secret_structs::lattice::ternary_lattice as sec_lat;
 use secret_structs::lattice::integrity_lattice as int_lat;
 

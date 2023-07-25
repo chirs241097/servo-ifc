@@ -180,12 +180,12 @@ use webxr_api::{Finger, Hand, Ray, View};
 
 //Vincent: Added import
 use secret_structs::lattice::ternary_lattice::Label;
-use secret_structs::secret::secret::StaticDynamicAll;
+use secret_structs::secret::StaticDynamicAll;
 use keyboard_wrapper::PreDOMString;
 use keyboard_wrapper::KeyWrapper;
 use keyboard_wrapper::ModifiersWrapper;
-use secret_structs::secret::secret::DynamicSecretLabel;
-use secret_structs::secret::secret::DynamicIntegrityLabel;
+use secret_structs::secret::DynamicSecretLabel;
+use secret_structs::secret::DynamicIntegrityLabel;
 
 unsafe_no_jsmanaged_fields!(Tm);
 unsafe_no_jsmanaged_fields!(JoinHandle<()>);

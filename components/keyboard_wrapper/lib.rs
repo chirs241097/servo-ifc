@@ -1,8 +1,8 @@
 #![feature(negative_impls)]
 
 use keyboard_types::KeyboardEvent;
-use secret_structs::secret::secret::SecretBlockSafe;
-use secret_structs::secret::secret::*;
+use secret_structs::secret::SecretBlockSafe;
+use secret_structs::secret::*;
 use secret_structs::lattice::integrity_lattice as int_lat;
 use secret_structs::lattice::ternary_lattice as sec_lat;
 use secret_macros::SecretBlockSafeDerive;
