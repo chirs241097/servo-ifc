@@ -203,9 +203,11 @@ impl Window {
         for xr_window_pose in &*xr_poses {
             xr_window_pose.handle_xr_translation(&event);
         }
+        let sl = new_dynamic_secret_label(vec![]);
+        let il = new_dynamic_integrity_label(vec![]);
         self.event_queue
             .borrow_mut()
-            .push(WindowEvent::Keyboard(event));
+            .push(WindowEvent::Keyboard(SecKeyboardEvent::<sec_lat::A,int_lat::All>::wrap(event, sl, il)));
     }
 
     fn handle_keyboard_input(&self, input: KeyboardInput) {
@@ -231,9 +233,11 @@ impl Window {
             for xr_window_pose in &*xr_poses {
                 xr_window_pose.handle_xr_rotation(&input, self.modifiers_state.get());
             }
+            let sl = new_dynamic_secret_label(vec![]);
+            let il = new_dynamic_integrity_label(vec![]);
             self.event_queue
                 .borrow_mut()
-                .push(WindowEvent::Keyboard(event));
+                .push(WindowEvent::Keyboard(SecKeyboardEvent::<sec_lat::A,int_lat::All>::wrap(event, sl, il)));
         }
     }
 

@@ -221,15 +221,7 @@ where
                 .shortcut(CMD_OR_CONTROL, ']', || {
                     WindowEvent::Navigation(id, TraversalDirection::Forward(1))
                 })
-                .otherwise(|| {
-                    //Chris: current resolution: mark the initial keystroke with a
-                    //static secrecy label (signifying it's user input), and relabel
-                    //with dynamic label corresponding to the current domain inside
-                    //the JS engine.
-                    let sl = new_dynamic_secret_label(vec![]);
-                    let il = new_dynamic_integrity_label(vec![]);
-                    WindowEvent::Keyboard(SecKeyboardEvent::<sec_lat::A,int_lat::All>::wrap(key_event, sl, il))
-                })
+                .otherwise(|| WindowEvent::Keyboard(key_event))
             {
                 self.event_queue.push(event)
             }
