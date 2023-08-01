@@ -50,6 +50,9 @@ use winit::event::ModifiersState;
 
 //Vincent: Add imports
 use keyboard_wrapper::SecKeyboardEvent;
+use secret_structs::secret::*;
+use secret_structs::ternary_lattice as sec_lat;
+use secret_structs::integrity_lattice as int_lat;
 
 pub struct Window {
     winit_window: winit::window::Window,
@@ -62,7 +65,7 @@ pub struct Window {
     event_queue: RefCell<Vec<WindowEvent>>,
     mouse_pos: Cell<Point2D<i32, DevicePixel>>,
     //Vincent: Changed type signature
-    last_pressed: Cell<Option<(SecKeyboardEvent, Option<VirtualKeyCode>)>>,
+    last_pressed: Cell<Option<(SecKeyboardEvent<sec_lat::A, int_lat::All>, Option<VirtualKeyCode>)>>,
     /// A map of winit's key codes to key values that are interpreted from
     /// winit's ReceivedChar events.
     keys_down: RefCell<HashMap<VirtualKeyCode, Key>>,
@@ -704,15 +707,22 @@ impl webxr::glwindow::GlWindow for XRWindow {
 }
 
 impl XRWindowPose {
-    fn handle_xr_translation(&self, input: &SecKeyboardEvent) {
-        if input.state != KeyState::Down {
+    fn handle_xr_translation(&self, input: &SecKeyboardEvent<sec_lat::A, int_lat::All>) {
+        //Vincent: TODO UNDO
+        let s = info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, input.state.get_dynamic_secret_label().generate_dynamic_secret(), input.state.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+            remove_label_wrapper(input.state)
+        });
+        if /*input.state*/s.s != KeyState::Down {
             return;
         }
         const NORMAL_TRANSLATE: f32 = 0.1;
         const QUICK_TRANSLATE: f32 = 1.0;
         let mut x = 0.0;
         let mut z = 0.0;
-        match input.key {
+        let k = info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, input.key.get_dynamic_secret_label().generate_dynamic_secret(), input.key.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+            remove_label_wrapper(input.key)
+        });
+        match /*input.key*/k.k {
             Key::Character(ref k) => match &**k {
                 "w" => z = -NORMAL_TRANSLATE,
                 "W" => z = -QUICK_TRANSLATE,

@@ -179,7 +179,7 @@ use webrender_api::{DocumentId, ExternalImageId, ImageKey};
 use webxr_api::{Finger, Hand, Ray, View};
 
 //Vincent: Added import
-use secret_structs::lattice::ternary_lattice::Label;
+use secret_structs::ternary_lattice::Label;
 use secret_structs::secret::StaticDynamicAll;
 use keyboard_wrapper::PreDOMString;
 use keyboard_wrapper::KeyWrapper;

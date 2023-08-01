@@ -180,8 +180,8 @@ use keyboard_wrapper::*;
 use secret_macros::info_leak_free_full;
 use secret_structs::{info_flow_block_dynamic_all, info_flow_block_declassify_dynamic_all};
 use secret_structs::secret::*;
-use secret_structs::lattice::ternary_lattice as sec_lat;
-use secret_structs::lattice::integrity_lattice as int_lat;
+use secret_structs::ternary_lattice as sec_lat;
+use secret_structs::integrity_lattice as int_lat;
 
 /// The number of times we are allowed to see spurious `requestAnimationFrame()` calls before
 /// falling back to fake ones.
@@ -1730,7 +1730,7 @@ impl Document {
     }
 
     /// The entry point for all key processing for web content
-    pub fn dispatch_key_event(&self, keyboard_event: SecKeyboardEvent<sec_lat::None,int_lat::All>) {
+    pub fn dispatch_key_event(&self, keyboard_event: SecKeyboardEvent<sec_lat::A,int_lat::All>) {
 
         let focused = self.get_focused_element();
         let body = self.GetBody();
@@ -1745,14 +1745,21 @@ impl Document {
         let label_s = keyboard_event.key.get_dynamic_secret_label().generate_dynamic_secret().dynamic_union(keyboard_event.state.get_dynamic_secret_label()).dynamic_union(keyboard_event.key.get_dynamic_secret_label()).dynamic_union(keyboard_event.code.get_dynamic_secret_label()).dynamic_union(keyboard_event.location.get_dynamic_secret_label()).dynamic_union(keyboard_event.repeat.get_dynamic_secret_label()).dynamic_union(keyboard_event.is_composing.get_dynamic_secret_label()).dynamic_union(keyboard_event.modifiers.get_dynamic_secret_label());
         let label_i = keyboard_event.key.get_dynamic_integrity_label().generate_dynamic_integrity().dynamic_intersection(keyboard_event.state.get_dynamic_integrity_label()).dynamic_intersection(keyboard_event.key.get_dynamic_integrity_label()).dynamic_intersection(keyboard_event.code.get_dynamic_integrity_label()).dynamic_intersection(keyboard_event.location.get_dynamic_integrity_label()).dynamic_intersection(keyboard_event.repeat.get_dynamic_integrity_label()).dynamic_intersection(keyboard_event.is_composing.get_dynamic_integrity_label()).dynamic_intersection(keyboard_event.modifiers.get_dynamic_integrity_label());
 
-        let secure_1 = info_flow_block_dynamic_all!(sec_lat::None, int_lat::All, label_s.clone(), label_i.clone(), {
-            let unwrapped_state = u(&(keyboard_event.state));
-            let unwrapped_key = u(&(keyboard_event.key));
-            let unwrapped_code = u(&(keyboard_event.code));
-            let unwrapped_location = u(&(keyboard_event.location));
-            let unwrapped_repeat = u(&(keyboard_event.repeat));
-            let unwrapped_is_composing = u(&(keyboard_event.is_composing));
-            let unwrapped_modifiers = u(&(keyboard_event.modifiers));
+        let s = &(keyboard_event.state);
+        let k = &(keyboard_event.key);
+        let c = &(keyboard_event.code);
+        let l = &(keyboard_event.location);
+        let r = &(keyboard_event.repeat);
+        let i_c = &(keyboard_event.is_composing);
+        let m = &(keyboard_event.modifiers);
+        let secure_1 = info_flow_block_dynamic_all!(sec_lat::A, int_lat::All, label_s.clone(), label_i.clone(), {
+            let unwrapped_state = u(s);
+            let unwrapped_key = u(k);
+            let unwrapped_code = u(c);
+            let unwrapped_location = u(l);
+            let unwrapped_repeat = u(r);
+            let unwrapped_is_composing = u(i_c);
+            let unwrapped_modifiers = u(m);
             let result = SecurePart{
                 type_: PreDOMString{s: key_state_to_string(&unwrapped_state)},
                 key: std::clone::Clone::clone(&unwrapped_key),
@@ -1767,15 +1774,21 @@ impl Document {
             sec(result)
         });
 
-
-        let secure_2 = info_flow_block_dynamic_all!(sec_lat::None, int_lat::All, label_s.clone(), label_i.clone(), {
-            let unwrapped_state = u(&(keyboard_event.state));
-            let unwrapped_key = u(&(keyboard_event.key));
-            let unwrapped_code = u(&(keyboard_event.code));
-            let unwrapped_location = u(&(keyboard_event.location));
-            let unwrapped_repeat = u(&(keyboard_event.repeat));
-            let unwrapped_is_composing = u(&(keyboard_event.is_composing));
-            let unwrapped_modifiers = u(&(keyboard_event.modifiers));
+        let s = &(keyboard_event.state);
+        let k = &(keyboard_event.key);
+        let c = &(keyboard_event.code);
+        let l = &(keyboard_event.location);
+        let r = &(keyboard_event.repeat);
+        let i_c = &(keyboard_event.is_composing);
+        let m = &(keyboard_event.modifiers);
+        let secure_2 = info_flow_block_dynamic_all!(sec_lat::A, int_lat::All, label_s.clone(), label_i.clone(), {
+            let unwrapped_state = u(s);
+            let unwrapped_key = u(k);
+            let unwrapped_code = u(c);
+            let unwrapped_location = u(l);
+            let unwrapped_repeat = u(r);
+            let unwrapped_is_composing = u(i_c);
+            let unwrapped_modifiers = u(m);
             let result = SecurePart{
                 type_: PreDOMString{s: key_state_to_string(unwrapped_state)},
                 key: std::clone::Clone::clone(unwrapped_key),
@@ -1815,18 +1828,20 @@ impl Document {
         let is_not_prevented = cancel_state != EventDefault::Prevented;
         let label_s = keyboard_event.state.get_dynamic_secret_label().generate_dynamic_secret().dynamic_union(keyboard_event.key.get_dynamic_secret_label()).dynamic_union(keyboard_event.is_composing.get_dynamic_secret_label());
         let label_i = keyboard_event.state.get_dynamic_integrity_label().generate_dynamic_integrity().dynamic_intersection(keyboard_event.key.get_dynamic_integrity_label()).dynamic_intersection(keyboard_event.is_composing.get_dynamic_integrity_label());
-
-        let cond = info_flow_block_dynamic_all!(sec_lat::None, int_lat::All, label_s.clone(), label_i.clone(), {
-            let unwrapped_state = u(&keyboard_event.state);
-            let unwrapped_key = u(&keyboard_event.key);
-            let unwrapped_is_composing = u(&keyboard_event.is_composing);
+        let s = &keyboard_event.state;
+        let k = &keyboard_event.key;
+        let i_s = &keyboard_event.is_composing;
+        let cond = info_flow_block_dynamic_all!(sec_lat::A, int_lat::All, label_s.clone(), label_i.clone(), {
+            let unwrapped_state = u(s);
+            let unwrapped_key = u(k);
+            let unwrapped_is_composing = u(i_s);
             sec(is_down(unwrapped_state) &&
             is_character_value_key(unwrapped_key) &&
             !unwrapped_is_composing &&
             is_not_prevented)
         });
 
-        let conditional = info_flow_block_declassify_dynamic_all!(sec_lat::None, int_lat::All, label_s.clone(), label_i.clone(), {
+        let conditional = info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, label_s.clone(), label_i.clone(), {
             remove_label_wrapper(cond)
         });
         // https://w3c.github.io/uievents/#keys-cancelable-keys
@@ -1868,13 +1883,16 @@ impl Document {
             // Here, we're dispatching it after the key event so the script has a chance to cancel it
             // https://www.w3.org/Bugs/Public/show_bug.cgi?id=27337
             //Vincent: Computed conditional here instead of inline.
-            let cond = info_flow_block_dynamic_all!(sec_lat::None, int_lat::All, label_s.clone(), label_i.clone(), {
-                let unwrapped_key = u(&keyboard_event.key);
-                let unwrapped_code = u(&keyboard_event.code);
-                let unwrapped_state = u(&keyboard_event.state);
+            let k = &keyboard_event.key;
+            let c = &keyboard_event.code;
+            let s = &keyboard_event.state;
+            let cond = info_flow_block_dynamic_all!(sec_lat::A, int_lat::All, label_s.clone(), label_i.clone(), {
+                let unwrapped_key = u(k);
+                let unwrapped_code = u(c);
+                let unwrapped_state = u(s);
                 sec((is_enter(unwrapped_key) || is_space(unwrapped_code)) && is_up(unwrapped_state))
             });
-            let conditional2 = info_flow_block_declassify_dynamic_all!(sec_lat::None, int_lat::All, label_s.clone(), label_i.clone(), {
+            let conditional2 = info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, label_s.clone(), label_i.clone(), {
                 remove_label_wrapper(cond)
             });
             if conditional2 //Vincent: Computed conditional in above block and used it here

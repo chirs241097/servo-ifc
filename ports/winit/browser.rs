@@ -29,10 +29,10 @@ use std::thread;
 use std::time::Duration;
 use tinyfiledialogs::{self, MessageBoxIcon, OkCancel, YesNo};
 use keyboard_wrapper::SecKeyboardEvent;
-use secret_structs::lattice::ternary_lattice as sec_lat;
-use secret_structs::lattice::integrity_lattice as int_lat;
-use secret_structs::secret::secret::*;
-use secret_structs::secret::secret::{get_new_secrecy_tag, get_new_integrity_tag, new_dynamic_secret_label, new_dynamic_integrity_label};
+use secret_structs::ternary_lattice as sec_lat;
+use secret_structs::integrity_lattice as int_lat;
+use secret_structs::secret::*;
+use secret_structs::secret::{get_new_secrecy_tag, get_new_integrity_tag, new_dynamic_secret_label, new_dynamic_integrity_label};
 
 use secret_structs::{/*info_flow_block_dynamic_all, */info_flow_block_declassify_dynamic_all};
 //use secret_structs::secret::secret::SecretBlockSafe;
@@ -101,7 +101,7 @@ where
     }
 
     /// Handle key events before sending them to Servo.
-    fn handle_key_from_window(&mut self, key_event: KeyboardEvent) {
+    fn handle_key_from_window(&mut self, key_event: SecKeyboardEvent<sec_lat::A, int_lat::All>) {
         ShortcutMatcher::from_event(key_event.clone())
             .shortcut(CMD_OR_CONTROL, 'R', || {
                 if let Some(id) = self.browser_id {
@@ -186,7 +186,7 @@ where
     }
 
     #[cfg(not(target_os = "win"))]
-    fn platform_handle_key(&mut self, key_event: KeyboardEvent /*WindowEvent::Keyboard(key_event)*/) {
+    fn platform_handle_key(&mut self, key_event: SecKeyboardEvent<sec_lat::A, int_lat::All> /*WindowEvent::Keyboard(key_event)*/) {
         if let Some(id) = self.browser_id {
             /*let state = info_flow_block_declassify_dynamic_all!(sec_lat::None, int_lat::All, key_event.state.get_dynamic_secret_label().generate_dynamic_secret(), key_event.state.get_dynamic_integrity_label().generate_dynamic_integrity(), {
                 remove_label_wrapper(key_event.state)
@@ -232,7 +232,7 @@ where
     fn platform_handle_key(&mut self, _key_event: KeyboardEvent) {}
 
     /// Handle key events after they have been handled by Servo.
-    fn handle_key_from_servo(&mut self, _: Option<BrowserId>, event: SecKeyboardEvent) {
+    fn handle_key_from_servo(&mut self, _: Option<BrowserId>, event: SecKeyboardEvent<sec_lat::A, int_lat::All>) {
         ShortcutMatcher::from_event(event)
             .shortcut(CMD_OR_CONTROL, '=', || {
                 self.event_queue.push(WindowEvent::Zoom(1.1))

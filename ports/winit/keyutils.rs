@@ -7,7 +7,9 @@ use keyboard_types::{Code, Key, KeyState, KeyboardEvent, Location, Modifiers};
 
 //Vincent: Add imports
 use keyboard_wrapper::{SecKeyboardEvent, KeyStateWrapper, KeyWrapper, CodeWrapper, ModifiersWrapper, ServoSecure, LocationWrapper};
-use secret_structs::secret::secret::{new_dynamic_secret_label, new_dynamic_integrity_label};
+use secret_structs::secret::{new_dynamic_secret_label, new_dynamic_integrity_label};
+use secret_structs::ternary_lattice as sec_lat;
+use secret_structs::integrity_lattice as int_lat;
 
 // Some shortcuts use Cmd on Mac and Control on other systems.
 #[cfg(target_os = "macos")]
@@ -254,7 +256,7 @@ fn get_modifiers(mods: ModifiersState) -> Modifiers {
     modifiers
 }
 
-pub fn keyboard_event_from_winit(input: KeyboardInput, state: ModifiersState) -> SecKeyboardEvent {
+pub fn keyboard_event_from_winit(input: KeyboardInput, state: ModifiersState) -> SecKeyboardEvent<sec_lat::A, int_lat::All> {
     info!("winit keyboard input: {:?}", input);
     SecKeyboardEvent {
         state: {let s = match input.state {
