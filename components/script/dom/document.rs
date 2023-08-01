@@ -180,8 +180,8 @@ use keyboard_wrapper::*;
 use secret_macros::info_leak_free_full;
 use secret_structs::{info_flow_block_dynamic_all, info_flow_block_declassify_dynamic_all};
 use secret_structs::secret::*;
-use secret_structs::lattice::ternary_lattice as sec_lat;
-use secret_structs::lattice::integrity_lattice as int_lat;
+use secret_structs::ternary_lattice as sec_lat;
+use secret_structs::integrity_lattice as int_lat;
 
 /// The number of times we are allowed to see spurious `requestAnimationFrame()` calls before
 /// falling back to fake ones.

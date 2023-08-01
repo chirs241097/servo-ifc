@@ -3,8 +3,8 @@
 use keyboard_types::KeyboardEvent;
 use secret_structs::secret::SecretBlockSafe;
 use secret_structs::secret::*;
-use secret_structs::lattice::integrity_lattice as int_lat;
-use secret_structs::lattice::ternary_lattice as sec_lat;
+use secret_structs::integrity_lattice as int_lat;
+use secret_structs::ternary_lattice as sec_lat;
 use secret_macros::SecretBlockSafeDerive;
 use secret_macros::info_leak_free_full;
 //use serde::ser::{Serializer, SerializeStruct};

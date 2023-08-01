@@ -61,8 +61,8 @@ use void::Void;
 
 //Vincent: Add imports
 use secret_structs::secret::*;
-use secret_structs::lattice::ternary_lattice::*;
-use secret_structs::lattice::integrity_lattice::*;
+use secret_structs::ternary_lattice::*;
+use secret_structs::integrity_lattice::*;
 
 /// A C function that takes a pointer to a heap allocation and returns its size.
 type VoidPtrToSizeFn = unsafe extern "C" fn(ptr: *const c_void) -> usize;
