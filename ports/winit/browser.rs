@@ -102,7 +102,31 @@ where
 
     /// Handle key events before sending them to Servo.
     fn handle_key_from_window(&mut self, key_event: SecKeyboardEvent<sec_lat::A, int_lat::All>) {
-        ShortcutMatcher::from_event(key_event.clone())
+        //Vincent: TODO UNDO
+        let k2 = KeyboardEvent {
+            state: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, key_event.state.get_dynamic_secret_label().generate_dynamic_secret(), key_event.state.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                remove_label_wrapper(std::clone::Clone::clone(&(&key_event).state))
+            }).k,
+            key: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, key_event.key.get_dynamic_secret_label().generate_dynamic_secret(), key_event.key.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                remove_label_wrapper(std::clone::Clone::clone(&(&key_event).key))
+            }).k,
+            code: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, key_event.code.get_dynamic_secret_label().generate_dynamic_secret(), key_event.code.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                remove_label_wrapper(std::clone::Clone::clone(&(&key_event).code))
+            }).c,
+            location: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, key_event.location.get_dynamic_secret_label().generate_dynamic_secret(), key_event.location.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                remove_label_wrapper(std::clone::Clone::clone(&(&key_event).location))
+            }).l,
+            modifiers: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, key_event.modifiers.get_dynamic_secret_label().generate_dynamic_secret(), key_event.modifiers.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                remove_label_wrapper(std::clone::Clone::clone(&(&key_event).modifiers))
+            }).m,
+            repeat: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, key_event.repeat.get_dynamic_secret_label().generate_dynamic_secret(), key_event.repeat.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                remove_label_wrapper(std::clone::Clone::clone(&(&key_event).repeat))
+            }),
+            is_composing: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, key_event.is_composing.get_dynamic_secret_label().generate_dynamic_secret(), key_event.is_composing.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                remove_label_wrapper(std::clone::Clone::clone(&(&key_event).is_composing))
+            }),
+        };
+        ShortcutMatcher::from_event(/*key_event*/k2.clone())
             .shortcut(CMD_OR_CONTROL, 'R', || {
                 if let Some(id) = self.browser_id {
                     self.event_queue.push(WindowEvent::Reload(id));
@@ -188,6 +212,30 @@ where
     #[cfg(not(target_os = "win"))]
     fn platform_handle_key(&mut self, key_event: SecKeyboardEvent<sec_lat::A, int_lat::All> /*WindowEvent::Keyboard(key_event)*/) {
         if let Some(id) = self.browser_id {
+            //Vincent: TODO UNDO
+            let k2 = KeyboardEvent {
+                state: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, key_event.state.get_dynamic_secret_label().generate_dynamic_secret(), key_event.state.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                    remove_label_wrapper(std::clone::Clone::clone(&(&key_event).state))
+                }).k,
+                key: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, key_event.key.get_dynamic_secret_label().generate_dynamic_secret(), key_event.key.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                    remove_label_wrapper(std::clone::Clone::clone(&(&key_event).key))
+                }).k,
+                code: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, key_event.code.get_dynamic_secret_label().generate_dynamic_secret(), key_event.code.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                    remove_label_wrapper(std::clone::Clone::clone(&(&key_event).code))
+                }).c,
+                location: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, key_event.location.get_dynamic_secret_label().generate_dynamic_secret(), key_event.location.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                    remove_label_wrapper(std::clone::Clone::clone(&(&key_event).location))
+                }).l,
+                modifiers: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, key_event.modifiers.get_dynamic_secret_label().generate_dynamic_secret(), key_event.modifiers.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                    remove_label_wrapper(std::clone::Clone::clone(&(&key_event).modifiers))
+                }).m,
+                repeat: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, key_event.repeat.get_dynamic_secret_label().generate_dynamic_secret(), key_event.repeat.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                    remove_label_wrapper(std::clone::Clone::clone(&(&key_event).repeat))
+                }),
+                is_composing: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, key_event.is_composing.get_dynamic_secret_label().generate_dynamic_secret(), key_event.is_composing.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                    remove_label_wrapper(std::clone::Clone::clone(&(&key_event).is_composing))
+                }),
+            };
             /*let state = info_flow_block_declassify_dynamic_all!(sec_lat::None, int_lat::All, key_event.state.get_dynamic_secret_label().generate_dynamic_secret(), key_event.state.get_dynamic_integrity_label().generate_dynamic_integrity(), {
                 remove_label_wrapper(key_event.state)
             }).k.clone();
@@ -214,7 +262,7 @@ where
                 state: state, key: key, code: code, location: location,
                 modifiers: modifiers, repeat: repeat, is_composing: is_composing,
             };*/
-            if let Some(event) = ShortcutMatcher::from_event(key_event.clone())
+            if let Some(event) = ShortcutMatcher::from_event(/*key_event*/k2.clone())
                 .shortcut(CMD_OR_CONTROL, '[', || {
                     WindowEvent::Navigation(id, TraversalDirection::Back(1))
                 })
@@ -233,7 +281,32 @@ where
 
     /// Handle key events after they have been handled by Servo.
     fn handle_key_from_servo(&mut self, _: Option<BrowserId>, event: SecKeyboardEvent<sec_lat::A, int_lat::All>) {
-        ShortcutMatcher::from_event(event)
+        //Vincent: TODO UNDO
+        let e2 = KeyboardEvent {
+            state: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, event.state.get_dynamic_secret_label().generate_dynamic_secret(), event.state.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                remove_label_wrapper(std::clone::Clone::clone(&(&event).state))
+            }).k,
+            key: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, event.key.get_dynamic_secret_label().generate_dynamic_secret(), event.key.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                remove_label_wrapper(std::clone::Clone::clone(&(&event).key))
+            }).k,
+            code: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, event.code.get_dynamic_secret_label().generate_dynamic_secret(), event.code.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                remove_label_wrapper(std::clone::Clone::clone(&(&event).code))
+            }).c,
+            location: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, event.location.get_dynamic_secret_label().generate_dynamic_secret(), event.location.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                remove_label_wrapper(std::clone::Clone::clone(&(&event).location))
+            }).l,
+            modifiers: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, event.modifiers.get_dynamic_secret_label().generate_dynamic_secret(), event.modifiers.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                remove_label_wrapper(std::clone::Clone::clone(&(&event).modifiers))
+            }).m,
+            repeat: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, event.repeat.get_dynamic_secret_label().generate_dynamic_secret(), event.repeat.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                remove_label_wrapper(std::clone::Clone::clone(&(&event).repeat))
+            }),
+            is_composing: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, event.is_composing.get_dynamic_secret_label().generate_dynamic_secret(), event.is_composing.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                remove_label_wrapper(std::clone::Clone::clone(&(&event).is_composing))
+            }),
+        };
+        //Vincent: TODO UNDO 
+        ShortcutMatcher::from_event(/*event*/e2)
             .shortcut(CMD_OR_CONTROL, '=', || {
                 self.event_queue.push(WindowEvent::Zoom(1.1))
             })

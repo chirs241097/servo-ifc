@@ -65,7 +65,7 @@ pub struct Window {
     event_queue: RefCell<Vec<WindowEvent>>,
     mouse_pos: Cell<Point2D<i32, DevicePixel>>,
     //Vincent: Changed type signature
-    last_pressed: Cell<Option<(SecKeyboardEvent<sec_lat::A, int_lat::All>, Option<VirtualKeyCode>)>>,
+    last_pressed: Cell<Option<(/*Sec*/KeyboardEvent/*<sec_lat::A, int_lat::All>*/, Option<VirtualKeyCode>)>>,
     /// A map of winit's key codes to key values that are interpreted from
     /// winit's ReceivedChar events.
     keys_down: RefCell<HashMap<VirtualKeyCode, Key>>,
@@ -187,7 +187,7 @@ impl Window {
             // For combined characters like the letter e with an acute accent
             // no keyboard event is emitted. A dummy event is created in this case.
             //Vincent: changed return type
-            (SecKeyboardEvent::default(), None)
+            (/*Sec*/KeyboardEvent::default(), None)
         };
         event.key = Key::Character(ch.to_string());
 
@@ -707,22 +707,22 @@ impl webxr::glwindow::GlWindow for XRWindow {
 }
 
 impl XRWindowPose {
-    fn handle_xr_translation(&self, input: &SecKeyboardEvent<sec_lat::A, int_lat::All>) {
+    fn handle_xr_translation(&self, input: &/*Sec*/KeyboardEvent/*<sec_lat::A, int_lat::All>*/) {
         //Vincent: TODO UNDO
-        let s = info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, input.state.get_dynamic_secret_label().generate_dynamic_secret(), input.state.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+        /*let s = info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, input.state.get_dynamic_secret_label().generate_dynamic_secret(), input.state.get_dynamic_integrity_label().generate_dynamic_integrity(), {
             remove_label_wrapper(input.state)
-        });
-        if /*input.state*/s.s != KeyState::Down {
+        });*/
+        if input.state/*s.s*/ != KeyState::Down {
             return;
         }
         const NORMAL_TRANSLATE: f32 = 0.1;
         const QUICK_TRANSLATE: f32 = 1.0;
         let mut x = 0.0;
         let mut z = 0.0;
-        let k = info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, input.key.get_dynamic_secret_label().generate_dynamic_secret(), input.key.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+        /*let k = info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, input.key.get_dynamic_secret_label().generate_dynamic_secret(), input.key.get_dynamic_integrity_label().generate_dynamic_integrity(), {
             remove_label_wrapper(input.key)
-        });
-        match /*input.key*/k.k {
+        });*/
+        match input.key/*k.k*/ {
             Key::Character(ref k) => match &**k {
                 "w" => z = -NORMAL_TRANSLATE,
                 "W" => z = -QUICK_TRANSLATE,

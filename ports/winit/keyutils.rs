@@ -256,8 +256,22 @@ fn get_modifiers(mods: ModifiersState) -> Modifiers {
     modifiers
 }
 
-pub fn keyboard_event_from_winit(input: KeyboardInput, state: ModifiersState) -> SecKeyboardEvent<sec_lat::A, int_lat::All> {
+pub fn keyboard_event_from_winit(input: KeyboardInput, state: ModifiersState) -> /*Sec*/KeyboardEvent/*<sec_lat::A, int_lat::All>*/ {
     info!("winit keyboard input: {:?}", input);
+    KeyboardEvent {
+        state: match input.state {
+            ElementState::Pressed => KeyState::Down,
+            ElementState::Released => KeyState::Up,
+        },
+        key: get_servo_key_from_winit_key(input.virtual_keycode),
+        code: get_servo_code_from_scancode(input.scancode),
+        location: get_servo_location_from_winit_key(input.virtual_keycode),
+        modifiers: get_modifiers(state),
+        repeat: false,
+        is_composing: false,
+    }
+    //Vincent: Original code above, altered card below
+    /*info!("winit keyboard input: {:?}", input);
     SecKeyboardEvent {
         state: {let s = match input.state {
             ElementState::Pressed => KeyState::Down,
@@ -272,5 +286,5 @@ pub fn keyboard_event_from_winit(input: KeyboardInput, state: ModifiersState) ->
         modifiers: ServoSecure::<ModifiersWrapper>::new_info_flow_struct(ModifiersWrapper{m: get_modifiers(state)}, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![])),
         repeat: ServoSecure::<bool>::new_info_flow_struct(false, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![])),
         is_composing: ServoSecure::<bool>::new_info_flow_struct(false, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![])),
-    }
+    }*/
 }

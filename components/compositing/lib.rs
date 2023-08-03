@@ -72,7 +72,7 @@ pub enum ConstellationMsg {
     /// Query the constellation to see if the current compositor output is stable
     IsReadyToSaveImage(HashMap<PipelineId, Epoch>),
     /// Inform the constellation of a key event.
-    Keyboard(SecKeyboardEvent<sec_lat::None,int_lat::All>),
+    Keyboard(SecKeyboardEvent<sec_lat::A,int_lat::All>),
     /// Whether to allow script to navigate.
     AllowNavigationResponse(PipelineId, bool),
     /// Request to load a page.
