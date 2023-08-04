@@ -1781,6 +1781,7 @@ impl Document {
         let r = &(keyboard_event.repeat);
         let i_c = &(keyboard_event.is_composing);
         let m = &(keyboard_event.modifiers);
+        let cancelable_type = PreDOMString{s: String::from("keypress")};
         let secure_2 = info_flow_block_dynamic_all!(sec_lat::A, int_lat::All, label_s.clone(), label_i.clone(), {
             let unwrapped_state = u(s);
             let unwrapped_key = u(k);
@@ -1790,7 +1791,7 @@ impl Document {
             let unwrapped_is_composing = u(i_c);
             let unwrapped_modifiers = u(m);
             let result = SecurePart{
-                type_: PreDOMString{s: key_state_to_string(unwrapped_state)},
+                type_: cancelable_type,
                 key: std::clone::Clone::clone(unwrapped_key),
                 code: PreDOMString{s: code_to_string(&unwrapped_code)},
                 location: unwrapped_location.l as u32,
