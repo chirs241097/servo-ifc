@@ -1730,7 +1730,7 @@ impl Document {
     }
 
     /// The entry point for all key processing for web content
-    pub fn dispatch_key_event(&self, keyboard_event: SecKeyboardEvent<sec_lat::A,int_lat::All>) {
+    pub fn dispatch_key_event(&self, keyboard_event: SecKeyboardEvent<sec_lat::None,int_lat::All>) {
         //Vincent: Massive overhaul of entire function
 
         let focused = self.get_focused_element();
@@ -1874,8 +1874,9 @@ impl Document {
         }
 
         if cancel_state == EventDefault::Allowed {
-            let msg = EmbedderMsg::Keyboard(keyboard_event.clone());
-            self.send_to_embedder(msg);
+            //Chris: commented out because this may need another rewrapping (back to static secrecy label)
+            //let msg = EmbedderMsg::Keyboard(keyboard_event.clone());
+            //self.send_to_embedder(msg);
             let label_s = keyboard_event.key.get_dynamic_secret_label().generate_dynamic_secret().dynamic_union(keyboard_event.code.get_dynamic_secret_label()).dynamic_union(keyboard_event.state.get_dynamic_secret_label());
             let label_i = keyboard_event.key.get_dynamic_integrity_label().generate_dynamic_integrity().dynamic_intersection(keyboard_event.code.get_dynamic_integrity_label()).dynamic_intersection(keyboard_event.state.get_dynamic_integrity_label());
 

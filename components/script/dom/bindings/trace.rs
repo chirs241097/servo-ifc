@@ -186,6 +186,7 @@ use keyboard_wrapper::KeyWrapper;
 use keyboard_wrapper::ModifiersWrapper;
 use secret_structs::secret::DynamicSecretLabel;
 use secret_structs::secret::DynamicIntegrityLabel;
+use secret_structs::secret::DynamicSecretComponent;
 
 unsafe_no_jsmanaged_fields!(Tm);
 unsafe_no_jsmanaged_fields!(JoinHandle<()>);
@@ -723,6 +724,7 @@ unsafe_no_jsmanaged_fields!(WebrenderIpcSender);
 unsafe_no_jsmanaged_fields!(StreamConsumer);
 unsafe_no_jsmanaged_fields!(DocumentAnimationSet);
 unsafe_no_jsmanaged_fields!(Stencil);
+unsafe_no_jsmanaged_fields!(DynamicSecretComponent);
 
 unsafe impl<'a> JSTraceable for &'a str {
     #[inline]
