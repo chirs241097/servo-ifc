@@ -918,14 +918,12 @@ impl ScriptThread {
 
     pub fn get_secrecy_tag_for_domain(&self, d: DOMString) -> DynamicSecretComponent {
         let ds = String::from(d);
-        match self.domain_label_map.borrow().get(&ds) {
-            None => {
-                let new_tag = get_new_secrecy_tag();
-                self.domain_label_map.borrow_mut().insert(ds, new_tag.clone());
-                new_tag
-            },
-            Some(tag) => tag.clone()
+        if let Some(tag) = self.domain_label_map.borrow().get(&ds) {
+            return tag.clone();
         }
+        let new_tag = get_new_secrecy_tag();
+        self.domain_label_map.borrow_mut().insert(ds, new_tag.clone());
+        new_tag
     }
 
     /// Process a single event as if it were the next event
@@ -3610,7 +3608,12 @@ impl ScriptThread {
                     Some(document) => document,
                     None => return warn!("Message sent to closed pipeline {}.", pipeline_id),
                 };
-                let focused_element_domain = document.get_focused_element().unwrap().downcast::<HTMLElement>().unwrap().get_domain();
+                let focused_element_domain =
+                if let Some(e) = document.get_focused_element() {
+                    if let Some(he) = e.downcast::<HTMLElement>() {
+                        he.get_domain()
+                    } else { DOMString::from("") }
+                } else { DOMString::from("") };
                 let dynamic_sec_label = new_dynamic_secret_label(vec![self.get_secrecy_tag_for_domain(focused_element_domain)]);
                 let dynamic_sec_label_old = new_dynamic_secret_label(vec![]);
                 let dynamic_int_label = new_dynamic_integrity_label(vec![]);
