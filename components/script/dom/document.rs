@@ -1731,6 +1731,7 @@ impl Document {
 
     /// The entry point for all key processing for web content
     pub fn dispatch_key_event(&self, keyboard_event: SecKeyboardEvent<sec_lat::A,int_lat::All>) {
+        //Vincent: Massive overhaul of entire function
 
         let focused = self.get_focused_element();
         let body = self.GetBody();
@@ -1761,9 +1762,9 @@ impl Document {
             let unwrapped_is_composing = u(i_c);
             let unwrapped_modifiers = u(m);
             let result = SecurePart{
-                type_: PreDOMString{s: key_state_to_string(&unwrapped_state)},
+                type_: PreDOMString{s: unchecked_operation(unwrapped_state.k.to_string()) /*key_state_to_string(&unwrapped_state)*/},
                 key: std::clone::Clone::clone(&unwrapped_key),
-                code: PreDOMString{s: code_to_string(&unwrapped_code)},
+                code: PreDOMString{s: unchecked_operation(unwrapped_code.c.to_string()) /*code_to_string(&unwrapped_code)*/},
                 location: unwrapped_location.l as u32,
                 repeat: *unwrapped_repeat,
                 is_composing: *unwrapped_is_composing,
@@ -1793,13 +1794,13 @@ impl Document {
             let result = SecurePart{
                 type_: cancelable_type,
                 key: std::clone::Clone::clone(unwrapped_key),
-                code: PreDOMString{s: code_to_string(&unwrapped_code)},
+                code: PreDOMString{s: unchecked_operation(unwrapped_code.c.to_string())},
                 location: unwrapped_location.l as u32,
                 repeat: *unwrapped_repeat,
                 is_composing: *unwrapped_is_composing,
                 modifiers: std::clone::Clone::clone(unwrapped_modifiers),
                 //Vincent: TODO, make this not need unchecked
-                char_code: unchecked_operation(legacy_charcode(unwrapped_key)),
+                char_code: unchecked_operation(unwrapped_key.k.legacy_charcode()),
                 key_code: 0
             };
             sec(result)
@@ -1836,7 +1837,7 @@ impl Document {
             let unwrapped_state = u(s);
             let unwrapped_key = u(k);
             let unwrapped_is_composing = u(i_s);
-            sec(is_down(unwrapped_state) &&
+            sec(unchecked_operation(unwrapped_state.k == KeyState::Down) /*is_down(unwrapped_state)*/ &&
             is_character_value_key(unwrapped_key) &&
             !unwrapped_is_composing &&
             is_not_prevented)
@@ -1891,7 +1892,7 @@ impl Document {
                 let unwrapped_key = u(k);
                 let unwrapped_code = u(c);
                 let unwrapped_state = u(s);
-                sec((is_enter(unwrapped_key) || is_space(unwrapped_code)) && is_up(unwrapped_state))
+                sec((unchecked_operation(unwrapped_key.k == Key::Enter) /*(is_enter(unwrapped_key)*/ || unchecked_operation(unwrapped_code.c == Code::Space) /*is_space(unwrapped_code)*/) && unchecked_operation(unwrapped_state.k == KeyState::Up) /*is_up(unwrapped_state)*/)
             });
             let conditional2 = info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, label_s.clone(), label_i.clone(), {
                 remove_label_wrapper(cond)

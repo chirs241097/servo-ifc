@@ -271,7 +271,8 @@ impl KeyboardEventMethods for KeyboardEvent {
             return;
         }
 
-        //Vincent: TODO UNDO
+        //Vincent: Modified function so it compiles, but this function shouldn't ever be called.
+        panic!("Vincent: Can't call method InitKeyboardEvent");
         self.upcast::<UIEvent>()
         .InitUIEvent(type_arg, can_bubble_arg, cancelable_arg, view_arg, 0);
         *self.key.borrow_mut() = ServoSecure::<PreDOMString>::new_info_flow_struct(PreDOMString{s: key_arg.to_string()}, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]));
@@ -279,9 +280,9 @@ impl KeyboardEventMethods for KeyboardEvent {
         *self.repeat.borrow_mut() = ServoSecure::<bool>::new_info_flow_struct(repeat, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]));
         //self.upcast::<UIEvent>()
         //    .InitUIEvent(type_arg, can_bubble_arg, cancelable_arg, view_arg, 0);
-        //*self.key.borrow_mut() = ServoSecure::<PreDOMString>::new_info_flow_struct(PreDOMString{s: key_arg.to_string()}, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]));
-        //*self.location.borrow_mut() = ServoSecure::<u32>::new_info_flow_struct(location_arg, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]));
-        //*self.repeat.borrow_mut() = ServoSecure::<bool>::new_info_flow_struct(repeat, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]));
+        //*self.key.borrow_mut() = key_arg;
+        //self.location.set(location_arg);
+        //self.repeat.set(repeat);
     }
 
     // https://w3c.github.io/uievents/#widl-KeyboardEvent-key

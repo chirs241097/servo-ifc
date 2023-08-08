@@ -97,7 +97,7 @@ impl UIEvent {
         if event.dispatching() {
             return;
         }
-        //Vincent: TODO UNDO
+        //Vincent: DECLASSIFY
         let new_type_pre_: PreDOMString = info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, type_.get_dynamic_secret_label().generate_dynamic_secret(), type_.get_dynamic_integrity_label().generate_dynamic_integrity(), {
             remove_label_wrapper(type_)
         });

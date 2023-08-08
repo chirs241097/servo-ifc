@@ -19,6 +19,7 @@ use unicode_segmentation::UnicodeSegmentation;
 
 use keyboard_wrapper::*;
 use secret_structs::info_flow_block_declassify_dynamic_all;
+use secret_structs::info_flow_block_dynamic_all;
 use secret_structs::secret::*;
 use secret_structs::integrity_lattice as int_lat;
 use secret_structs::ternary_lattice as sec_lat;
@@ -839,18 +840,20 @@ impl<T: ClipboardProvider> TextInput<T> {
     }
 
     /// Process a given `KeyboardEvent` and return an action for the caller to execute.
+    //Vincent: Changed function to preserve secrecy
     pub fn handle_keydown(&mut self, event: &KeyboardEvent) -> KeyReaction {
-        //Vincent: TODO UNDO
-        let key_stage_1 = event.get_typed_key();
-        let key_wrapper: KeyWrapper = info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, key_stage_1.get_dynamic_secret_label().generate_dynamic_secret(), key_stage_1.get_dynamic_integrity_label().generate_dynamic_integrity(), {
-            remove_label_wrapper(key_stage_1)
-        });
-        let key = key_wrapper.k;
-        let mods_stage_1 = event.get_modifiers();
-        let mods_wrapper: ModifiersWrapper = info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, mods_stage_1.get_dynamic_secret_label().generate_dynamic_secret(), mods_stage_1.get_dynamic_integrity_label().generate_dynamic_integrity(), {
-            remove_label_wrapper(mods_stage_1)
-        });
-        let mods = mods_wrapper.m;
+        //let key_stage_1 = event.get_typed_key();
+        //let key_wrapper: KeyWrapper = info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, key_stage_1.get_dynamic_secret_label().generate_dynamic_secret(), key_stage_1.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+        //    remove_label_wrapper(key_stage_1)
+        //});
+        //let key = key_wrapper.k;
+        let key = event.get_typed_key();
+        //let mods_stage_1 = event.get_modifiers();
+        //let mods_wrapper: ModifiersWrapper = info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, mods_stage_1.get_dynamic_secret_label().generate_dynamic_secret(), mods_stage_1.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+        //    remove_label_wrapper(mods_stage_1)
+        //});
+        //let mods = mods_wrapper.m;
+        let mods = event.get_modifiers();
         //let key = event.key(); 
         //let mods = event.modifiers();
         self.handle_keydown_aux(key, mods, cfg!(target_os = "macos"))
@@ -858,19 +861,40 @@ impl<T: ClipboardProvider> TextInput<T> {
 
     // This function exists for easy unit testing.
     // To test Mac OS shortcuts on other systems a flag is passed.
+    //Vincent: Modified function to preserve secrecy.
     pub fn handle_keydown_aux(
         &mut self,
-        key: Key,
-        mut mods: Modifiers,
+        key: ServoSecure<KeyWrapper>,
+        mut mods: ServoSecure<ModifiersWrapper>,
         macos: bool,
     ) -> KeyReaction {
-        let maybe_select = if mods.contains(Modifiers::SHIFT) {
+        let mods_cond_classified = info_flow_block_dynamic_all!(sec_lat::A, int_lat::All, mods.get_dynamic_secret_label().generate_dynamic_secret(), mods.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+            let m = u(&mods);
+            sec(unchecked_operation(m.m.contains(Modifiers::SHIFT)))
+        });
+        let mods_cond_declassified = info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, mods_cond_classified.get_dynamic_secret_label().generate_dynamic_secret(), mods_cond_classified.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+            remove_label_wrapper(mods_cond_classified)
+        });
+        let maybe_select = if mods_cond_declassified /*mods.contains(Modifiers::SHIFT)*/ {
             Selection::Selected
         } else {
             Selection::NotSelected
         };
-        mods.remove(Modifiers::SHIFT);
-        ShortcutMatcher::new(KeyState::Down, key.clone(), mods)
+        info_flow_block_dynamic_all!(sec_lat::A, int_lat::All, mods.get_dynamic_secret_label().generate_dynamic_secret(), mods.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+            let mut m = u_mut(&mut mods);
+            unchecked_operation(m.m.remove(Modifiers::SHIFT))
+        });
+        //mods.remove(Modifiers::SHIFT);
+        
+        //Vincent: DECLASSIFY 
+        let k = info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, key.get_dynamic_secret_label().generate_dynamic_secret(), key.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+            remove_label_wrapper(std::clone::Clone::clone(&key))
+        }).k;
+        //Vincent: DECLASSIFY
+        let m: Modifiers = info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, mods.get_dynamic_secret_label().generate_dynamic_secret(), mods.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+            remove_label_wrapper(std::clone::Clone::clone(&mods))
+        }).m;
+        ShortcutMatcher::new(KeyState::Down, /*key.clone()*/ k, /*mods*/ m)
             .shortcut(Modifiers::CONTROL | Modifiers::ALT, 'B', || {
                 self.adjust_horizontal_by_word(Direction::Backward, maybe_select);
                 KeyReaction::RedrawSelection
@@ -984,7 +1008,11 @@ impl<T: ClipboardProvider> TextInput<T> {
                 KeyReaction::RedrawSelection
             })
             .otherwise(|| {
-                if let Key::Character(ref c) = key {
+                //Vincent: TODO UNDO
+                let k = info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, key.get_dynamic_secret_label().generate_dynamic_secret(), key.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                    remove_label_wrapper(std::clone::Clone::clone(&key))
+                }).k;
+                if let Key::Character(ref c) = k /*key*/ {
                     self.insert_string(c.as_str());
                     return KeyReaction::DispatchInput;
                 }

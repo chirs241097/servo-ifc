@@ -75,7 +75,7 @@ unsafe impl SecretBlockSafe for KeyStateWrapper {}
 pub struct KeyWrapper {
     pub k: Key
 }
-#[info_leak_free_full]
+/*#[info_leak_free_full]
 pub fn is_enter(k: &KeyWrapper) -> bool {
     unsafe {k.k == Key::Enter}
 }
@@ -108,7 +108,7 @@ pub fn key_state_to_string(k: &KeyStateWrapper) -> String {
 #[info_leak_free_full]
 pub fn legacy_charcode(k: &KeyWrapper) -> u32 {
     unsafe { k.k.legacy_charcode() }
-}
+}*/
 
 #[info_leak_free_full]
 pub fn to_string(k: &KeyWrapper) -> String {
