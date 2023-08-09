@@ -170,7 +170,7 @@ use secret_structs::secret::*;
 
 use secret_structs::integrity_lattice as int_lat;
 use secret_structs::ternary_lattice as sec_lat;
-use secret_structs::info_flow_block_declassify_dynamic_all;
+use secret_structs::info_flow_block_dynamic_all_partial_declassify_dynamic_all;
 
 use keyboard_wrapper::{SecKeyboardEvent, KeyStateWrapper, KeyWrapper, LocationWrapper, ModifiersWrapper, CodeWrapper};
 
@@ -3617,22 +3617,42 @@ impl ScriptThread {
                 let dynamic_sec_label = new_dynamic_secret_label(vec![self.get_secrecy_tag_for_domain(focused_element_domain)]);
                 let dynamic_sec_label_old = new_dynamic_secret_label(vec![]);
                 let dynamic_int_label = new_dynamic_integrity_label(vec![]);
-                let c = key_event.state.clone();
-                let state = info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, dynamic_sec_label_old.clone(), dynamic_int_label.clone(), { remove_label_wrapper(c) }).k;
-                let c = key_event.key.clone();
-                let key = info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, dynamic_sec_label_old.clone(), dynamic_int_label.clone(), { remove_label_wrapper(c) }).k;
-                let c = key_event.code.clone();
-                let code = info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, dynamic_sec_label_old.clone(), dynamic_int_label.clone(), { remove_label_wrapper(c) }).c;
-                let c = key_event.location.clone();
-                let location = info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, dynamic_sec_label_old.clone(), dynamic_int_label.clone(), { remove_label_wrapper(c) }).l;
-                let c = key_event.modifiers.clone();
-                let modifiers = info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, dynamic_sec_label_old.clone(), dynamic_int_label.clone(), { remove_label_wrapper(c) }).m;
-                let c = key_event.repeat.clone();
-                let repeat = info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, dynamic_sec_label_old.clone(), dynamic_int_label.clone(), { remove_label_wrapper(c) });
-                let c = key_event.is_composing.clone();
-                let is_composing = info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, dynamic_sec_label_old.clone(), dynamic_int_label.clone(), { remove_label_wrapper(c) });
-                let unwrapped_ke = keyboard_types::KeyboardEvent{state, key, code, location, modifiers, repeat, is_composing};
-                let key_event_dl = SecKeyboardEvent::<sec_lat::None, int_lat::All>::wrap(unwrapped_ke, dynamic_sec_label, dynamic_int_label);
+                let state = info_flow_block_dynamic_all_partial_declassify_dynamic_all!(
+                    sec_lat::A, int_lat::All, dynamic_sec_label_old.clone(), dynamic_int_label.clone(),
+                    sec_lat::None, int_lat::All, dynamic_sec_label.clone(), dynamic_int_label.clone(), {
+                        sec(std::clone::Clone::clone(u(&key_event.state)))
+                });
+                let key = info_flow_block_dynamic_all_partial_declassify_dynamic_all!(
+                    sec_lat::A, int_lat::All, dynamic_sec_label_old.clone(), dynamic_int_label.clone(),
+                    sec_lat::None, int_lat::All, dynamic_sec_label.clone(), dynamic_int_label.clone(), {
+                        sec(std::clone::Clone::clone(u(&key_event.key)))
+                });
+                let code = info_flow_block_dynamic_all_partial_declassify_dynamic_all!(
+                    sec_lat::A, int_lat::All, dynamic_sec_label_old.clone(), dynamic_int_label.clone(),
+                    sec_lat::None, int_lat::All, dynamic_sec_label.clone(), dynamic_int_label.clone(), {
+                        sec(std::clone::Clone::clone(u(&key_event.code)))
+                });
+                let location = info_flow_block_dynamic_all_partial_declassify_dynamic_all!(
+                    sec_lat::A, int_lat::All, dynamic_sec_label_old.clone(), dynamic_int_label.clone(),
+                    sec_lat::None, int_lat::All, dynamic_sec_label.clone(), dynamic_int_label.clone(), {
+                        sec(std::clone::Clone::clone(u(&key_event.location)))
+                });
+                let modifiers = info_flow_block_dynamic_all_partial_declassify_dynamic_all!(
+                    sec_lat::A, int_lat::All, dynamic_sec_label_old.clone(), dynamic_int_label.clone(),
+                    sec_lat::None, int_lat::All, dynamic_sec_label.clone(), dynamic_int_label.clone(), {
+                        sec(std::clone::Clone::clone(u(&key_event.modifiers)))
+                });
+                let repeat = info_flow_block_dynamic_all_partial_declassify_dynamic_all!(
+                    sec_lat::A, int_lat::All, dynamic_sec_label_old.clone(), dynamic_int_label.clone(),
+                    sec_lat::None, int_lat::All, dynamic_sec_label.clone(), dynamic_int_label.clone(), {
+                        sec(std::clone::Clone::clone(u(&key_event.repeat)))
+                });
+                let is_composing = info_flow_block_dynamic_all_partial_declassify_dynamic_all!(
+                    sec_lat::A, int_lat::All, dynamic_sec_label_old.clone(), dynamic_int_label.clone(),
+                    sec_lat::None, int_lat::All, dynamic_sec_label.clone(), dynamic_int_label.clone(), {
+                        sec(std::clone::Clone::clone(u(&key_event.is_composing)))
+                });
+                let key_event_dl = SecKeyboardEvent::<sec_lat::None, int_lat::All>{state, key, code, location, modifiers, repeat, is_composing};
                 document.dispatch_key_event(key_event_dl);
             },
 
