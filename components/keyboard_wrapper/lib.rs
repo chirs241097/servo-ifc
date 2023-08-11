@@ -443,6 +443,12 @@ pub struct PreDOMString {
     pub s: String
 }
 
+impl From<PreDOMString> for String {
+    fn from(contents: PreDOMString) -> String {
+        contents.s
+    }
+}
+
 /*pub struct CellWrapper<T> {
     pub c: std::cell::Cell<T>
 }

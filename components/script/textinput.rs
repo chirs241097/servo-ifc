@@ -248,7 +248,7 @@ fn len_of_first_n_chars(text: &str, n: usize) -> UTF8Bytes {
 /// The length in bytes of the first n code units in a string when encoded in UTF-16.
 ///
 /// If the string is fewer than n code units, returns the length of the whole string.
-fn len_of_first_n_code_units(text: &str, n: UTF16CodeUnits) -> UTF8Bytes {
+fn len_of_first_n_code_units(text: &ServoSecure<PreDOMString> /*&str*/, n: UTF16CodeUnits) -> UTF8Bytes {
     let mut utf8_len = UTF8Bytes::zero();
     let mut utf16_len = UTF16CodeUnits::zero();
     for c in text.chars() {
@@ -322,7 +322,10 @@ impl<T: ClipboardProvider> TextInput<T> {
         if self.selection_origin.is_none() || self.selection_origin == Some(self.edit_point) {
             self.adjust_horizontal_by_one(dir, Selection::Selected);
         }
-        self.replace_selection(DOMString::new());
+        //Vincent: FIX LABEL
+        self.replace_selection( info_flow_block_dynamic_all!(sec_lat::A, int_lat::All, get_new_secrecy_tag(), get_new_integrity_tag(), {
+            sec(PreDOMString { s: String::from("")})
+        }) /*DOMString::new()*/ );
     }
 
     /// Insert a character at the current editing point
@@ -335,7 +338,22 @@ impl<T: ClipboardProvider> TextInput<T> {
         if self.selection_origin.is_none() {
             self.selection_origin = Some(self.edit_point);
         }
-        self.replace_selection(DOMString::from(s.into()));
+        //Vincent: FIX LABEL  
+        let s_new: String = s.into();
+        self.replace_selection(info_flow_block_dynamic_all!(sec_lat::A, int_lat::All, get_new_secrecy_tag(), get_new_integrity_tag(), {
+            sec(PreDOMString { s: s_new})
+        }) /*DOMString::from(s.into())*/);
+    }
+
+    //Vincent: added new function
+    pub fn insert_secret_string<S: Into<String> + SecretValueSafe>(&mut self, s: ServoSecure<S>) {
+        if self.selection_origin.is_none() {
+            self.selection_origin = Some(self.edit_point);
+        }
+        self.replace_selection(info_flow_block_dynamic_all!(sec_lat::A, int_lat::All, get_new_secrecy_tag(), get_new_integrity_tag(), {
+            let unwrapped = u(&s);
+            sec(PreDOMString { s: unchecked_operation(*unwrapped.into())})
+        }) /*DOMString::from(s.into())*/);
     }
 
     /// The start of the selection (or the edit point, if there is no selection). Always less than
@@ -459,7 +477,7 @@ impl<T: ClipboardProvider> TextInput<T> {
         acc
     }
 
-    pub fn replace_selection(&mut self, insert: DOMString) {
+    pub fn replace_selection(&mut self, insert: /*DOMString*/ ServoSecure<PreDOMString>) {
         if !self.has_selection() {
             return;
         }
@@ -473,8 +491,12 @@ impl<T: ClipboardProvider> TextInput<T> {
         };
 
         let UTF8Bytes(last_char_index) =
-            len_of_first_n_code_units(&*insert, allowed_to_insert_count);
-        let to_insert = &insert[..last_char_index];
+            len_of_first_n_code_units(&/***/insert, allowed_to_insert_count);
+        //let to_insert = &insert[..last_char_index];
+        let to_insert = info_flow_block_dynamic_all!(sec_lat::A, int_lat::All, insert.get_dynamic_secret_label().generate_dynamic_secret(), insert.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+            let unwrapped = u(&insert);
+            sec(&unwrapped[..last_char_index])
+        });
 
         let (start, end) = self.sorted_selection_bounds();
         let UTF8Bytes(start_offset) = start.index;
@@ -1009,11 +1031,27 @@ impl<T: ClipboardProvider> TextInput<T> {
             })
             .otherwise(|| {
                 //Vincent: TODO UNDO
-                let k = info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, key.get_dynamic_secret_label().generate_dynamic_secret(), key.get_dynamic_integrity_label().generate_dynamic_integrity(), {
-                    remove_label_wrapper(std::clone::Clone::clone(&key))
-                }).k;
-                if let Key::Character(ref c) = k /*key*/ {
-                    self.insert_string(c.as_str());
+                let cond_wrapped = info_flow_block_dynamic_all!(sec_lat::A, int_lat::All, key.get_dynamic_secret_label().generate_dynamic_secret(), key.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                    let unwrapped = u(&key);
+                    let mut val = false;
+                    unchecked_operation(if let Key::Character(ref c) = unwrapped.k {
+                        val = true;
+                    });
+                    sec(val)
+                });
+                let cond_unwrapped = info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, key.get_dynamic_secret_label().generate_dynamic_secret(), key.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                    remove_label_wrapper(cond_wrapped)
+                });
+                let string_wrapped = info_flow_block_dynamic_all!(sec_lat::A, int_lat::All, key.get_dynamic_secret_label().generate_dynamic_secret(), key.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                    let unwrapped = u(&key);
+                    let mut s: &str;
+                    unchecked_operation(if let Key::Character(ref c) = unwrapped.k {
+                        s = c.as_str();
+                    });
+                    sec(s)
+                });
+                if /*let Key::Character(ref c) = /*k*/ key*/ cond_unwrapped {
+                    self.insert_secret_string(string_wrapped/*c.as_str()*/);
                     return KeyReaction::DispatchInput;
                 }
                 KeyReaction::Nothing

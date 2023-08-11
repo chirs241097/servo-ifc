@@ -18,6 +18,13 @@ use crate::dom::node::{window_from_node, Node, NodeDamage};
 use crate::textinput::{SelectionDirection, SelectionState, TextInput, UTF8Bytes};
 use script_traits::ScriptToConstellationChan;
 
+//Vincent: Add imports
+use secret_structs::info_flow_block_dynamic_all;
+use secret_structs::secret::*;
+use secret_structs::ternary_lattice as sec_lat;
+use secret_structs::integrity_lattice as int_lat;
+use keyboard_wrapper::*;
+
 pub trait TextControlElement: DerivedFrom<EventTarget> + DerivedFrom<Node> {
     fn selection_api_applies(&self) -> bool;
     fn has_selectable_text(&self) -> bool;
@@ -206,7 +213,11 @@ impl<'a, E: TextControlElement> TextControlSelection<'a, E> {
 
             // Steps 9-10
             textinput.set_selection_range(start, end, SelectionDirection::None);
-            textinput.replace_selection(replacement);
+            //Vincent: FIX LABEL
+            let r: String = (*replacement).to_string();
+            textinput.replace_selection(info_flow_block_dynamic_all!(sec_lat::A, int_lat::All, get_new_secrecy_tag(), get_new_integrity_tag(), {
+                sec(PreDOMString { s: r})
+            }) /*replacement*/);
         }
 
         // Step 12
