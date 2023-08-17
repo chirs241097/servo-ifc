@@ -37,8 +37,10 @@ pub enum SelectionDirection {
     None,
 }
 
-#[derive(Clone, Copy, Debug, Eq, JSTraceable, MallocSizeOf, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, Default, Eq, JSTraceable, MallocSizeOf, Ord, PartialEq, PartialOrd)]
 pub struct UTF8Bytes(pub usize);
+//Vincent: impl secretblocksafe for type
+unsafe impl SecretBlockSafe for UTF8Bytes {}
 
 impl UTF8Bytes {
     pub fn zero() -> UTF8Bytes {
@@ -85,8 +87,10 @@ impl StrExt for str {
     }
 }
 
-#[derive(Clone, Copy, Debug, JSTraceable, MallocSizeOf, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, Default, JSTraceable, MallocSizeOf, PartialEq, PartialOrd)]
 pub struct UTF16CodeUnits(pub usize);
+//Vincent: impl secretblocksafe for utf16
+unsafe impl SecretBlockSafe for UTF16CodeUnits {}
 
 impl UTF16CodeUnits {
     pub fn zero() -> UTF16CodeUnits {
@@ -248,17 +252,39 @@ fn len_of_first_n_chars(text: &str, n: usize) -> UTF8Bytes {
 /// The length in bytes of the first n code units in a string when encoded in UTF-16.
 ///
 /// If the string is fewer than n code units, returns the length of the whole string.
-fn len_of_first_n_code_units(text: &ServoSecure<PreDOMString> /*&str*/, n: UTF16CodeUnits) -> UTF8Bytes {
-    let mut utf8_len = UTF8Bytes::zero();
-    let mut utf16_len = UTF16CodeUnits::zero();
-    for c in text.chars() {
+fn len_of_first_n_code_units(text: &ServoSecure<PreDOMString> /*&str*/, n: UTF16CodeUnits) -> ServoSecure<usize> {
+    let mut utf8_len = info_flow_block_dynamic_all!(sec_lat::A, int_lat::All, text.get_dynamic_secret_label().generate_dynamic_secret(), text.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+        sec(unchecked_operation(UTF8Bytes::zero()))
+    });
+    let mut utf16_len = info_flow_block_dynamic_all!(sec_lat::A, int_lat::All, text.get_dynamic_secret_label().generate_dynamic_secret(), text.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+        sec(unchecked_operation(UTF16CodeUnits::zero()))
+    });
+    //let mut utf8_len = UTF8Bytes::zero();
+    //let mut utf16_len = UTF16CodeUnits::zero();
+    info_flow_block_dynamic_all!(sec_lat::A, int_lat::All, text.get_dynamic_secret_label().generate_dynamic_secret(), text.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+        let unwrapped_text = u(text);
+        let mut unwrapped_utf8 = u_mut(&mut utf8_len);
+        let mut unwrapped_utf16 = u_mut(&mut utf16_len);
+        for c in unchecked_operation(unwrapped_text.s.chars()) {
+            unchecked_operation(*unwrapped_utf16 += UTF16CodeUnits(c.len_utf16()));
+            if unchecked_operation(*unwrapped_utf16 > n) {
+                break;
+            }
+            unchecked_operation(*unwrapped_utf8 += UTF8Bytes(c.len_utf8()));
+        }
+    });
+    info_flow_block_dynamic_all!(sec_lat::A, int_lat::All, text.get_dynamic_secret_label().generate_dynamic_secret(), text.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+        let unwrapped_u = u(&utf8_len);
+        sec((*unwrapped_u).0)
+    })
+    /*for c in text.chars() {
         utf16_len += UTF16CodeUnits(c.len_utf16());
         if utf16_len > n {
             break;
         }
         utf8_len += UTF8Bytes(c.len_utf8());
     }
-    utf8_len
+    utf8_len*/
 }
 
 impl<T: ClipboardProvider> TextInput<T> {
@@ -323,8 +349,8 @@ impl<T: ClipboardProvider> TextInput<T> {
             self.adjust_horizontal_by_one(dir, Selection::Selected);
         }
         //Vincent: FIX LABEL
-        self.replace_selection( info_flow_block_dynamic_all!(sec_lat::A, int_lat::All, get_new_secrecy_tag(), get_new_integrity_tag(), {
-            sec(PreDOMString { s: String::from("")})
+        self.replace_selection( info_flow_block_dynamic_all!(sec_lat::A, int_lat::All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {
+            sec(PreDOMString { s: std::string::String::from("")})
         }) /*DOMString::new()*/ );
     }
 
@@ -340,7 +366,7 @@ impl<T: ClipboardProvider> TextInput<T> {
         }
         //Vincent: FIX LABEL  
         let s_new: String = s.into();
-        self.replace_selection(info_flow_block_dynamic_all!(sec_lat::A, int_lat::All, get_new_secrecy_tag(), get_new_integrity_tag(), {
+        self.replace_selection(info_flow_block_dynamic_all!(sec_lat::A, int_lat::All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {
             sec(PreDOMString { s: s_new})
         }) /*DOMString::from(s.into())*/);
     }
@@ -350,9 +376,9 @@ impl<T: ClipboardProvider> TextInput<T> {
         if self.selection_origin.is_none() {
             self.selection_origin = Some(self.edit_point);
         }
-        self.replace_selection(info_flow_block_dynamic_all!(sec_lat::A, int_lat::All, get_new_secrecy_tag(), get_new_integrity_tag(), {
+        self.replace_selection(info_flow_block_dynamic_all!(sec_lat::A, int_lat::All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {
             let unwrapped = u(&s);
-            sec(PreDOMString { s: unchecked_operation(*unwrapped.into())})
+            sec(PreDOMString { s: unchecked_operation(<S as Into<String>>::into(*unwrapped)/*.into()*/)})
         }) /*DOMString::from(s.into())*/);
     }
 
@@ -490,12 +516,14 @@ impl<T: ClipboardProvider> TextInput<T> {
             UTF16CodeUnits(usize::MAX)
         };
 
-        let UTF8Bytes(last_char_index) =
+        let last_char_index =
             len_of_first_n_code_units(&/***/insert, allowed_to_insert_count);
+            //usize 
         //let to_insert = &insert[..last_char_index];
         let to_insert = info_flow_block_dynamic_all!(sec_lat::A, int_lat::All, insert.get_dynamic_secret_label().generate_dynamic_secret(), insert.get_dynamic_integrity_label().generate_dynamic_integrity(), {
             let unwrapped = u(&insert);
-            sec(&unwrapped[..last_char_index])
+            let unwrapped_index = u(&last_char_index);
+            sec(&((&unwrapped.s)[..*unwrapped_index]))
         });
 
         let (start, end) = self.sorted_selection_bounds();
@@ -509,9 +537,19 @@ impl<T: ClipboardProvider> TextInput<T> {
             let lines_suffix = &self.lines[end.line + 1..];
 
             let mut insert_lines = if self.multiline {
-                to_insert.split('\n').map(|s| DOMString::from(s)).collect()
+                info_flow_block_dynamic_all!(sec_lat::A, int_lat::All, to_insert.get_dynamic_secret_label().generate_dynamic_secret(), to_insert.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                    let unwrapped = u(&to_insert);
+                    sec(unchecked_operation(unwrapped.split('\n').map(|s| PreDOMString{s: std::string::String::from(s)}).collect()))
+                })
+                //to_insert.split('\n').map(|s| DOMString::from(s)).collect()
             } else {
-                vec![DOMString::from(to_insert)]
+                info_flow_block_dynamic_all!(sec_lat::A, int_lat::All, to_insert.get_dynamic_secret_label().generate_dynamic_secret(), to_insert.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                    let unwrapped = u(&to_insert);
+                    let mut v = std::vec::Vec::new();
+                    std::vec::Vec::push(&mut v, PreDOMString{s: std::string::String::from(*unwrapped)});
+                    sec(v)
+                    //vec![DOMString::from(to_insert)]
+                })
             };
 
             // FIXME(ajeffrey): effecient append for DOMStrings

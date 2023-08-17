@@ -215,7 +215,7 @@ impl<'a, E: TextControlElement> TextControlSelection<'a, E> {
             textinput.set_selection_range(start, end, SelectionDirection::None);
             //Vincent: FIX LABEL
             let r: String = (*replacement).to_string();
-            textinput.replace_selection(info_flow_block_dynamic_all!(sec_lat::A, int_lat::All, get_new_secrecy_tag(), get_new_integrity_tag(), {
+            textinput.replace_selection(info_flow_block_dynamic_all!(sec_lat::A, int_lat::All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {
                 sec(PreDOMString { s: r})
             }) /*replacement*/);
         }
