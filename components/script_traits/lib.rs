@@ -576,7 +576,7 @@ pub enum CompositorEvent {
     /// A wheel event was generated with a delta in the X, Y, and/or Z directions
     WheelEvent(WheelDelta, Point2D<f32>, Option<UntrustedNodeAddress>),
     /// A key was pressed.
-    KeyboardEvent(SecKeyboardEvent<sec_lat::A,int_lat::All>),
+    KeyboardEvent(SecKeyboardEvent<sec_lat::Label_A,int_lat::Label_All>),
     /// An event from the IME is dispatched.
     CompositionEvent(CompositionEvent),
     /// Virtual keyboard was dismissed

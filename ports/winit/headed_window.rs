@@ -65,7 +65,7 @@ pub struct Window {
     event_queue: RefCell<Vec<WindowEvent>>,
     mouse_pos: Cell<Point2D<i32, DevicePixel>>,
     //Vincent: Changed type signature
-    last_pressed: Cell<Option<(/*Sec*/KeyboardEvent/*<sec_lat::A, int_lat::All>*/, Option<VirtualKeyCode>)>>,
+    last_pressed: Cell<Option<(/*Sec*/KeyboardEvent/*<sec_lat::Label_A, int_lat::Label_All>*/, Option<VirtualKeyCode>)>>,
     /// A map of winit's key codes to key values that are interpreted from
     /// winit's ReceivedChar events.
     keys_down: RefCell<HashMap<VirtualKeyCode, Key>>,
@@ -210,7 +210,7 @@ impl Window {
         let il = new_dynamic_integrity_label(vec![]);
         self.event_queue
             .borrow_mut()
-            .push(WindowEvent::Keyboard(SecKeyboardEvent::<sec_lat::A,int_lat::All>::wrap(event, sl, il)));
+            .push(WindowEvent::Keyboard(SecKeyboardEvent::<sec_lat::Label_A,int_lat::Label_All>::wrap(event, sl, il)));
     }
 
     fn handle_keyboard_input(&self, input: KeyboardInput) {
@@ -240,7 +240,7 @@ impl Window {
             let il = new_dynamic_integrity_label(vec![]);
             self.event_queue
                 .borrow_mut()
-                .push(WindowEvent::Keyboard(SecKeyboardEvent::<sec_lat::A,int_lat::All>::wrap(event, sl, il)));
+                .push(WindowEvent::Keyboard(SecKeyboardEvent::<sec_lat::Label_A,int_lat::Label_All>::wrap(event, sl, il)));
         }
     }
 
@@ -707,7 +707,7 @@ impl webxr::glwindow::GlWindow for XRWindow {
 }
 
 impl XRWindowPose {
-    fn handle_xr_translation(&self, input: &/*Sec*/KeyboardEvent/*<sec_lat::A, int_lat::All>*/) {
+    fn handle_xr_translation(&self, input: &/*Sec*/KeyboardEvent/*<sec_lat::Label_A, int_lat::Label_All>*/) {
         if input.state != KeyState::Down {
             return;
         }

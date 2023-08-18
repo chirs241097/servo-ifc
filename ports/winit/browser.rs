@@ -101,28 +101,28 @@ where
     }
 
     /// Handle key events before sending them to Servo.
-    fn handle_key_from_window(&mut self, key_event: SecKeyboardEvent<sec_lat::A, int_lat::All>) {
+    fn handle_key_from_window(&mut self, key_event: SecKeyboardEvent<sec_lat::Label_A, int_lat::Label_All>) {
         //Vincent: DECLASSIFY
         let k2 = KeyboardEvent {
-            state: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, key_event.state.get_dynamic_secret_label().generate_dynamic_secret(), key_event.state.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+            state: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.state.get_dynamic_secret_label().generate_dynamic_secret(), key_event.state.get_dynamic_integrity_label().generate_dynamic_integrity(), {
                 remove_label_wrapper(std::clone::Clone::clone(&(&key_event).state))
             }).k,
-            key: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, key_event.key.get_dynamic_secret_label().generate_dynamic_secret(), key_event.key.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+            key: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.key.get_dynamic_secret_label().generate_dynamic_secret(), key_event.key.get_dynamic_integrity_label().generate_dynamic_integrity(), {
                 remove_label_wrapper(std::clone::Clone::clone(&(&key_event).key))
             }).k,
-            code: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, key_event.code.get_dynamic_secret_label().generate_dynamic_secret(), key_event.code.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+            code: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.code.get_dynamic_secret_label().generate_dynamic_secret(), key_event.code.get_dynamic_integrity_label().generate_dynamic_integrity(), {
                 remove_label_wrapper(std::clone::Clone::clone(&(&key_event).code))
             }).c,
-            location: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, key_event.location.get_dynamic_secret_label().generate_dynamic_secret(), key_event.location.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+            location: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.location.get_dynamic_secret_label().generate_dynamic_secret(), key_event.location.get_dynamic_integrity_label().generate_dynamic_integrity(), {
                 remove_label_wrapper(std::clone::Clone::clone(&(&key_event).location))
             }).l,
-            modifiers: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, key_event.modifiers.get_dynamic_secret_label().generate_dynamic_secret(), key_event.modifiers.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+            modifiers: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.modifiers.get_dynamic_secret_label().generate_dynamic_secret(), key_event.modifiers.get_dynamic_integrity_label().generate_dynamic_integrity(), {
                 remove_label_wrapper(std::clone::Clone::clone(&(&key_event).modifiers))
             }).m,
-            repeat: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, key_event.repeat.get_dynamic_secret_label().generate_dynamic_secret(), key_event.repeat.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+            repeat: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.repeat.get_dynamic_secret_label().generate_dynamic_secret(), key_event.repeat.get_dynamic_integrity_label().generate_dynamic_integrity(), {
                 remove_label_wrapper(std::clone::Clone::clone(&(&key_event).repeat))
             }),
-            is_composing: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, key_event.is_composing.get_dynamic_secret_label().generate_dynamic_secret(), key_event.is_composing.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+            is_composing: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.is_composing.get_dynamic_secret_label().generate_dynamic_secret(), key_event.is_composing.get_dynamic_integrity_label().generate_dynamic_integrity(), {
                 remove_label_wrapper(std::clone::Clone::clone(&(&key_event).is_composing))
             }),
         };
@@ -210,29 +210,29 @@ where
     }
 
     #[cfg(not(target_os = "win"))]
-    fn platform_handle_key(&mut self, key_event: SecKeyboardEvent<sec_lat::A, int_lat::All> /*WindowEvent::Keyboard(key_event)*/) {
+    fn platform_handle_key(&mut self, key_event: SecKeyboardEvent<sec_lat::Label_A, int_lat::Label_All> /*WindowEvent::Keyboard(key_event)*/) {
         if let Some(id) = self.browser_id {
             //Vincent: DECLASSIFY
             let k2 = KeyboardEvent {
-                state: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, key_event.state.get_dynamic_secret_label().generate_dynamic_secret(), key_event.state.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                state: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.state.get_dynamic_secret_label().generate_dynamic_secret(), key_event.state.get_dynamic_integrity_label().generate_dynamic_integrity(), {
                     remove_label_wrapper(std::clone::Clone::clone(&(&key_event).state))
                 }).k,
-                key: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, key_event.key.get_dynamic_secret_label().generate_dynamic_secret(), key_event.key.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                key: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.key.get_dynamic_secret_label().generate_dynamic_secret(), key_event.key.get_dynamic_integrity_label().generate_dynamic_integrity(), {
                     remove_label_wrapper(std::clone::Clone::clone(&(&key_event).key))
                 }).k,
-                code: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, key_event.code.get_dynamic_secret_label().generate_dynamic_secret(), key_event.code.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                code: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.code.get_dynamic_secret_label().generate_dynamic_secret(), key_event.code.get_dynamic_integrity_label().generate_dynamic_integrity(), {
                     remove_label_wrapper(std::clone::Clone::clone(&(&key_event).code))
                 }).c,
-                location: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, key_event.location.get_dynamic_secret_label().generate_dynamic_secret(), key_event.location.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                location: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.location.get_dynamic_secret_label().generate_dynamic_secret(), key_event.location.get_dynamic_integrity_label().generate_dynamic_integrity(), {
                     remove_label_wrapper(std::clone::Clone::clone(&(&key_event).location))
                 }).l,
-                modifiers: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, key_event.modifiers.get_dynamic_secret_label().generate_dynamic_secret(), key_event.modifiers.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                modifiers: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.modifiers.get_dynamic_secret_label().generate_dynamic_secret(), key_event.modifiers.get_dynamic_integrity_label().generate_dynamic_integrity(), {
                     remove_label_wrapper(std::clone::Clone::clone(&(&key_event).modifiers))
                 }).m,
-                repeat: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, key_event.repeat.get_dynamic_secret_label().generate_dynamic_secret(), key_event.repeat.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                repeat: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.repeat.get_dynamic_secret_label().generate_dynamic_secret(), key_event.repeat.get_dynamic_integrity_label().generate_dynamic_integrity(), {
                     remove_label_wrapper(std::clone::Clone::clone(&(&key_event).repeat))
                 }),
-                is_composing: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, key_event.is_composing.get_dynamic_secret_label().generate_dynamic_secret(), key_event.is_composing.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                is_composing: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.is_composing.get_dynamic_secret_label().generate_dynamic_secret(), key_event.is_composing.get_dynamic_integrity_label().generate_dynamic_integrity(), {
                     remove_label_wrapper(std::clone::Clone::clone(&(&key_event).is_composing))
                 }),
             };
@@ -254,28 +254,28 @@ where
     fn platform_handle_key(&mut self, _key_event: KeyboardEvent) {}
 
     /// Handle key events after they have been handled by Servo.
-    fn handle_key_from_servo(&mut self, _: Option<BrowserId>, event: SecKeyboardEvent<sec_lat::A, int_lat::All>) {
+    fn handle_key_from_servo(&mut self, _: Option<BrowserId>, event: SecKeyboardEvent<sec_lat::Label_A, int_lat::Label_All>) {
         //Vincent: DECLASSIFY
         let e2 = KeyboardEvent {
-            state: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, event.state.get_dynamic_secret_label().generate_dynamic_secret(), event.state.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+            state: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, event.state.get_dynamic_secret_label().generate_dynamic_secret(), event.state.get_dynamic_integrity_label().generate_dynamic_integrity(), {
                 remove_label_wrapper(std::clone::Clone::clone(&(&event).state))
             }).k,
-            key: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, event.key.get_dynamic_secret_label().generate_dynamic_secret(), event.key.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+            key: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, event.key.get_dynamic_secret_label().generate_dynamic_secret(), event.key.get_dynamic_integrity_label().generate_dynamic_integrity(), {
                 remove_label_wrapper(std::clone::Clone::clone(&(&event).key))
             }).k,
-            code: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, event.code.get_dynamic_secret_label().generate_dynamic_secret(), event.code.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+            code: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, event.code.get_dynamic_secret_label().generate_dynamic_secret(), event.code.get_dynamic_integrity_label().generate_dynamic_integrity(), {
                 remove_label_wrapper(std::clone::Clone::clone(&(&event).code))
             }).c,
-            location: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, event.location.get_dynamic_secret_label().generate_dynamic_secret(), event.location.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+            location: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, event.location.get_dynamic_secret_label().generate_dynamic_secret(), event.location.get_dynamic_integrity_label().generate_dynamic_integrity(), {
                 remove_label_wrapper(std::clone::Clone::clone(&(&event).location))
             }).l,
-            modifiers: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, event.modifiers.get_dynamic_secret_label().generate_dynamic_secret(), event.modifiers.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+            modifiers: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, event.modifiers.get_dynamic_secret_label().generate_dynamic_secret(), event.modifiers.get_dynamic_integrity_label().generate_dynamic_integrity(), {
                 remove_label_wrapper(std::clone::Clone::clone(&(&event).modifiers))
             }).m,
-            repeat: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, event.repeat.get_dynamic_secret_label().generate_dynamic_secret(), event.repeat.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+            repeat: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, event.repeat.get_dynamic_secret_label().generate_dynamic_secret(), event.repeat.get_dynamic_integrity_label().generate_dynamic_integrity(), {
                 remove_label_wrapper(std::clone::Clone::clone(&(&event).repeat))
             }),
-            is_composing: info_flow_block_declassify_dynamic_all!(sec_lat::A, int_lat::All, event.is_composing.get_dynamic_secret_label().generate_dynamic_secret(), event.is_composing.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+            is_composing: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, event.is_composing.get_dynamic_secret_label().generate_dynamic_secret(), event.is_composing.get_dynamic_integrity_label().generate_dynamic_integrity(), {
                 remove_label_wrapper(std::clone::Clone::clone(&(&event).is_composing))
             }),
         };

@@ -256,7 +256,7 @@ fn get_modifiers(mods: ModifiersState) -> Modifiers {
     modifiers
 }
 
-pub fn keyboard_event_from_winit(input: KeyboardInput, state: ModifiersState) -> /*Sec*/KeyboardEvent/*<sec_lat::A, int_lat::All>*/ {
+pub fn keyboard_event_from_winit(input: KeyboardInput, state: ModifiersState) -> /*Sec*/KeyboardEvent/*<sec_lat::Label_A, int_lat::Label_All>*/ {
     info!("winit keyboard input: {:?}", input);
     KeyboardEvent {
         state: match input.state {
