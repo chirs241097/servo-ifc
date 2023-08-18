@@ -1730,7 +1730,7 @@ impl Document {
     }
 
     /// The entry point for all key processing for web content
-    pub fn dispatch_key_event(&self, keyboard_event: SecKeyboardEvent<sec_lat::Label_Empty,int_lat::All>) {
+    pub fn dispatch_key_event(&self, keyboard_event: SecKeyboardEvent<sec_lat::Label_Empty,int_lat::Label_All>) {
         //Vincent: Massive overhaul of entire function
 
         let focused = self.get_focused_element();
