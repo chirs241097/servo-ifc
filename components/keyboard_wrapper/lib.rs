@@ -1,12 +1,12 @@
 #![feature(negative_impls)]
 
 use keyboard_types::KeyboardEvent;
-use secret_structs::secret::SecretBlockSafe;
+use secret_structs::secret::InvisibleSideEffectFree;
 use secret_structs::secret::*;
 use secret_structs::integrity_lattice as int_lat;
 use secret_structs::ternary_lattice as sec_lat;
-use secret_macros::SecretBlockSafeDerive;
-use secret_macros::info_leak_free_full;
+use secret_macros::InvisibleSideEffectFreeDerive;
+use secret_macros::side_effect_free_attr_full;
 //use serde::ser::{Serializer, SerializeStruct};
 use serde::{Serialize, Deserialize, /*Deserializer*/};
 //use std::marker::PhantomData;
@@ -20,7 +20,7 @@ use malloc_size_of_derive::MallocSizeOf;
 //    pub ke: KeyboardEvent
 //}
 
-unsafe impl<L1,L2> SecretBlockSafe for SecKeyboardEvent<L1,L2> {}
+unsafe impl<L1,L2> InvisibleSideEffectFree for SecKeyboardEvent<L1,L2> {}
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct SecKeyboardEvent<L1,L2> {
@@ -67,50 +67,50 @@ pub struct KeyStateWrapper {
     pub k: KeyState
 }
 
-pub type ServoSecure<T> = StaticDynamicAll<T, sec_lat::A, int_lat::All, DynamicSecretLabel, DynamicIntegrityLabel>;
+pub type ServoSecure<T> = StaticDynamicAll<T, sec_lat::Label_A, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>;
 
-unsafe impl SecretBlockSafe for KeyStateWrapper {}
+unsafe impl InvisibleSideEffectFree for KeyStateWrapper {}
 
 #[derive(Clone, Default, Serialize, Deserialize, MallocSizeOf)]
 pub struct KeyWrapper {
     pub k: Key
 }
-/*#[info_leak_free_full]
+/*#[side_effect_free_attr_full]
 pub fn is_enter(k: &KeyWrapper) -> bool {
     unsafe {k.k == Key::Enter}
 }
 
-#[info_leak_free_full]
+#[side_effect_free_attr_full]
 pub fn is_space(c: &CodeWrapper) -> bool {
     unsafe {c.c == Code::Space}
 }
 
-#[info_leak_free_full]
+#[side_effect_free_attr_full]
 pub fn is_up(k: &KeyStateWrapper) -> bool {
     unsafe {k.k == KeyState::Up}
 }
 
-#[info_leak_free_full]
+#[side_effect_free_attr_full]
 pub fn is_down(k: &KeyStateWrapper) -> bool {
     unsafe {k.k == KeyState::Down}
 }
 
-#[info_leak_free_full]
+#[side_effect_free_attr_full]
 pub fn code_to_string(c: &CodeWrapper) -> String {
     unsafe {c.c.to_string()}
 }
 
-#[info_leak_free_full]
+#[side_effect_free_attr_full]
 pub fn key_state_to_string(k: &KeyStateWrapper) -> String {
     unsafe {k.k.to_string()}
 }
 
-#[info_leak_free_full]
+#[side_effect_free_attr_full]
 pub fn legacy_charcode(k: &KeyWrapper) -> u32 {
     unsafe { k.k.legacy_charcode() }
 }*/
 
-#[info_leak_free_full]
+#[side_effect_free_attr_full]
 pub fn to_string(k: &KeyWrapper) -> String {
     match k.k {
         Key::Character(ref s) => std::string::String::from(s),
@@ -414,21 +414,21 @@ pub fn to_string(k: &KeyWrapper) -> String {
     }
 }
 
-unsafe impl SecretBlockSafe for KeyWrapper {}
+unsafe impl InvisibleSideEffectFree for KeyWrapper {}
 
 #[derive(Clone, Default, Serialize, Deserialize)]
 pub struct LocationWrapper {
     pub l: Location
 }
 
-unsafe impl SecretBlockSafe for LocationWrapper {}
+unsafe impl InvisibleSideEffectFree for LocationWrapper {}
 
 #[derive(Clone, Default, Serialize, Deserialize, MallocSizeOf)]
 pub struct ModifiersWrapper {
     pub m: Modifiers
 }
 
-unsafe impl SecretBlockSafe for ModifiersWrapper {}
+unsafe impl InvisibleSideEffectFree for ModifiersWrapper {}
 
 #[derive(Clone, Default, Serialize, Deserialize)]
 pub struct CodeWrapper {
@@ -436,9 +436,9 @@ pub struct CodeWrapper {
 }
 
 
-unsafe impl SecretBlockSafe for CodeWrapper {}
+unsafe impl InvisibleSideEffectFree for CodeWrapper {}
 
-#[derive(Clone, Default, SecretBlockSafeDerive, MallocSizeOf)]
+#[derive(Clone, Default, InvisibleSideEffectFreeDerive, MallocSizeOf)]
 pub struct PreDOMString {
     pub s: String
 }
@@ -471,4 +471,4 @@ pub struct SecurePart {
     pub char_code: u32, //this
     pub key_code: u32, //this
 }
-unsafe impl SecretBlockSafe for SecurePart {}
+unsafe impl InvisibleSideEffectFree for SecurePart {}

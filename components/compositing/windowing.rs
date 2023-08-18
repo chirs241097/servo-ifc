@@ -85,7 +85,7 @@ pub enum WindowEvent {
     /// Sent when the user exits from fullscreen mode
     ExitFullScreen(TopLevelBrowsingContextId),
     /// Sent when a key input state changes
-    Keyboard(SecKeyboardEvent<sec_lat::A,int_lat::All>),
+    Keyboard(SecKeyboardEvent<sec_lat::Label_A,int_lat::Label_All>),
     /// Sent when Ctr+R/Apple+R is called to reload the current page.
     Reload(TopLevelBrowsingContextId),
     /// Create a new top level browsing context

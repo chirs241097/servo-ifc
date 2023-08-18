@@ -294,7 +294,7 @@ impl MallocSizeOf for DynamicIntegrityComponent {
     }
 }
 
-impl MallocSizeOf for A {
+impl MallocSizeOf for Label_A {
     #[inline]
     #[allow(unused_variables, unused_mut, unreachable_code)]
     fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
@@ -302,7 +302,7 @@ impl MallocSizeOf for A {
     }
 }
 
-impl MallocSizeOf for B {
+impl MallocSizeOf for Label_B {
     #[inline]
     #[allow(unused_variables, unused_mut, unreachable_code)]
     fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
@@ -310,7 +310,7 @@ impl MallocSizeOf for B {
     }
 }
 
-impl MallocSizeOf for C {
+impl MallocSizeOf for Label_C {
     #[inline]
     #[allow(unused_variables, unused_mut, unreachable_code)]
     fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
@@ -318,7 +318,7 @@ impl MallocSizeOf for C {
     }
 }
 
-impl MallocSizeOf for AB {
+impl MallocSizeOf for Label_AB {
     #[inline]
     #[allow(unused_variables, unused_mut, unreachable_code)]
     fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
@@ -326,7 +326,7 @@ impl MallocSizeOf for AB {
     }
 }
 
-impl MallocSizeOf for BC {
+impl MallocSizeOf for Label_BC {
     #[inline]
     #[allow(unused_variables, unused_mut, unreachable_code)]
     fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
@@ -334,7 +334,7 @@ impl MallocSizeOf for BC {
     }
 }
 
-impl MallocSizeOf for AC {
+impl MallocSizeOf for Label_AC {
     #[inline]
     #[allow(unused_variables, unused_mut, unreachable_code)]
     fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
@@ -342,7 +342,7 @@ impl MallocSizeOf for AC {
     }
 }
 
-impl MallocSizeOf for None {
+impl MallocSizeOf for Label_Empty {
     #[inline]
     #[allow(unused_variables, unused_mut, unreachable_code)]
     fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
@@ -350,7 +350,7 @@ impl MallocSizeOf for None {
     }
 }
 
-impl MallocSizeOf for ABC {
+impl MallocSizeOf for Label_ABC {
     #[inline]
     #[allow(unused_variables, unused_mut, unreachable_code)]
     fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
@@ -358,7 +358,7 @@ impl MallocSizeOf for ABC {
     }
 }
 
-impl MallocSizeOf for NotX {
+impl MallocSizeOf for Label_NotX {
     #[inline]
     #[allow(unused_variables, unused_mut, unreachable_code)]
     fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
@@ -366,7 +366,7 @@ impl MallocSizeOf for NotX {
     }
 }
 
-impl MallocSizeOf for NotY {
+impl MallocSizeOf for Label_NotY {
     #[inline]
     #[allow(unused_variables, unused_mut, unreachable_code)]
     fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
@@ -374,7 +374,7 @@ impl MallocSizeOf for NotY {
     }
 }
 
-impl MallocSizeOf for NotZ {
+impl MallocSizeOf for Label_NotZ {
     #[inline]
     #[allow(unused_variables, unused_mut, unreachable_code)]
     fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
@@ -382,7 +382,7 @@ impl MallocSizeOf for NotZ {
     }
 }
 
-impl MallocSizeOf for NotXY {
+impl MallocSizeOf for Label_NotXY {
     #[inline]
     #[allow(unused_variables, unused_mut, unreachable_code)]
     fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
@@ -390,7 +390,7 @@ impl MallocSizeOf for NotXY {
     }
 }
 
-impl MallocSizeOf for NotYZ {
+impl MallocSizeOf for Label_NotYZ {
     #[inline]
     #[allow(unused_variables, unused_mut, unreachable_code)]
     fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
@@ -398,7 +398,7 @@ impl MallocSizeOf for NotYZ {
     }
 }
 
-impl MallocSizeOf for NotXZ {
+impl MallocSizeOf for Label_NotXZ {
     #[inline]
     #[allow(unused_variables, unused_mut, unreachable_code)]
     fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
@@ -406,7 +406,7 @@ impl MallocSizeOf for NotXZ {
     }
 }
 
-impl MallocSizeOf for All {
+impl MallocSizeOf for Label_All {
     #[inline]
     #[allow(unused_variables, unused_mut, unreachable_code)]
     fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
@@ -414,7 +414,7 @@ impl MallocSizeOf for All {
     }
 }
 
-impl MallocSizeOf for NotXYZ {
+impl MallocSizeOf for Label_NotXYZ {
     #[inline]
     #[allow(unused_variables, unused_mut, unreachable_code)]
     fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
