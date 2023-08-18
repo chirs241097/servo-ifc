@@ -75,37 +75,37 @@ unsafe impl InvisibleSideEffectFree for KeyStateWrapper {}
 pub struct KeyWrapper {
     pub k: Key
 }
-/*#[info_leak_free_full]
+/*#[side_effect_free_attr_full]
 pub fn is_enter(k: &KeyWrapper) -> bool {
     unsafe {k.k == Key::Enter}
 }
 
-#[info_leak_free_full]
+#[side_effect_free_attr_full]
 pub fn is_space(c: &CodeWrapper) -> bool {
     unsafe {c.c == Code::Space}
 }
 
-#[info_leak_free_full]
+#[side_effect_free_attr_full]
 pub fn is_up(k: &KeyStateWrapper) -> bool {
     unsafe {k.k == KeyState::Up}
 }
 
-#[info_leak_free_full]
+#[side_effect_free_attr_full]
 pub fn is_down(k: &KeyStateWrapper) -> bool {
     unsafe {k.k == KeyState::Down}
 }
 
-#[info_leak_free_full]
+#[side_effect_free_attr_full]
 pub fn code_to_string(c: &CodeWrapper) -> String {
     unsafe {c.c.to_string()}
 }
 
-#[info_leak_free_full]
+#[side_effect_free_attr_full]
 pub fn key_state_to_string(k: &KeyStateWrapper) -> String {
     unsafe {k.k.to_string()}
 }
 
-#[info_leak_free_full]
+#[side_effect_free_attr_full]
 pub fn legacy_charcode(k: &KeyWrapper) -> u32 {
     unsafe { k.k.legacy_charcode() }
 }*/

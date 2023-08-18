@@ -165,6 +165,15 @@ use webgpu::identity::WebGPUMsg;
 use webrender_api::units::LayoutPixel;
 use webrender_api::DocumentId;
 
+use crate::dom::htmlelement::HTMLElement;
+use secret_structs::secret::*;
+
+use secret_structs::integrity_lattice as int_lat;
+use secret_structs::ternary_lattice as sec_lat;
+use secret_structs::info_flow_block_dynamic_all_partial_declassify_dynamic_all;
+
+use keyboard_wrapper::{SecKeyboardEvent, KeyStateWrapper, KeyWrapper, LocationWrapper, ModifiersWrapper, CodeWrapper};
+
 pub type ImageCacheMsg = (PipelineId, PendingImageResponse);
 
 thread_local!(static SCRIPT_THREAD_ROOT: Cell<Option<*const ScriptThread>> = Cell::new(None));
@@ -697,6 +706,9 @@ pub struct ScriptThread {
 
     // Secure context
     inherited_secure_context: Option<bool>,
+
+    // Mapping from domain names to secrecy tags
+    domain_label_map: DomRefCell<HashMap<String, DynamicSecretComponent>>,
 }
 
 struct BHMExitSignal {
@@ -902,6 +914,16 @@ impl ScriptThread {
             let script_thread = unsafe { &*root.get().unwrap() };
             script_thread.handle_page_headers_available(id, metadata)
         })
+    }
+
+    pub fn get_secrecy_tag_for_domain(&self, d: DOMString) -> DynamicSecretComponent {
+        let ds = String::from(d);
+        if let Some(tag) = self.domain_label_map.borrow().get(&ds) {
+            return tag.clone();
+        }
+        let new_tag = get_new_secrecy_tag();
+        self.domain_label_map.borrow_mut().insert(ds, new_tag.clone());
+        new_tag
     }
 
     /// Process a single event as if it were the next event
@@ -1385,6 +1407,7 @@ impl ScriptThread {
             gpu_id_hub: Arc::new(Mutex::new(Identities::new())),
             webgpu_port: RefCell::new(None),
             inherited_secure_context: state.inherited_secure_context,
+            domain_label_map: DomRefCell::new(HashMap::new()),
         }
     }
 
@@ -3585,7 +3608,52 @@ impl ScriptThread {
                     Some(document) => document,
                     None => return warn!("Message sent to closed pipeline {}.", pipeline_id),
                 };
-                document.dispatch_key_event(key_event);
+                let focused_element_domain =
+                if let Some(e) = document.get_focused_element() {
+                    if let Some(he) = e.downcast::<HTMLElement>() {
+                        he.get_domain()
+                    } else { DOMString::from("") }
+                } else { DOMString::from("") };
+                let dynamic_sec_label = new_dynamic_secret_label(vec![self.get_secrecy_tag_for_domain(focused_element_domain)]);
+                let dynamic_sec_label_old = new_dynamic_secret_label(vec![]);
+                let dynamic_int_label = new_dynamic_integrity_label(vec![]);
+                let state = info_flow_block_dynamic_all_partial_declassify_dynamic_all!(
+                    sec_lat::Label_A, int_lat::Label_All, dynamic_sec_label_old.clone(), dynamic_int_label.clone(),
+                    sec_lat::Label_Empty, int_lat::Label_All, dynamic_sec_label.clone(), dynamic_int_label.clone(), {
+                        wrap_secret(std::clone::Clone::clone(unwrap_secret_ref(&key_event.state)))
+                });
+                let key = info_flow_block_dynamic_all_partial_declassify_dynamic_all!(
+                    sec_lat::Label_A, int_lat::Label_All, dynamic_sec_label_old.clone(), dynamic_int_label.clone(),
+                    sec_lat::Label_Empty, int_lat::Label_All, dynamic_sec_label.clone(), dynamic_int_label.clone(), {
+                        wrap_secret(std::clone::Clone::clone(unwrap_secret_ref(&key_event.key)))
+                });
+                let code = info_flow_block_dynamic_all_partial_declassify_dynamic_all!(
+                    sec_lat::Label_A, int_lat::Label_All, dynamic_sec_label_old.clone(), dynamic_int_label.clone(),
+                    sec_lat::Label_Empty, int_lat::Label_All, dynamic_sec_label.clone(), dynamic_int_label.clone(), {
+                        wrap_secret(std::clone::Clone::clone(unwrap_secret_ref(&key_event.code)))
+                });
+                let location = info_flow_block_dynamic_all_partial_declassify_dynamic_all!(
+                    sec_lat::Label_A, int_lat::Label_All, dynamic_sec_label_old.clone(), dynamic_int_label.clone(),
+                    sec_lat::Label_Empty, int_lat::Label_All, dynamic_sec_label.clone(), dynamic_int_label.clone(), {
+                        wrap_secret(std::clone::Clone::clone(unwrap_secret_ref(&key_event.location)))
+                });
+                let modifiers = info_flow_block_dynamic_all_partial_declassify_dynamic_all!(
+                    sec_lat::Label_A, int_lat::Label_All, dynamic_sec_label_old.clone(), dynamic_int_label.clone(),
+                    sec_lat::Label_Empty, int_lat::Label_All, dynamic_sec_label.clone(), dynamic_int_label.clone(), {
+                        wrap_secret(std::clone::Clone::clone(unwrap_secret_ref(&key_event.modifiers)))
+                });
+                let repeat = info_flow_block_dynamic_all_partial_declassify_dynamic_all!(
+                    sec_lat::Label_A, int_lat::Label_All, dynamic_sec_label_old.clone(), dynamic_int_label.clone(),
+                    sec_lat::Label_Empty, int_lat::Label_All, dynamic_sec_label.clone(), dynamic_int_label.clone(), {
+                        wrap_secret(std::clone::Clone::clone(unwrap_secret_ref(&key_event.repeat)))
+                });
+                let is_composing = info_flow_block_dynamic_all_partial_declassify_dynamic_all!(
+                    sec_lat::Label_A, int_lat::Label_All, dynamic_sec_label_old.clone(), dynamic_int_label.clone(),
+                    sec_lat::Label_Empty, int_lat::Label_All, dynamic_sec_label.clone(), dynamic_int_label.clone(), {
+                        wrap_secret(std::clone::Clone::clone(unwrap_secret_ref(&key_event.is_composing)))
+                });
+                let key_event_dl = SecKeyboardEvent::<sec_lat::Label_Empty, int_lat::Label_All>{state, key, code, location, modifiers, repeat, is_composing};
+                document.dispatch_key_event(key_event_dl);
             },
 
             IMEDismissedEvent => {
