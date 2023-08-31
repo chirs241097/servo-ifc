@@ -57,11 +57,22 @@ impl UTF8Bytes {
         byte_range.start.0..byte_range.end.0
     }
 
-    pub fn saturating_sub(self, other: UTF8Bytes) -> UTF8Bytes {
-        if self > other {
-            UTF8Bytes(self.0 - other.0)
+    pub fn saturating_sub(self, other: InfoFlowStruct<UTF8Bytes, sec_lat::Label_A, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>) -> InfoFlowStruct<UTF8Bytes, sec_lat::Label_A, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel> {
+        let conditional = info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, other.get_dynamic_secret_label().generate_dynamic_secret(), other.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+            let unwrapped = u(&other);
+            self > unwrapped
+        });
+        if /*self > other*/ conditional {
+            info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, other.get_dynamic_secret_label().generate_dynamic_secret(), other.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                let result = self.0 - u(&other).0;
+                wrap_secret(unchecked_operation(UTF8Bytes(result)))
+            })
+            //UTF8Bytes(self.0 - other.0)
         } else {
-            UTF8Bytes::zero()
+            info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, other.get_dynamic_secret_label().generate_dynamic_secret(), other.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                wrap_secret(unchecked_operation(UTF8Bytes::zero()))
+            })
+            //UTF8Bytes::zero()
         }
     }
 }
@@ -103,11 +114,22 @@ impl UTF16CodeUnits {
         UTF16CodeUnits(1)
     }
 
-    pub fn saturating_sub(self, other: UTF16CodeUnits) -> UTF16CodeUnits {
-        if self > other {
-            UTF16CodeUnits(self.0 - other.0)
+    pub fn saturating_sub(self, other: InfoFlowStruct<UTF16CodeUnits, sec_lat::Label_A, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>) -> InfoFlowStruct<UTF16CodeUnits, sec_lat::Label_A, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel> {
+        let conditional = info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, other.get_dynamic_secret_label().generate_dynamic_secret(), other.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+            let unwrapped = u(&other);
+            self > unwrapped
+        });
+        if /*self > other*/ conditional {
+            info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, other.get_dynamic_secret_label().generate_dynamic_secret(), other.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                let result = self.0 - u(&other).0;
+                wrap_secret(unchecked_operation(UTF16CodeUnits(result)))
+            })
+            //UTF16CodeUnits(self.0 - other.0)
         } else {
-            UTF16CodeUnits::zero()
+            info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, other.get_dynamic_secret_label().generate_dynamic_secret(), other.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                wrap_secret(unchecked_operation(UTF16CodeUnits::zero()))
+            })
+            //UTF16CodeUnits::zero()
         }
     }
 }
@@ -244,17 +266,27 @@ pub const CMD_OR_CONTROL: Modifiers = Modifiers::CONTROL;
 ///
 /// If the string has fewer than n characters, returns the length of the whole string.
 /// If n is 0, returns 0
-fn len_of_first_n_chars(text: &str, n: usize) -> UTF8Bytes {
-    match text.char_indices().take(n).last() {
+fn len_of_first_n_chars(text: &InfoFlowStruct<PreDOMString, sec_lat::Label_A, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>, n: InfoFlowStruct<usize, sec_lat::Label_A, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>) -> UTF8Bytes {
+    info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, text.get_dynamic_secret_label().generate_dynamic_secret(), text.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+        let unwrapped = str::char_indices(unwrap_secret_ref(text).s);
+        let unwrapped_n = unwrap_secret_ref(&n);
+
+
+        match unchecked_operation(unwrapped.take(*unwrapped_n).last()) {
+            Some((index, ch)) => UTF8Bytes(index + ch.len_utf8()),
+            None => UTF8Bytes::zero(),
+        }
+    })
+    /*match text.char_indices().take(n).last() {
         Some((index, ch)) => UTF8Bytes(index + ch.len_utf8()),
         None => UTF8Bytes::zero(),
-    }
+    }*/
 }
 
-/// The length in bytes of the first n code units in a string when encoded in UTF-16.
+/// The length in bytes of the first n code units in a string when encoded in UTF-16. 
 ///
 /// If the string is fewer than n code units, returns the length of the whole string.
-fn len_of_first_n_code_units(text: &ServoSecure<PreDOMString> /*&str*/, n: UTF16CodeUnits) -> ServoSecure<usize> {
+fn len_of_first_n_code_units(text: &ServoSecure<PreDOMString> /*&str*/, n: InfoFlowStruct<UTF16CodeUnits, sec_lat::Label_A, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>) -> ServoSecure<usize> {
     let mut utf8_len = info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, text.get_dynamic_secret_label().generate_dynamic_secret(), text.get_dynamic_integrity_label().generate_dynamic_integrity(), {
         wrap_secret(unchecked_operation(UTF8Bytes::zero()))
     });
@@ -267,10 +299,11 @@ fn len_of_first_n_code_units(text: &ServoSecure<PreDOMString> /*&str*/, n: UTF16
         let unwrapped_text = unwrap_secret_ref(text);
         let mut unwrapped_utf8 = unwrap_secret_mut_ref(&mut utf8_len);
         let mut unwrapped_utf16 = unwrap_secret_mut_ref(&mut utf16_len);
+        let unwrapped_n = unwrap_secret_ref(&n);
         for c in str::chars(&unwrapped_text.s[..]) {
             *unwrapped_utf16 = UTF16CodeUnits(unwrapped_utf16.0 + unchecked_operation(c.len_utf16()));
             //unchecked_operation(*unwrapped_utf16 += UTF16CodeUnits(c.len_utf16()));
-            if unchecked_operation(*unwrapped_utf16 > n) {
+            if unchecked_operation(*unwrapped_utf16 > *unwrapped_n) {
                 break;
             }
             *unwrapped_utf8 = UTF8Bytes(unwrapped_utf8.0 + unchecked_operation(c.len_utf8()))
@@ -483,52 +516,87 @@ impl<T: ClipboardProvider> TextInput<T> {
         }) /*self.lines[self.edit_point.line].len_utf8()*/ );
     }
 
-    pub fn get_selection_text(&self) -> Option<String> {
-        let text = self.fold_selection_slices(String::new(), |s, slice| s.push_str(slice));
-        if text.is_empty() {
+    pub fn get_selection_text(&self) -> Option<InfoFlowStruct<String, sec_lat::Label_A, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>> {
+        let new = info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {
+            wrap_secret(std::string::String::new())
+        });
+
+        let text = self.fold_selection_slices(new, |s, slice| {
+            info_flow_block_no_return_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, s.get_dynamic_secret_label().generate_dynamic_secret().dynamic_union(slice.get_dynamic_secret_label()), s.get_dynamic_integrity_label().generate_dynamic_integrity().dynamic_intersection(slice.get_dynamic_integrity_label()), {
+                let mut unwrapped_mut = unwrap_secret_mut_ref(s);
+                let unwrapped = unwrap_secret_ref(&slice);
+                std::string::String::push_str(unwrapped_mut, unwrapped);
+            });
+        }/*s.push_str(slice)*/);
+        let bool_check = info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, text.get_dynamic_secret_label().generate_dynamic_secret(), text.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+            let unwrapped = unwrap_secret_ref(&text);
+            unchecked_operation(unwrapped.is_empty())
+        });
+        if bool_check /*text.is_empty()*/ {
             return None;
         }
         Some(text)
     }
 
     /// The length of the selected text in UTF-16 code units.
-    fn selection_utf16_len(&self) -> UTF16CodeUnits {
-        self.fold_selection_slices(UTF16CodeUnits::zero(), |len, slice| {
-            *len += UTF16CodeUnits(slice.chars().map(char::len_utf16).sum::<usize>())
+    fn selection_utf16_len(&self) -> InfoFlowStruct<UTF16CodeUnits, sec_lat::Label_A, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel> {
+        let new_acc = info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {
+            wrap_secret(unchecked_operation(UTF16CodeUnits::zero()))
+        });
+        //Vincent: changed function
+        self.fold_selection_slices(new_acc, |len, slice| {
+            info_flow_block_no_return_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, len.get_dynamic_secret_label().generate_dynamic_secret().dynamic_union(slice.get_dynamic_secret_label()), len.get_dynamic_integrity_label().generate_dynamic_integrity().dynamic_intersection(slice.get_dynamic_integrity_label()), {
+                let mut unwrapped_mut = unwrap_secret_mut_ref(len);
+                let unwrapped = unwrap_secret_ref(&slice);
+                let added1 = str::chars(unwrapped);
+                let added2 = unchecked_operation(added1.map(char::len_utf16).sum::<usize>());
+                unchecked_operation(*unwrapped_mut += UTF16CodeUnits(added2));
+            });
+            //*len += UTF16CodeUnits(slice.chars().map(char::len_utf16).sum::<usize>())
         })
     }
 
     /// Run the callback on a series of slices that, concatenated, make up the selected text.
     ///
     /// The accumulator `acc` can be mutated by the callback, and will be returned at the end.
-    fn fold_selection_slices<B, F: FnMut(&mut B, &str)>(&self, mut acc: B, mut f: F) -> B {
+    fn fold_selection_slices<B: SecretValueSafe, F: FnMut(&mut InfoFlowStruct<B, sec_lat::Label_A, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>, InfoFlowStruct<&str, sec_lat::Label_A, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>)>(&self, mut acc: InfoFlowStruct<B, sec_lat::Label_A, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>, mut f: F) -> InfoFlowStruct<B, sec_lat::Label_A, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel> {
         if self.has_selection() {
             let (start, end) = self.sorted_selection_bounds();
             let UTF8Bytes(start_offset) = start.index;
             let UTF8Bytes(end_offset) = end.index;
 
             if start.line == end.line {
-                let a = &info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, self.lines[start.line].get_dynamic_secret_label().generate_dynamic_secret(), self.lines[start.line].get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                let a = info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, self.lines[start.line].get_dynamic_secret_label().generate_dynamic_secret(), self.lines[start.line].get_dynamic_integrity_label().generate_dynamic_integrity(), {
                     let a = unwrap_secret_ref(&self.lines[start.line]);
-                    let b = a.s[unchecked_operation(start_offset..end_offset)];
+                    let b = &a.s[start_offset..end_offset];
                     wrap_secret(b)
                 }); //Vincent: EXPERIMENTAL RETURN REFERENCE TO SECRET
                 f(&mut acc, a/*&self.lines[start.line][start_offset..end_offset]*/)
             } else {
-                let a = &info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, self.lines[start.line].get_dynamic_secret_label().generate_dynamic_secret(), self.lines[start.line].get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                let a = info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, self.lines[start.line].get_dynamic_secret_label().generate_dynamic_secret(), self.lines[start.line].get_dynamic_integrity_label().generate_dynamic_integrity(), {
                     let a = unwrap_secret_ref(&self.lines[start.line]);
-                    let b = a.s[unchecked_operation(start_offset..)];
+                    let b = &a.s[start_offset..];
                     wrap_secret(b)
                 }); //Vincent: EXPERIMENTAL RETURN REFERENCE TO SECRET
                 f(&mut acc, a/*&self.lines[start.line][start_offset..]*/);
                 for line in &self.lines[start.line + 1..end.line] {
-                    f(&mut acc, "\n");
-                    f(&mut acc, line);
+                    let a = info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {
+                        wrap_secret("\n")
+                    });
+                    let b = info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, self.lines[start.line].get_dynamic_secret_label().generate_dynamic_secret(), self.lines[start.line].get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                        let a = &unwrap_secret_ref(&line).s;
+                        wrap_secret(std::string::String::as_str(a))
+                    }); //Vincent: EXPERIMENTAL RETURN REFERENCE TO SECRET
+                    f(&mut acc, a/*"\n"*/);
+                    f(&mut acc, b/*line*/);
                 }
-                f(&mut acc, "\n");
-                let a = &info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, self.lines[end.line].get_dynamic_secret_label().generate_dynamic_secret(), self.lines[end.line].get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                let a = info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {
+                    wrap_secret("\n")
+                });
+                f(&mut acc, a/*"\n"*/);
+                let a = info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, self.lines[end.line].get_dynamic_secret_label().generate_dynamic_secret(), self.lines[end.line].get_dynamic_integrity_label().generate_dynamic_integrity(), {
                     let a = unwrap_secret_ref(&self.lines[end.line]);
-                    let b = a.s[unchecked_operation(..end_offset)];
+                    let b = &a.s[..end_offset];
                     wrap_secret(b)
                 }); //Vincent: EXPERIMENTAL RETURN REFERENCE TO SECRET
                 f(&mut acc, a/*&self.lines[end.line][..end_offset]*/)
@@ -548,7 +616,10 @@ impl<T: ClipboardProvider> TextInput<T> {
                 self.utf16_len().saturating_sub(self.selection_utf16_len());
             max_length.saturating_sub(len_after_selection_replaced)
         } else {
-            UTF16CodeUnits(usize::MAX)
+            info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {
+                wrap_secret(unchecked_operation(UTF16CodeUnits(usize::MAX)))
+            })
+            //UTF16CodeUnits(usize::MAX)
         };
 
         let last_char_index =
@@ -707,9 +778,14 @@ impl<T: ClipboardProvider> TextInput<T> {
         }
 
         let UTF8Bytes(edit_index) = self.edit_point.index;
-        let col = self.lines[self.edit_point.line][..edit_index]
+        let col = info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, self.lines[self.edit_point.line].get_dynamic_secret_label().generate_dynamic_secret(), self.lines[self.edit_point.line].get_dynamic_integrity_label().generate_dynamic_integrity(), {
+            let unwrapped_u = unwrap_secret_ref(&self.lines[self.edit_point.line]).s;
+            let chs = str::chars(&unwrapped_u[..edit_index]);
+            wrap_secret(unchecked_operation(chs.count()))
+        });
+        /*let col = self.lines[self.edit_point.line][..edit_index]
             .chars()
-            .count();
+            .count();*/
         self.edit_point.line = target_line as usize;
         // NOTE: this adjusts to the nearest complete Unicode codepoint, rather than grapheme cluster
         self.edit_point.index = len_of_first_n_chars(&self.lines[self.edit_point.line], col);
