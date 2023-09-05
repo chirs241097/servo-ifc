@@ -184,7 +184,9 @@ impl<'a, E: TextControlElement> TextControlSelection<'a, E> {
         // change the selection state in order to replace the text in the range.
         let original_selection_state = self.textinput.borrow().selection_state();
 
-        let UTF8Bytes(content_length) = self.textinput.borrow().len_utf8();
+        //Vincent: Changed struct to have named fields
+        let content_length = self.textinput.borrow().len_utf8().value;
+        //let UTF8Bytes(content_length) = self.textinput.borrow().len_utf8();
         let content_length = content_length as u32;
 
         // Step 5
@@ -274,12 +276,16 @@ impl<'a, E: TextControlElement> TextControlSelection<'a, E> {
     }
 
     fn start(&self) -> u32 {
-        let UTF8Bytes(offset) = self.textinput.borrow().selection_start_offset();
+        //Vincent: Changed struct to have named fields
+        let offset = self.textinput.borrow().selection_start_offset().value;
+        //let UTF8Bytes(offset) = self.textinput.borrow().selection_start_offset();
         offset as u32
     }
 
     fn end(&self) -> u32 {
-        let UTF8Bytes(offset) = self.textinput.borrow().selection_end_offset();
+        //Vincent: Changed struct to have named fields
+        let offset = self.textinput.borrow().selection_end_offset().value;
+        //let UTF8Bytes(offset) = self.textinput.borrow().selection_end_offset();
         offset as u32
     }
 

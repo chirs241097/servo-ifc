@@ -25,6 +25,7 @@ use secret_structs::secret::*;
 use secret_structs::integrity_lattice as int_lat;
 use secret_structs::ternary_lattice as sec_lat;
 use secret_macros::InvisibleSideEffectFreeDerive;
+use secret_macros::side_effect_free_attr_full;
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum Selection {
@@ -40,21 +41,22 @@ pub enum SelectionDirection {
 }
 
 #[derive(Clone, Copy, Debug, Default, Eq, JSTraceable, MallocSizeOf, Ord, PartialEq, PartialOrd)]
-pub struct UTF8Bytes(pub usize);
+pub struct UTF8Bytes{pub value: usize}
 //Vincent: impl secretblocksafe for type
 unsafe impl InvisibleSideEffectFree for UTF8Bytes {}
-
 impl UTF8Bytes {
+    #[side_effect_free_attr_full(method)]
     pub fn zero() -> UTF8Bytes {
-        UTF8Bytes(0)
+        UTF8Bytes{value: 0}
     }
 
+    #[side_effect_free_attr_full(method)]
     pub fn one() -> UTF8Bytes {
-        UTF8Bytes(1)
+        UTF8Bytes{value: 1}
     }
 
     pub fn unwrap_range(byte_range: Range<UTF8Bytes>) -> Range<usize> {
-        byte_range.start.0..byte_range.end.0
+        byte_range.start.value..byte_range.end.value
     }
 
     pub fn saturating_sub(self, other: InfoFlowStruct<UTF8Bytes, sec_lat::Label_A, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>) -> InfoFlowStruct<UTF8Bytes, sec_lat::Label_A, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel> {
@@ -63,14 +65,14 @@ impl UTF8Bytes {
             self > unwrapped
         });
         if /*self > other*/ conditional {
-            info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, other.get_dynamic_secret_label().generate_dynamic_secret(), other.get_dynamic_integrity_label().generate_dynamic_integrity(), {
-                let result = self.0 - u(&other).0;
-                wrap_secret(unchecked_operation(UTF8Bytes(result)))
+            info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, other.get_dynamic_secret_label().generate_dynamic_secret(), other.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                let result = self.value - u(&other).value;
+                wrap_secret(UTF8Bytes{value: result})
             })
             //UTF8Bytes(self.0 - other.0)
         } else {
-            info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, other.get_dynamic_secret_label().generate_dynamic_secret(), other.get_dynamic_integrity_label().generate_dynamic_integrity(), {
-                wrap_secret(unchecked_operation(UTF8Bytes::zero()))
+            info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, other.get_dynamic_secret_label().generate_dynamic_secret(), other.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+                wrap_secret(UTF8Bytes::zero())
             })
             //UTF8Bytes::zero()
         }
@@ -81,13 +83,13 @@ impl Add for UTF8Bytes {
     type Output = UTF8Bytes;
 
     fn add(self, other: UTF8Bytes) -> UTF8Bytes {
-        UTF8Bytes(self.0 + other.0)
+        UTF8Bytes{value: self.value + other.value}
     }
 }
 
 impl AddAssign for UTF8Bytes {
     fn add_assign(&mut self, other: UTF8Bytes) {
-        *self = UTF8Bytes(self.0 + other.0)
+        *self = UTF8Bytes{value: self.value + other.value}
     }
 }
 
@@ -96,22 +98,23 @@ trait StrExt {
 }
 impl StrExt for str {
     fn len_utf8(&self) -> UTF8Bytes {
-        UTF8Bytes(self.len())
+        UTF8Bytes{value: self.len()}
     }
 }
 
 #[derive(Clone, Copy, Debug, Default, JSTraceable, MallocSizeOf, PartialEq, PartialOrd)]
-pub struct UTF16CodeUnits(pub usize);
+pub struct UTF16CodeUnits{pub value: usize}
 //Vincent: impl secretblocksafe for utf16
 unsafe impl InvisibleSideEffectFree for UTF16CodeUnits {}
 
 impl UTF16CodeUnits {
+    #[side_effect_free_attr_full(method)]
     pub fn zero() -> UTF16CodeUnits {
-        UTF16CodeUnits(0)
+        UTF16CodeUnits{value: 0}
     }
 
     pub fn one() -> UTF16CodeUnits {
-        UTF16CodeUnits(1)
+        UTF16CodeUnits{value: 1}
     }
 
     pub fn saturating_sub(self, other: InfoFlowStruct<UTF16CodeUnits, sec_lat::Label_A, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>) -> InfoFlowStruct<UTF16CodeUnits, sec_lat::Label_A, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel> {
@@ -121,13 +124,13 @@ impl UTF16CodeUnits {
         });
         if /*self > other*/ conditional {
             info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, other.get_dynamic_secret_label().generate_dynamic_secret(), other.get_dynamic_integrity_label().generate_dynamic_integrity(), {
-                let result = self.0 - u(&other).0;
-                wrap_secret(unchecked_operation(UTF16CodeUnits(result)))
+                let result = self.value - u(&other).value;
+                wrap_secret(UTF16CodeUnits{value: result})
             })
             //UTF16CodeUnits(self.0 - other.0)
         } else {
             info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, other.get_dynamic_secret_label().generate_dynamic_secret(), other.get_dynamic_integrity_label().generate_dynamic_integrity(), {
-                wrap_secret(unchecked_operation(UTF16CodeUnits::zero()))
+                wrap_secret(UTF16CodeUnits::zero())
             })
             //UTF16CodeUnits::zero()
         }
@@ -138,13 +141,13 @@ impl Add for UTF16CodeUnits {
     type Output = UTF16CodeUnits;
 
     fn add(self, other: UTF16CodeUnits) -> UTF16CodeUnits {
-        UTF16CodeUnits(self.0 + other.0)
+        UTF16CodeUnits{value: self.value + other.value}
     }
 }
 
 impl AddAssign for UTF16CodeUnits {
     fn add_assign(&mut self, other: UTF16CodeUnits) {
-        *self = UTF16CodeUnits(self.0 + other.0)
+        *self = UTF16CodeUnits{value: self.value + other.value}
     }
 }
 
@@ -268,12 +271,12 @@ pub const CMD_OR_CONTROL: Modifiers = Modifiers::CONTROL;
 /// If n is 0, returns 0
 fn len_of_first_n_chars(text: &InfoFlowStruct<PreDOMString, sec_lat::Label_A, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>, n: InfoFlowStruct<usize, sec_lat::Label_A, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>) -> UTF8Bytes {
     info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, text.get_dynamic_secret_label().generate_dynamic_secret(), text.get_dynamic_integrity_label().generate_dynamic_integrity(), {
-        let unwrapped = str::char_indices(unwrap_secret_ref(text).s);
+        let unwrapped = str::char_indices(&unwrap_secret_ref(text).s);
         let unwrapped_n = unwrap_secret_ref(&n);
 
 
         match unchecked_operation(unwrapped.take(*unwrapped_n).last()) {
-            Some((index, ch)) => UTF8Bytes(index + ch.len_utf8()),
+            Some((index, ch)) => UTF8Bytes{value: index + ch.len_utf8()},
             None => UTF8Bytes::zero(),
         }
     })
@@ -288,31 +291,31 @@ fn len_of_first_n_chars(text: &InfoFlowStruct<PreDOMString, sec_lat::Label_A, in
 /// If the string is fewer than n code units, returns the length of the whole string.
 fn len_of_first_n_code_units(text: &ServoSecure<PreDOMString> /*&str*/, n: InfoFlowStruct<UTF16CodeUnits, sec_lat::Label_A, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>) -> ServoSecure<usize> {
     let mut utf8_len = info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, text.get_dynamic_secret_label().generate_dynamic_secret(), text.get_dynamic_integrity_label().generate_dynamic_integrity(), {
-        wrap_secret(unchecked_operation(UTF8Bytes::zero()))
+        wrap_secret(UTF8Bytes::zero())
     });
     let mut utf16_len = info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, text.get_dynamic_secret_label().generate_dynamic_secret(), text.get_dynamic_integrity_label().generate_dynamic_integrity(), {
-        wrap_secret(unchecked_operation(UTF16CodeUnits::zero()))
+        wrap_secret(UTF16CodeUnits::zero())
     });
     //let mut utf8_len = UTF8Bytes::zero();
     //let mut utf16_len = UTF16CodeUnits::zero();
     info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, text.get_dynamic_secret_label().generate_dynamic_secret(), text.get_dynamic_integrity_label().generate_dynamic_integrity(), {
         let unwrapped_text = unwrap_secret_ref(text);
-        let mut unwrapped_utf8 = unwrap_secret_mut_ref(&mut utf8_len);
-        let mut unwrapped_utf16 = unwrap_secret_mut_ref(&mut utf16_len);
+        let mut unwrapped_utf8: &mut UTF8Bytes = unwrap_secret_mut_ref(&mut utf8_len);
+        let mut unwrapped_utf16: &mut UTF16CodeUnits = unwrap_secret_mut_ref(&mut utf16_len);
         let unwrapped_n = unwrap_secret_ref(&n);
         for c in str::chars(&unwrapped_text.s[..]) {
-            *unwrapped_utf16 = UTF16CodeUnits(unwrapped_utf16.0 + unchecked_operation(c.len_utf16()));
+            *unwrapped_utf16 = UTF16CodeUnits{value: unwrapped_utf16.value + unchecked_operation(c.len_utf16())};
             //unchecked_operation(*unwrapped_utf16 += UTF16CodeUnits(c.len_utf16()));
             if unchecked_operation(*unwrapped_utf16 > *unwrapped_n) {
                 break;
             }
-            *unwrapped_utf8 = UTF8Bytes(unwrapped_utf8.0 + unchecked_operation(c.len_utf8()))
+            *unwrapped_utf8 = UTF8Bytes{value: unwrapped_utf8.value + unchecked_operation(c.len_utf8())}
             //unchecked_operation(*unwrapped_utf8 += UTF8Bytes(c.len_utf8()));
         }
     });
     info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, text.get_dynamic_secret_label().generate_dynamic_secret(), text.get_dynamic_integrity_label().generate_dynamic_integrity(), {
         let unwrapped_u = unwrap_secret_ref(&utf8_len);
-        wrap_secret((*unwrapped_u).0)
+        wrap_secret((*unwrapped_u).value)
     })
     /*for c in text.chars() {
         utf16_len += UTF16CodeUnits(c.len_utf16());
@@ -337,7 +340,7 @@ impl<T: ClipboardProvider> TextInput<T> {
         //Vincent: TODO: replace every instance of new_dynamic_secret_label and new_dynamic_integrity_label
         let mut i = TextInput {
             lines: info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {
-                sec(std::vec::Vec::new())
+                wrap_secret(std::vec::Vec::new())
             }),
             //vec![],
             edit_point: Default::default(),
@@ -541,7 +544,7 @@ impl<T: ClipboardProvider> TextInput<T> {
     /// The length of the selected text in UTF-16 code units.
     fn selection_utf16_len(&self) -> InfoFlowStruct<UTF16CodeUnits, sec_lat::Label_A, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel> {
         let new_acc = info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {
-            wrap_secret(unchecked_operation(UTF16CodeUnits::zero()))
+            wrap_secret(UTF16CodeUnits::zero())
         });
         //Vincent: changed function
         self.fold_selection_slices(new_acc, |len, slice| {
@@ -550,7 +553,7 @@ impl<T: ClipboardProvider> TextInput<T> {
                 let unwrapped = unwrap_secret_ref(&slice);
                 let added1 = str::chars(unwrapped);
                 let added2 = unchecked_operation(added1.map(char::len_utf16).sum::<usize>());
-                unchecked_operation(*unwrapped_mut += UTF16CodeUnits(added2));
+                unchecked_operation(*unwrapped_mut += UTF16CodeUnits{value: added2});
             });
             //*len += UTF16CodeUnits(slice.chars().map(char::len_utf16).sum::<usize>())
         })
@@ -562,8 +565,10 @@ impl<T: ClipboardProvider> TextInput<T> {
     fn fold_selection_slices<B: SecretValueSafe, F: FnMut(&mut InfoFlowStruct<B, sec_lat::Label_A, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>, InfoFlowStruct<&str, sec_lat::Label_A, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>)>(&self, mut acc: InfoFlowStruct<B, sec_lat::Label_A, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>, mut f: F) -> InfoFlowStruct<B, sec_lat::Label_A, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel> {
         if self.has_selection() {
             let (start, end) = self.sorted_selection_bounds();
-            let UTF8Bytes(start_offset) = start.index;
-            let UTF8Bytes(end_offset) = end.index;
+            let start_offset = start.index.value;
+            let end_offset = end.index.value;
+            //let UTF8Bytes(start_offset) = start.index;
+            //let UTF8Bytes(end_offset) = end.index;
 
             if start.line == end.line {
                 let a = info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, self.lines[start.line].get_dynamic_secret_label().generate_dynamic_secret(), self.lines[start.line].get_dynamic_integrity_label().generate_dynamic_integrity(), {
@@ -617,7 +622,7 @@ impl<T: ClipboardProvider> TextInput<T> {
             max_length.saturating_sub(len_after_selection_replaced)
         } else {
             info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {
-                wrap_secret(unchecked_operation(UTF16CodeUnits(usize::MAX)))
+                wrap_secret(unchecked_operation(UTF16CodeUnits{value: usize::MAX}))
             })
             //UTF16CodeUnits(usize::MAX)
         };
@@ -633,8 +638,10 @@ impl<T: ClipboardProvider> TextInput<T> {
         });
 
         let (start, end) = self.sorted_selection_bounds();
-        let UTF8Bytes(start_offset) = start.index;
-        let UTF8Bytes(end_offset) = end.index;
+        let start_offset = start.index.value;
+        let end_offset = end.index.value;
+        //let UTF8Bytes(start_offset) = start.index;
+        //let UTF8Bytes(end_offset) = end.index;
 
         let new_lines = {
             let mut l: Vec<DOMString>;
@@ -777,7 +784,8 @@ impl<T: ClipboardProvider> TextInput<T> {
             return;
         }
 
-        let UTF8Bytes(edit_index) = self.edit_point.index;
+        let edit_index = self.edit_point.index.value;
+        //let UTF8Bytes(edit_index) = self.edit_point.index;
         let col = info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, self.lines[self.edit_point.line].get_dynamic_secret_label().generate_dynamic_secret(), self.lines[self.edit_point.line].get_dynamic_integrity_label().generate_dynamic_integrity(), {
             let unwrapped_u = unwrap_secret_ref(&self.lines[self.edit_point.line]).s;
             let chs = str::chars(&unwrapped_u[..edit_index]);
@@ -826,13 +834,14 @@ impl<T: ClipboardProvider> TextInput<T> {
         }
         let adjust = {
             let current_line = &self.lines[self.edit_point.line];
-            let UTF8Bytes(current_offset) = self.edit_point.index;
+            let current_offset = self.edit_point.index.value;
+            //let UTF8Bytes(current_offset) = self.edit_point.index;
             let next_ch = match direction {
                 Direction::Forward => current_line[current_offset..].graphemes(true).next(),
                 Direction::Backward => current_line[..current_offset].graphemes(true).next_back(),
             };
             match next_ch {
-                Some(c) => UTF8Bytes(c.len() as usize),
+                Some(c) => UTF8Bytes{value: c.len() as usize},
                 None => UTF8Bytes::one(), // Going to the next line is a "one byte" offset
             }
         };
@@ -974,7 +983,8 @@ impl<T: ClipboardProvider> TextInput<T> {
                         input = &self.lines[current_line - 1];
                         newline_adjustment = UTF8Bytes::one();
                     } else {
-                        let UTF8Bytes(remaining) = current_index;
+                        let remaining = current_index.value;
+                        //let UTF8Bytes(remaining) = current_index;
                         input = &self.lines[current_line][..remaining];
                     }
 
@@ -983,7 +993,7 @@ impl<T: ClipboardProvider> TextInput<T> {
                         match iter.next() {
                             None => break,
                             Some(x) => {
-                                shift_temp += UTF8Bytes(x.len() as usize);
+                                shift_temp += UTF8Bytes{value: x.len() as usize};
                                 if x.chars().any(|x| x.is_alphabetic() || x.is_numeric()) {
                                     break;
                                 }
@@ -999,7 +1009,8 @@ impl<T: ClipboardProvider> TextInput<T> {
                         input = &self.lines[current_line + 1];
                         newline_adjustment = UTF8Bytes::one();
                     } else {
-                        let UTF8Bytes(current_offset) = current_index;
+                        let current_offset = current_index.value;
+                        //let UTF8Bytes(current_offset) = current_index;
                         input = &self.lines[current_line][current_offset..];
                     }
 
@@ -1008,7 +1019,7 @@ impl<T: ClipboardProvider> TextInput<T> {
                         match iter.next() {
                             None => break,
                             Some(x) => {
-                                shift_temp += UTF8Bytes(x.len() as usize);
+                                shift_temp += UTF8Bytes{value: x.len() as usize};
                                 if x.chars().any(|x| x.is_alphabetic() || x.is_numeric()) {
                                     break;
                                 }
@@ -1030,13 +1041,14 @@ impl<T: ClipboardProvider> TextInput<T> {
         }
         let shift: usize = {
             let current_line = &self.lines[self.edit_point.line];
-            let UTF8Bytes(current_offset) = self.edit_point.index;
+            let current_offset = self.edit_point.index.value;
+            //let UTF8Bytes(current_offset) = self.edit_point.index;
             match direction {
                 Direction::Backward => current_line[..current_offset].len(),
                 Direction::Forward => current_line[current_offset..].len(),
             }
         };
-        self.perform_horizontal_adjustment(UTF8Bytes(shift), direction, select);
+        self.perform_horizontal_adjustment(UTF8Bytes{value: shift}, direction, select);
     }
 
     pub fn adjust_horizontal_to_limit(&mut self, direction: Direction, select: Selection) {
@@ -1278,7 +1290,7 @@ impl<T: ClipboardProvider> TextInput<T> {
         self.lines
             .iter()
             .fold(UTF16CodeUnits::zero(), |m, l| {
-                m + UTF16CodeUnits(l.chars().map(char::len_utf16).sum::<usize>() + 1)
+                m + UTF16CodeUnits{value: l.chars().map(char::len_utf16).sum::<usize>() + 1}
                 // + 1 for the '\n'
             })
             .saturating_sub(UTF16CodeUnits::one())
@@ -1376,8 +1388,8 @@ impl<T: ClipboardProvider> TextInput<T> {
     }
 
     pub fn set_selection_range(&mut self, start: u32, end: u32, direction: SelectionDirection) {
-        let mut start = UTF8Bytes(start as usize);
-        let mut end = UTF8Bytes(end as usize);
+        let mut start = UTF8Bytes{value: start as usize};
+        let mut end = UTF8Bytes{value: end as usize};
         let text_end = self.get_content().len_utf8();
 
         if end > text_end {

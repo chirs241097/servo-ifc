@@ -899,7 +899,9 @@ impl HTMLInputElement {
         }
 
         let mut failed_flags = ValidationFlags::empty();
-        let UTF16CodeUnits(value_len) = textinput.utf16_len();
+        //Vincent: Changed struct to have named fields
+        let value_len = textinput.utf16_len().value;
+        //let UTF16CodeUnits(value_len) = textinput.utf16_len();
         let min_length = self.MinLength();
         let max_length = self.MaxLength();
 
@@ -2422,7 +2424,8 @@ impl VirtualMethods for HTMLInputElement {
                     if value < 0 {
                         textinput.set_max_length(None);
                     } else {
-                        textinput.set_max_length(Some(UTF16CodeUnits(value as usize)))
+                        //Vincent: Changed struct to have named fields
+                        textinput.set_max_length(Some(UTF16CodeUnits{value: value as usize}))
                     }
                 },
                 _ => panic!("Expected an AttrValue::Int"),
@@ -2434,7 +2437,8 @@ impl VirtualMethods for HTMLInputElement {
                     if value < 0 {
                         textinput.set_min_length(None);
                     } else {
-                        textinput.set_min_length(Some(UTF16CodeUnits(value as usize)))
+                        //Vincent: Changed struct to have named fields
+                        textinput.set_min_length(Some(UTF16CodeUnits{value: value as usize}))
                     }
                 },
                 _ => panic!("Expected an AttrValue::Int"),
