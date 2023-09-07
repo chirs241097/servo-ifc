@@ -30,8 +30,8 @@ use std::collections::HashMap;
 use std::fmt;
 use std::time::Duration;
 
-use secret_structs::ternary_lattice as sec_lat;
 use secret_structs::integrity_lattice as int_lat;
+use secret_structs::ternary_lattice as sec_lat;
 //use secret_structs::secret::secret::SecretBlockSafe;
 //use secret_structs::secret::secret::{StaticDynamicAll,DynamicSecretLabel, DynamicIntegrityLabel};
 
@@ -72,7 +72,7 @@ pub enum ConstellationMsg {
     /// Query the constellation to see if the current compositor output is stable
     IsReadyToSaveImage(HashMap<PipelineId, Epoch>),
     /// Inform the constellation of a key event.
-    Keyboard(SecKeyboardEvent<sec_lat::Label_A,int_lat::Label_All>),
+    Keyboard(SecKeyboardEvent<sec_lat::Label_A, int_lat::Label_All>),
     /// Whether to allow script to navigate.
     AllowNavigationResponse(PipelineId, bool),
     /// Request to load a page.

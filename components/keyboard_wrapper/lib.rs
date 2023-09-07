@@ -1,16 +1,16 @@
 #![feature(negative_impls)]
 
 use keyboard_types::KeyboardEvent;
+use secret_macros::side_effect_free_attr_full;
+use secret_macros::InvisibleSideEffectFreeDerive;
+use secret_structs::integrity_lattice as int_lat;
 use secret_structs::secret::InvisibleSideEffectFree;
 use secret_structs::secret::*;
-use secret_structs::integrity_lattice as int_lat;
 use secret_structs::ternary_lattice as sec_lat;
-use secret_macros::InvisibleSideEffectFreeDerive;
-use secret_macros::side_effect_free_attr_full;
 //use serde::ser::{Serializer, SerializeStruct};
-use serde::{Serialize, Deserialize, /*Deserializer*/};
+use serde::{Deserialize /*Deserializer*/, Serialize};
 //use std::marker::PhantomData;
-use keyboard_types::{Key, Modifiers, KeyState, Code, Location};
+use keyboard_types::{Code, Key, KeyState, Location, Modifiers};
 use malloc_size_of_derive::MallocSizeOf;
 //use malloc_size_of::MallocSizeOf;
 //use malloc_size_of::MallocSizeOfOps;
@@ -20,28 +20,30 @@ use malloc_size_of_derive::MallocSizeOf;
 //    pub ke: KeyboardEvent
 //}
 
-unsafe impl<L1,L2> InvisibleSideEffectFree for SecKeyboardEvent<L1,L2> {}
+unsafe impl<L1, L2> InvisibleSideEffectFree for SecKeyboardEvent<L1, L2> {}
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
-pub struct SecKeyboardEvent<L1,L2> {
+pub struct SecKeyboardEvent<L1, L2> {
     /// Whether the key is pressed or released.
-    pub state: /*ServoSecure<KeyStateWrapper>,*/ StaticDynamicAll<KeyStateWrapper,L1,L2,DynamicSecretLabel,DynamicIntegrityLabel>,
+    pub state: StaticDynamicAll<KeyStateWrapper, L1, L2, DynamicSecretLabel, DynamicIntegrityLabel>,
     /// Logical key value.
-    pub key: /*ServoSecure<KeyWrapper>,*/ StaticDynamicAll<KeyWrapper,L1,L2,DynamicSecretLabel,DynamicIntegrityLabel>,
+    pub key: StaticDynamicAll<KeyWrapper, L1, L2, DynamicSecretLabel, DynamicIntegrityLabel>,
     /// Physical key position.
-    pub code: /*ServoSecure<CodeWrapper>,*/ StaticDynamicAll<CodeWrapper,L1,L2,DynamicSecretLabel,DynamicIntegrityLabel>,
+    pub code: StaticDynamicAll<CodeWrapper, L1, L2, DynamicSecretLabel, DynamicIntegrityLabel>,
     /// Location for keys with multiple instances on common keyboards.
-    pub location: /*ServoSecure<LocationWrapper>,*/ StaticDynamicAll<LocationWrapper,L1,L2,DynamicSecretLabel,DynamicIntegrityLabel>,
+    pub location:
+        StaticDynamicAll<LocationWrapper, L1, L2, DynamicSecretLabel, DynamicIntegrityLabel>,
     /// Flags for pressed modifier keys.
-    pub modifiers: /*ServoSecure<ModifiersWrapper>,*/ StaticDynamicAll<ModifiersWrapper,L1,L2,DynamicSecretLabel,DynamicIntegrityLabel>,
+    pub modifiers:
+        StaticDynamicAll<ModifiersWrapper, L1, L2, DynamicSecretLabel, DynamicIntegrityLabel>,
     /// True if the key is currently auto-repeated.
-    pub repeat: /*ServoSecure<bool>,*/ StaticDynamicAll<bool,L1,L2,DynamicSecretLabel,DynamicIntegrityLabel>,
+    pub repeat: StaticDynamicAll<bool, L1, L2, DynamicSecretLabel, DynamicIntegrityLabel>,
     /// Events with this flag should be ignored in a text editor
     /// and instead composition events should be used.
-    pub is_composing: /*ServoSecure<bool>,*/ StaticDynamicAll<bool,L1,L2,DynamicSecretLabel,DynamicIntegrityLabel>,
+    pub is_composing: StaticDynamicAll<bool, L1, L2, DynamicSecretLabel, DynamicIntegrityLabel>,
 }
 
-impl<L1,L2> SecKeyboardEvent<L1,L2> {
+impl<L1, L2> SecKeyboardEvent<L1, L2> {
     pub fn wrap(ke: KeyboardEvent, sl: DynamicSecretLabel, il: DynamicIntegrityLabel) -> Self {
         SecKeyboardEvent {
             state: StaticDynamicAll::<KeyStateWrapper,L1,L2,DynamicSecretLabel,DynamicIntegrityLabel>
@@ -64,16 +66,22 @@ impl<L1,L2> SecKeyboardEvent<L1,L2> {
 
 #[derive(Clone, Default, Serialize, Deserialize)]
 pub struct KeyStateWrapper {
-    pub k: KeyState
+    pub k: KeyState,
 }
 
-pub type ServoSecure<T> = StaticDynamicAll<T, sec_lat::Label_A, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>;
+pub type ServoSecure<T> = StaticDynamicAll<
+    T,
+    sec_lat::Label_A,
+    int_lat::Label_All,
+    DynamicSecretLabel,
+    DynamicIntegrityLabel,
+>;
 
 unsafe impl InvisibleSideEffectFree for KeyStateWrapper {}
 
 #[derive(Clone, Default, Serialize, Deserialize, MallocSizeOf)]
 pub struct KeyWrapper {
-    pub k: Key
+    pub k: Key,
 }
 /*#[side_effect_free_attr_full]
 pub fn is_enter(k: &KeyWrapper) -> bool {
@@ -418,29 +426,28 @@ unsafe impl InvisibleSideEffectFree for KeyWrapper {}
 
 #[derive(Clone, Default, Serialize, Deserialize)]
 pub struct LocationWrapper {
-    pub l: Location
+    pub l: Location,
 }
 
 unsafe impl InvisibleSideEffectFree for LocationWrapper {}
 
 #[derive(Clone, Default, Serialize, Deserialize, MallocSizeOf)]
 pub struct ModifiersWrapper {
-    pub m: Modifiers
+    pub m: Modifiers,
 }
 
 unsafe impl InvisibleSideEffectFree for ModifiersWrapper {}
 
 #[derive(Clone, Default, Serialize, Deserialize)]
 pub struct CodeWrapper {
-    pub c: Code
+    pub c: Code,
 }
-
 
 unsafe impl InvisibleSideEffectFree for CodeWrapper {}
 
 #[derive(Clone, Default, InvisibleSideEffectFreeDerive, MallocSizeOf)]
 pub struct PreDOMString {
-    pub s: String
+    pub s: String,
 }
 
 impl From<PreDOMString> for String {
@@ -461,14 +468,14 @@ impl<T: MallocSizeOf + Copy + SecretValueSafe, L1: sec_lat::Label, L2: sec_lat::
 
 #[derive(Clone, Default)]
 pub struct SecurePart {
-    pub type_: PreDOMString, //this
-    pub key: KeyWrapper, //this
-    pub code: PreDOMString, //this
-    pub location: u32, //this
-    pub repeat: bool, //this
-    pub is_composing: bool, //this
+    pub type_: PreDOMString,         //this
+    pub key: KeyWrapper,             //this
+    pub code: PreDOMString,          //this
+    pub location: u32,               //this
+    pub repeat: bool,                //this
+    pub is_composing: bool,          //this
     pub modifiers: ModifiersWrapper, //this
-    pub char_code: u32, //this
-    pub key_code: u32, //this
+    pub char_code: u32,              //this
+    pub key_code: u32,               //this
 }
 unsafe impl InvisibleSideEffectFree for SecurePart {}

@@ -10,14 +10,14 @@ use keyboard_types::KeyboardEvent;
 use keyboard_wrapper::SecKeyboardEvent;
 use msg::constellation_msg::{PipelineId, TopLevelBrowsingContextId, TraversalDirection};
 use script_traits::{MediaSessionActionType, MouseButton, TouchEventType, TouchId, WheelDelta};
+use secret_structs::integrity_lattice as int_lat;
+use secret_structs::ternary_lattice as sec_lat;
 use servo_geometry::DeviceIndependentPixel;
 use servo_media::player::context::{GlApi, GlContext, NativeDisplay};
 use servo_url::ServoUrl;
 use std::fmt::{Debug, Error, Formatter};
 use std::time::Duration;
 use style_traits::DevicePixel;
-use secret_structs::ternary_lattice as sec_lat;
-use secret_structs::integrity_lattice as int_lat;
 //use secret_structs::secret::secret::SecretBlockSafe;
 //use secret_structs::secret::secret::{StaticDynamicAll,DynamicSecretLabel, DynamicIntegrityLabel};
 
@@ -40,7 +40,6 @@ pub enum WebRenderDebugOption {
     TextureCacheDebug,
     RenderTargetDebug,
 }
-
 
 /// Events that the windowing system sends to Servo.
 #[derive(Clone)]
@@ -85,7 +84,7 @@ pub enum WindowEvent {
     /// Sent when the user exits from fullscreen mode
     ExitFullScreen(TopLevelBrowsingContextId),
     /// Sent when a key input state changes
-    Keyboard(SecKeyboardEvent<sec_lat::Label_A,int_lat::Label_All>),
+    Keyboard(SecKeyboardEvent<sec_lat::Label_A, int_lat::Label_All>),
     /// Sent when Ctr+R/Apple+R is called to reload the current page.
     Reload(TopLevelBrowsingContextId),
     /// Create a new top level browsing context

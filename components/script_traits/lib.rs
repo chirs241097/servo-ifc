@@ -41,6 +41,7 @@ use ipc_channel::ipc::{self, IpcReceiver, IpcSender};
 use ipc_channel::Error as IpcError;
 use keyboard_types::webdriver::Event as WebDriverInputEvent;
 use keyboard_types::{CompositionEvent, KeyboardEvent};
+use keyboard_wrapper::SecKeyboardEvent;
 use libc::c_void;
 use log::warn;
 use media::WindowGLContext;
@@ -57,6 +58,8 @@ use net_traits::{FetchResponseMsg, ReferrerPolicy, ResourceThreads};
 use pixels::PixelFormat;
 use profile_traits::mem;
 use profile_traits::time as profile_time;
+use secret_structs::integrity_lattice as int_lat;
+use secret_structs::ternary_lattice as sec_lat;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use servo_atoms::Atom;
 use servo_url::ImmutableOrigin;
@@ -77,9 +80,6 @@ use webrender_api::{
     ImageKey, ScrollClamping,
 };
 use webrender_api::{BuiltDisplayListDescriptor, HitTestFlags};
-use keyboard_wrapper::SecKeyboardEvent;
-use secret_structs::ternary_lattice as sec_lat;
-use secret_structs::integrity_lattice as int_lat;
 //use secret_structs::secret::secret::SecretBlockSafe;
 //use secret_structs::secret::secret::{StaticDynamicAll,DynamicSecretLabel, DynamicIntegrityLabel};
 
@@ -576,7 +576,7 @@ pub enum CompositorEvent {
     /// A wheel event was generated with a delta in the X, Y, and/or Z directions
     WheelEvent(WheelDelta, Point2D<f32>, Option<UntrustedNodeAddress>),
     /// A key was pressed.
-    KeyboardEvent(SecKeyboardEvent<sec_lat::Label_A,int_lat::Label_All>),
+    KeyboardEvent(SecKeyboardEvent<sec_lat::Label_A, int_lat::Label_All>),
     /// An event from the IME is dispatched.
     CompositionEvent(CompositionEvent),
     /// Virtual keyboard was dismissed

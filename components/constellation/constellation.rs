@@ -182,8 +182,8 @@ use webgpu::{self, WebGPU, WebGPURequest};
 use webrender_traits::WebrenderExternalImageRegistry;
 
 use keyboard_wrapper::SecKeyboardEvent;
-use secret_structs::ternary_lattice as sec_lat;
 use secret_structs::integrity_lattice as int_lat;
+use secret_structs::ternary_lattice as sec_lat;
 //use secret_structs::secret::secret::SecretBlockSafe;
 //use secret_structs::secret::secret::{StaticDynamicAll,DynamicSecretLabel, DynamicIntegrityLabel};
 
@@ -4059,7 +4059,7 @@ where
     }
 
     //Chris: (TODO) verify signature
-    fn handle_key_msg(&mut self, event: SecKeyboardEvent<sec_lat::Label_A,int_lat::Label_All>) {
+    fn handle_key_msg(&mut self, event: SecKeyboardEvent<sec_lat::Label_A, int_lat::Label_All>) {
         // Send to the focused browsing contexts' current pipeline.  If it
         // doesn't exist, fall back to sending to the compositor.
         let focused_browsing_context_id = self
@@ -4443,7 +4443,7 @@ where
                 let control_msg = ConstellationControlMsg::SendEvent(
                     pipeline_id,
                     //CompositorEvent::KeyboardEvent(event),
-                    CompositorEvent::IMEDismissedEvent
+                    CompositorEvent::IMEDismissedEvent,
                 );
                 if let Err(e) = event_loop.send(control_msg) {
                     return self.handle_send_error(pipeline_id, e);

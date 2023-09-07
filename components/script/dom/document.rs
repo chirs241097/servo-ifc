@@ -1743,8 +1743,8 @@ impl Document {
         };
 
 
-        let label_s = keyboard_event.key.get_dynamic_secret_label().generate_dynamic_secret().dynamic_union(keyboard_event.state.get_dynamic_secret_label()).dynamic_union(keyboard_event.key.get_dynamic_secret_label()).dynamic_union(keyboard_event.code.get_dynamic_secret_label()).dynamic_union(keyboard_event.location.get_dynamic_secret_label()).dynamic_union(keyboard_event.repeat.get_dynamic_secret_label()).dynamic_union(keyboard_event.is_composing.get_dynamic_secret_label()).dynamic_union(keyboard_event.modifiers.get_dynamic_secret_label());
-        let label_i = keyboard_event.key.get_dynamic_integrity_label().generate_dynamic_integrity().dynamic_intersection(keyboard_event.state.get_dynamic_integrity_label()).dynamic_intersection(keyboard_event.key.get_dynamic_integrity_label()).dynamic_intersection(keyboard_event.code.get_dynamic_integrity_label()).dynamic_intersection(keyboard_event.location.get_dynamic_integrity_label()).dynamic_intersection(keyboard_event.repeat.get_dynamic_integrity_label()).dynamic_intersection(keyboard_event.is_composing.get_dynamic_integrity_label()).dynamic_intersection(keyboard_event.modifiers.get_dynamic_integrity_label());
+        let label_s = keyboard_event.key.get_dynamic_secret_label_clone().dynamic_union(keyboard_event.state.get_dynamic_secret_label_reference()).dynamic_union(keyboard_event.key.get_dynamic_secret_label_reference()).dynamic_union(keyboard_event.code.get_dynamic_secret_label_reference()).dynamic_union(keyboard_event.location.get_dynamic_secret_label_reference()).dynamic_union(keyboard_event.repeat.get_dynamic_secret_label_reference()).dynamic_union(keyboard_event.is_composing.get_dynamic_secret_label_reference()).dynamic_union(keyboard_event.modifiers.get_dynamic_secret_label_reference());
+        let label_i = keyboard_event.key.get_dynamic_integrity_label_clone().dynamic_intersection(keyboard_event.state.get_dynamic_integrity_label_reference()).dynamic_intersection(keyboard_event.key.get_dynamic_integrity_label_reference()).dynamic_intersection(keyboard_event.code.get_dynamic_integrity_label_reference()).dynamic_intersection(keyboard_event.location.get_dynamic_integrity_label_reference()).dynamic_intersection(keyboard_event.repeat.get_dynamic_integrity_label_reference()).dynamic_intersection(keyboard_event.is_composing.get_dynamic_integrity_label_reference()).dynamic_intersection(keyboard_event.modifiers.get_dynamic_integrity_label_reference());
 
         let s = &(keyboard_event.state);
         let k = &(keyboard_event.key);
@@ -1828,8 +1828,8 @@ impl Document {
         event.fire(target);
         let mut cancel_state = event.get_cancel_state();
         let is_not_prevented = cancel_state != EventDefault::Prevented;
-        let label_s = keyboard_event.state.get_dynamic_secret_label().generate_dynamic_secret().dynamic_union(keyboard_event.key.get_dynamic_secret_label()).dynamic_union(keyboard_event.is_composing.get_dynamic_secret_label());
-        let label_i = keyboard_event.state.get_dynamic_integrity_label().generate_dynamic_integrity().dynamic_intersection(keyboard_event.key.get_dynamic_integrity_label()).dynamic_intersection(keyboard_event.is_composing.get_dynamic_integrity_label());
+        let label_s = keyboard_event.state.get_dynamic_secret_label_clone().dynamic_union(keyboard_event.key.get_dynamic_secret_label_reference()).dynamic_union(keyboard_event.is_composing.get_dynamic_secret_label_reference());
+        let label_i = keyboard_event.state.get_dynamic_integrity_label_clone().dynamic_intersection(keyboard_event.key.get_dynamic_integrity_label_reference()).dynamic_intersection(keyboard_event.is_composing.get_dynamic_integrity_label_reference());
         let s = &keyboard_event.state;
         let k = &keyboard_event.key;
         let i_s = &keyboard_event.is_composing;
@@ -1877,8 +1877,8 @@ impl Document {
             //Chris: commented out because this may need another rewrapping (back to static secrecy label)
             //let msg = EmbedderMsg::Keyboard(keyboard_event.clone());
             //self.send_to_embedder(msg);
-            let label_s = keyboard_event.key.get_dynamic_secret_label().generate_dynamic_secret().dynamic_union(keyboard_event.code.get_dynamic_secret_label()).dynamic_union(keyboard_event.state.get_dynamic_secret_label());
-            let label_i = keyboard_event.key.get_dynamic_integrity_label().generate_dynamic_integrity().dynamic_intersection(keyboard_event.code.get_dynamic_integrity_label()).dynamic_intersection(keyboard_event.state.get_dynamic_integrity_label());
+            let label_s = keyboard_event.key.get_dynamic_secret_label_clone().dynamic_union(keyboard_event.code.get_dynamic_secret_label_reference()).dynamic_union(keyboard_event.state.get_dynamic_secret_label_reference());
+            let label_i = keyboard_event.key.get_dynamic_integrity_label_clone().dynamic_intersection(keyboard_event.code.get_dynamic_integrity_label_reference()).dynamic_intersection(keyboard_event.state.get_dynamic_integrity_label_reference());
 
             // This behavior is unspecced
             // We are supposed to dispatch synthetic click activation for Space and/or Return,

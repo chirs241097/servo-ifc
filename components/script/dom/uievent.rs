@@ -99,7 +99,7 @@ impl UIEvent {
         }
         //Vincent: DECLASSIFY
         panic!("Vincent: Don't want to declassify here");
-        let new_type_pre_: PreDOMString = info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, type_.get_dynamic_secret_label().generate_dynamic_secret(), type_.get_dynamic_integrity_label().generate_dynamic_integrity(), {
+        let new_type_pre_: PreDOMString = info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, type_.get_dynamic_secret_label_clone(), type_.get_dynamic_integrity_label_clone(), {
             remove_label_wrapper(type_)
         });
         let new_type_ = DOMString::from(new_type_pre_.s);
