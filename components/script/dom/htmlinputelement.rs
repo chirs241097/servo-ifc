@@ -43,6 +43,7 @@ use crate::dom::validation::{is_barred_by_datalist_ancestor, Validatable};
 use crate::dom::validitystate::{ValidationFlags, ValidityState};
 use crate::dom::virtualmethods::VirtualMethods;
 use crate::realms::enter_realm;
+use crate::script_thread::ScriptThread;
 use crate::script_runtime::JSContext as SafeJSContext;
 use crate::textinput::KeyReaction::{
     DispatchInput, Nothing, RedrawSelection, TriggerDefaultAction,
@@ -81,6 +82,11 @@ use style::element_state::ElementState;
 use style::str::{split_commas, str_join};
 use unicode_bidi::{bidi_class, BidiClass};
 use url::Url;
+
+use secret_structs::info_flow_block_declassify_dynamic_all;
+use secret_structs::{new_dynamic_secret_label, new_dynamic_integrity_label};
+use secret_structs::integrity_lattice as int_lat;
+use secret_structs::ternary_lattice as sec_lat;
 
 const DEFAULT_SUBMIT_VALUE: &'static str = "Submit";
 const DEFAULT_RESET_VALUE: &'static str = "Reset";
@@ -985,12 +991,21 @@ pub trait LayoutHTMLInputElementHelpers<'dom> {
 
 #[allow(unsafe_code)]
 impl<'dom> LayoutDom<'dom, HTMLInputElement> {
+    //Chris: existing uses of this function never leaks actual text content of the input
+    //(only other attributes derived from the content, e.g. length, are used)
+    //for this reason, it's declassified in-place
+    //TODO: maybe push declassification later?
     fn get_raw_textinput_value(self) -> DOMString {
         unsafe {
-            self.unsafe_get()
-                .textinput
-                .borrow_for_layout()
-                .get_content()
+            let domain = self.upcast::<HTMLElement>().unsafe_get().get_domain();
+            let dynamic_sec_label = new_dynamic_secret_label(vec![ScriptThread::get_secrecy_tag_for_domain(domain)]);
+            let dynamic_int_label = new_dynamic_integrity_label(vec![]);
+            info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, dynamic_sec_label, dynamic_int_label, {
+                unwrap_secret(self.unsafe_get()
+                              .textinput
+                              .borrow_for_layout()
+                              .get_content())
+            })
         }
     }
 
@@ -1230,7 +1245,12 @@ impl HTMLInputElementMethods for HTMLInputElement {
     // https://html.spec.whatwg.org/multipage/#dom-input-value
     fn Value(&self) -> DOMString {
         match self.value_mode() {
-            ValueMode::Value => self.textinput.borrow().get_content(),
+            ValueMode::Value => {
+                let content = self.textinput.borrow().get_content();
+                info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, content.get_dynamic_secret_label().clone(), content.get_dynamic_integrity_label().clone(), {
+                    DOMString::from(unwrap(content).s.into())
+                })
+            },
             ValueMode::Default => self
                 .upcast::<Element>()
                 .get_attribute(&ns!(), &local_name!("value"))

@@ -916,7 +916,7 @@ impl ScriptThread {
         })
     }
 
-    pub fn get_secrecy_tag_for_domain(&self, d: DOMString) -> DynamicSecretComponent {
+    pub fn get_secrecy_tag_for_domain_impl(&self, d: DOMString) -> DynamicSecretComponent {
         let ds = String::from(d);
         if let Some(tag) = self.domain_label_map.borrow().get(&ds) {
             return tag.clone();
@@ -924,6 +924,16 @@ impl ScriptThread {
         let new_tag = get_new_secrecy_tag();
         self.domain_label_map.borrow_mut().insert(ds, new_tag.clone());
         new_tag
+    }
+
+    pub fn get_secrecy_tag_for_domain(d: DOMString) -> Option<DynamicSecretComponent> {
+        SCRIPT_THREAD_ROOT.with(|root| {
+            if let Some(script_thread) = root.get() {
+                let script_thread = unsafe { &*script_thread };
+                return Some(script_thread.get_secrecy_tag_for_domain_impl(d));
+            }
+            None
+        })
     }
 
     /// Process a single event as if it were the next event
@@ -3614,7 +3624,7 @@ impl ScriptThread {
                         he.get_domain()
                     } else { DOMString::from("") }
                 } else { DOMString::from("") };
-                let dynamic_sec_label = new_dynamic_secret_label(vec![self.get_secrecy_tag_for_domain(focused_element_domain)]);
+                let dynamic_sec_label = new_dynamic_secret_label(vec![self.get_secrecy_tag_for_domain_impl(focused_element_domain)]);
                 let dynamic_sec_label_old = new_dynamic_secret_label(vec![]);
                 let dynamic_int_label = new_dynamic_integrity_label(vec![]);
                 let state = info_flow_block_dynamic_all_partial_declassify_dynamic_all!(

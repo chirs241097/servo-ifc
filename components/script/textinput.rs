@@ -1423,15 +1423,28 @@ impl<T: ClipboardProvider> TextInput<T> {
     }
 
     /// Get the current contents of the text input. Multiple lines are joined by \n.
-    pub fn get_content(&self) -> DOMString {
-        let mut content = "".to_owned();
-        for (i, line) in self.lines.iter().enumerate() {
-            content.push_str(&line);
-            if i < self.lines.len() - 1 {
-                content.push('\n');
-            }
+    pub fn get_content(&self) -> ServoSecure<PreDOMString> {
+        if (self.lines.is_empty())
+        {
+            //TODO: use domain information from element owning this textinput
+            ServoSecure::<PreDOMString>::new_info_flow_struct(PreDOMString{s: String::from("")},
+            new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]))
         }
-        DOMString::from(content)
+        else
+        {
+            let sec_label = self.lines[0].get_dynamic_secret_label_clone();
+            let int_label = self.lines[0].get_dynamic_integrity_label_clone();
+            info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, sec_label, int_label, {
+                let mut content = "".to_owned();
+                for (i, line) in self.lines.iter().enumerate() {
+                    content.push_str(unwrap(&line));
+                    if i < self.lines.len() - 1 {
+                        content.push('\n');
+                    }
+                }
+                wrap_secret(PreDOMString{s: content})
+            })
+        }
     }
 
     /// Get a reference to the contents of a single-line text input. Panics if self is a multiline input.
