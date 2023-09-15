@@ -84,9 +84,10 @@ use unicode_bidi::{bidi_class, BidiClass};
 use url::Url;
 
 use secret_structs::info_flow_block_declassify_dynamic_all;
-use secret_structs::{new_dynamic_secret_label, new_dynamic_integrity_label};
+use secret_structs::secret::{new_dynamic_secret_label, new_dynamic_integrity_label};
 use secret_structs::integrity_lattice as int_lat;
 use secret_structs::ternary_lattice as sec_lat;
+use keyboard_wrapper::*;
 
 const DEFAULT_SUBMIT_VALUE: &'static str = "Submit";
 const DEFAULT_RESET_VALUE: &'static str = "Reset";
@@ -316,7 +317,7 @@ impl HTMLInputElement {
             size: Cell::new(DEFAULT_INPUT_SIZE),
             textinput: DomRefCell::new(TextInput::new(
                 Single,
-                DOMString::new(),
+                PreDOMString{s: String::new()},
                 chan,
                 None,
                 None,
