@@ -84,7 +84,7 @@ use unicode_bidi::{bidi_class, BidiClass};
 use url::Url;
 
 use secret_structs::info_flow_block_declassify_dynamic_all;
-use secret_structs::secret::{new_dynamic_secret_label, new_dynamic_integrity_label};
+use secret_structs::secret::*;
 use secret_structs::integrity_lattice as int_lat;
 use secret_structs::ternary_lattice as sec_lat;
 use keyboard_wrapper::*;
@@ -996,17 +996,12 @@ impl<'dom> LayoutDom<'dom, HTMLInputElement> {
     //(only other attributes derived from the content, e.g. length, are used)
     //for this reason, it's declassified in-place
     //TODO: maybe push declassification later?
-    fn get_raw_textinput_value(self) -> DOMString {
+    fn get_raw_textinput_value(self) -> ServoSecure<PreDOMString> {
         unsafe {
-            let domain = self.upcast::<HTMLElement>().unsafe_get().get_domain();
-            let dynamic_sec_label = new_dynamic_secret_label(vec![ScriptThread::get_secrecy_tag_for_domain(domain)]);
-            let dynamic_int_label = new_dynamic_integrity_label(vec![]);
-            info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, dynamic_sec_label, dynamic_int_label, {
-                unwrap_secret(self.unsafe_get()
-                              .textinput
-                              .borrow_for_layout()
-                              .get_content())
-            })
+            self.unsafe_get()
+                .textinput
+                .borrow_for_layout()
+                .get_content()
         }
     }
 
@@ -1048,23 +1043,38 @@ impl<'dom> LayoutHTMLInputElementHelpers<'dom> for LayoutDom<'dom, HTMLInputElem
             InputType::Submit => get_raw_attr_value(self, DEFAULT_SUBMIT_VALUE),
             InputType::Reset => get_raw_attr_value(self, DEFAULT_RESET_VALUE),
             InputType::Password => {
-                let text = self.get_raw_textinput_value();
-                if !text.is_empty() {
-                    text.chars()
-                        .map(|_| PASSWORD_REPLACEMENT_CHAR)
-                        .collect::<String>()
-                        .into()
-                } else {
-                    self.placeholder().into()
-                }
+                let domain = self.upcast::<HTMLElement>().unsafe_get().get_domain();
+                let dynamic_sec_label = new_dynamic_secret_label(vec![ScriptThread::get_secrecy_tag_for_domain(domain).unwrap()]);
+                let dynamic_int_label = new_dynamic_integrity_label(vec![]);
+                let sectext = self.get_raw_textinput_value();
+                let placeholder = String::from(self.placeholder());
+                let ret : String =
+                info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, dynamic_sec_label, dynamic_int_label, {
+                    let text = unwrap_secret_ref(&sectext).s;
+                    let empty = unchecked_operation(text.is_empty());
+                    if !empty {
+                        unchecked_operation(
+                        text.chars()
+                            .map(|_| PASSWORD_REPLACEMENT_CHAR)
+                            .collect::<String>()
+                        )
+                    } else {
+                        placeholder
+                    }
+                });
+                ret.into()
             },
             _ => {
+                //TODO (Chris): discuss.
+                /*
                 let text = self.get_raw_textinput_value();
                 if !text.is_empty() {
                     text.into()
                 } else {
                     self.placeholder().into()
                 }
+                */
+                self.placeholder().into()
             },
         }
     }
@@ -1244,13 +1254,16 @@ impl HTMLInputElementMethods for HTMLInputElement {
     make_atomic_setter!(SetType, "type");
 
     // https://html.spec.whatwg.org/multipage/#dom-input-value
+    // Chris: JavaScript bindings, can't change signature
+    // Have to either declassify in-place or return a placeholder value
     fn Value(&self) -> DOMString {
         match self.value_mode() {
             ValueMode::Value => {
                 let content = self.textinput.borrow().get_content();
-                info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, content.get_dynamic_secret_label().clone(), content.get_dynamic_integrity_label().clone(), {
-                    DOMString::from(unwrap(content).s.into())
-                })
+                let s = info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, content.get_dynamic_secret_label_clone(), content.get_dynamic_integrity_label_clone(), {
+                    unwrap_secret(content).s
+                });
+                DOMString::from(s)
             },
             ValueMode::Default => self
                 .upcast::<Element>()
