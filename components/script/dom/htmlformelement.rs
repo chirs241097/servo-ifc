@@ -79,6 +79,13 @@ use time::{now, Duration, Tm};
 
 use crate::dom::bindings::codegen::Bindings::NodeBinding::{NodeConstants, NodeMethods};
 
+use keyboard_wrapper::*;
+use secret_macros::side_effect_free_attr_full;
+use secret_macros::info_flow_block_dynamic_all;
+use secret_structs::secret::*;
+use secret_structs::integrity_lattice as int_lat;
+use secret_structs::ternary_lattice as sec_lat;
+
 #[derive(Clone, Copy, JSTraceable, MallocSizeOf, PartialEq)]
 pub struct GenerationId(u32);
 
@@ -1155,7 +1162,8 @@ impl HTMLFormElement {
         submitter: Option<FormSubmitter>,
         encoding: Option<&'static Encoding>,
     ) -> Option<Vec<FormDatum>> {
-        fn clean_crlf(s: &str) -> DOMString {
+        #[side_effect_free_attr_full]
+        fn clean_crlf(s: &str) -> String {
             // Step 4
             let mut buf = "".to_owned();
             let mut prev = ' ';
@@ -1183,8 +1191,15 @@ impl HTMLFormElement {
             if prev == '\r' {
                 buf.push('\n');
             }
-            DOMString::from(buf)
+            buf
         }
+        fn clean_crlf_sec(s: ServoSecure<PreDOMString>) -> ServoSecure<PreDOMString> {
+            info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, s.get_dynamic_secret_label_clone(), s.get_dynamic_integrity_label_clone(), {
+                let ss = &unwrap_secret(s).s;
+                wrap_secret(PreDOMString{s: clean_crlf(ss)})
+            })
+        }
+
 
         // Step 1
         if self.constructing_entry_list.get() {
@@ -1200,11 +1215,12 @@ impl HTMLFormElement {
             match &*datum.ty {
                 "file" | "textarea" => (), // TODO
                 _ => {
-                    datum.name = clean_crlf(&datum.name);
-                    datum.value = FormDatumValue::String(clean_crlf(match datum.value {
-                        FormDatumValue::String(ref s) => s,
+                    datum.name = DOMString::from(clean_crlf(&datum.name));
+                    datum.value = match datum.value {
+                        FormDatumValue::SecretString(s) => FormDatumValue::SecretString(clean_crlf_sec(s)),
+                        FormDatumValue::String(ref s) => FormDatumValue::String(DOMString::from(clean_crlf(s))),
                         FormDatumValue::File(_) => unreachable!(),
-                    }));
+                    };
                 },
             }
         }
@@ -1313,6 +1329,7 @@ pub enum FormDatumValue {
     #[allow(dead_code)]
     File(DomRoot<File>),
     String(DOMString),
+    SecretString(ServoSecure<PreDOMString>),
 }
 
 #[derive(Clone, JSTraceable, MallocSizeOf)]

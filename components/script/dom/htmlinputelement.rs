@@ -1747,6 +1747,41 @@ impl HTMLInputElement {
         }
     }
 
+    fn value_for_form(&self) -> FormDatumValue {
+        match self.value_mode() {
+            ValueMode::Value => {
+                let content = self.textinput.borrow().get_content();
+                FormDatumValue::SecretString(content)
+            },
+            ValueMode::Default => self
+                .upcast::<Element>()
+                .get_attribute(&ns!(), &local_name!("value"))
+                .map_or(DOMString::from(""), |a| {
+                    FormDatumValue::String(DOMString::from(a.summarize().value))
+                }),
+            ValueMode::DefaultOn => self
+                .upcast::<Element>()
+                .get_attribute(&ns!(), &local_name!("value"))
+                .map_or(DOMString::from("on"), |a| {
+                    FormDatumValue::String(DOMString::from(a.summarize().value))
+                }),
+            ValueMode::Filename => {
+                let mut path = DOMString::from("");
+                FormDatumValue::String(match self.filelist.get() {
+                    Some(ref fl) => match fl.Item(0) {
+                        Some(ref f) => {
+                            path.push_str("C:\\fakepath\\");
+                            path.push_str(f.name());
+                            path
+                        },
+                        None => path,
+                    },
+                    None => path,
+                })
+            },
+        }
+    }
+
     /// <https://html.spec.whatwg.org/multipage/#constructing-the-form-data-set>
     /// Steps range from 5.1 to 5.10 (specific to HTMLInputElement)
     pub fn form_datums(
@@ -1837,7 +1872,7 @@ impl HTMLInputElement {
         vec![FormDatum {
             ty: ty.clone(),
             name: name,
-            value: FormDatumValue::String(self.Value()),
+            value: self.value_for_form(),
         }]
     }
 

@@ -380,6 +380,15 @@ unsafe impl<L1, L2> JSTraceable for DomRefCell<StaticDynamicAll<bool,L1,L2,Dynam
     }
 }
 
+unsafe impl<L1, L2> JSTraceable for InfoFlowStruct<PreDOMString, L1, L2, DynamicSecretLabel, DynamicIntegrityLabel>
+    where L1: Label, L2: Label {
+    unsafe fn trace(&self, trc: *mut JSTracer) {
+        panic!("This should never be called");
+        self.unwrap_unsafe_dynamic_all::<L1, L2>().s.trace(trc);
+        //unsafe {self.unwrap_unsafe_dynamic_all::<L1, L2>()}.trace(trc);
+    }
+}
+
 unsafe impl<T: JSTraceable + Copy> JSTraceable for Cell<T> {
     unsafe fn trace(&self, trc: *mut JSTracer) {
         self.get().trace(trc)
