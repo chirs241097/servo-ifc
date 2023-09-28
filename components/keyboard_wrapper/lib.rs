@@ -69,9 +69,17 @@ pub struct KeyStateWrapper {
     pub k: KeyState,
 }
 
-pub type ServoSecure<T> = StaticDynamicAll<
+pub type ServoSecureStatic<T> = StaticDynamicAll<
     T,
     sec_lat::Label_A,
+    int_lat::Label_All,
+    DynamicSecretLabel,
+    DynamicIntegrityLabel,
+>;
+
+pub type ServoSecureDynamic<T> = StaticDynamicAll<
+    T,
+    sec_lat::Label_Empty,
     int_lat::Label_All,
     DynamicSecretLabel,
     DynamicIntegrityLabel,

@@ -20,7 +20,6 @@ use keyboard_types::{Key, Modifiers};
 
 //Vincent: Added imports
 use keyboard_wrapper::*;
-use keyboard_wrapper::ServoSecure;
 use secret_structs::ternary_lattice as sec_lat;
 use secret_structs::integrity_lattice as int_lat;
 use secret_structs::info_flow_block_dynamic_all;
@@ -34,22 +33,22 @@ unsafe_no_jsmanaged_fields!(Modifiers);
 pub struct KeyboardEvent {
     //TODO: Make sure DomRefCell is the only option, and we can't in fact use Cell
     uievent: UIEvent,
-    key: DomRefCell</*StaticDynamicAll<PreDOMString, sec_lat::Label_Empty, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>*//**/ServoSecure<PreDOMString>/**/>,
-    typed_key: DomRefCell</*StaticDynamicAll<KeyWrapper, sec_lat::Label_Empty, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>*//**/ServoSecure<KeyWrapper>/**/>,
-    code: DomRefCell</*StaticDynamicAll<PreDOMString, sec_lat::Label_Empty, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>*//**/ServoSecure<PreDOMString>/**/>,
-    location: DomRefCell</*StaticDynamicAll<u32, sec_lat::Label_Empty, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>*//**/ServoSecure<u32>/**/>, //initially Cell
-    modifiers: DomRefCell</*StaticDynamicAll<ModifiersWrapper, sec_lat::Label_Empty, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>*//**/ServoSecure<ModifiersWrapper>/**/>, //initially Cell
-    repeat: DomRefCell</*StaticDynamicAll<bool, sec_lat::Label_Empty, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>*//**/ServoSecure<bool>/**/>, //initially Cell
-    is_composing: DomRefCell</*StaticDynamicAll<bool, sec_lat::Label_Empty, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>*//**/ServoSecure<bool>/**/>, //initially Cell
-    char_code: DomRefCell</*StaticDynamicAll<u32, sec_lat::Label_Empty, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>*//**/ServoSecure<u32>/**/>, //initially Cell
-    key_code: DomRefCell</*StaticDynamicAll<u32, sec_lat::Label_Empty, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>*//**/ServoSecure<u32>/**/>, //initially Cell
+    key: DomRefCell</*StaticDynamicAll<PreDOMString, sec_lat::Label_Empty, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>*//**/ServoSecureDynamic<PreDOMString>/**/>,
+    typed_key: DomRefCell</*StaticDynamicAll<KeyWrapper, sec_lat::Label_Empty, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>*//**/ServoSecureDynamic<KeyWrapper>/**/>,
+    code: DomRefCell</*StaticDynamicAll<PreDOMString, sec_lat::Label_Empty, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>*//**/ServoSecureDynamic<PreDOMString>/**/>,
+    location: DomRefCell</*StaticDynamicAll<u32, sec_lat::Label_Empty, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>*//**/ServoSecureDynamic<u32>/**/>, //initially Cell
+    modifiers: DomRefCell</*StaticDynamicAll<ModifiersWrapper, sec_lat::Label_Empty, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>*//**/ServoSecureDynamic<ModifiersWrapper>/**/>, //initially Cell
+    repeat: DomRefCell</*StaticDynamicAll<bool, sec_lat::Label_Empty, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>*//**/ServoSecureDynamic<bool>/**/>, //initially Cell
+    is_composing: DomRefCell</*StaticDynamicAll<bool, sec_lat::Label_Empty, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>*//**/ServoSecureDynamic<bool>/**/>, //initially Cell
+    char_code: DomRefCell</*StaticDynamicAll<u32, sec_lat::Label_Empty, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>*//**/ServoSecureDynamic<u32>/**/>, //initially Cell
+    key_code: DomRefCell</*StaticDynamicAll<u32, sec_lat::Label_Empty, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>*//**/ServoSecureDynamic<u32>/**/>, //initially Cell
 }
 
 impl KeyboardEvent {
-    pub fn get_modifiers(&self) -> ServoSecure<ModifiersWrapper> {
+    pub fn get_modifiers(&self) -> ServoSecureDynamic<ModifiersWrapper> {
         self.modifiers.borrow().clone()
     }
-    pub fn get_typed_key(&self) -> ServoSecure<KeyWrapper> {
+    pub fn get_typed_key(&self) -> ServoSecureDynamic<KeyWrapper> {
         self.typed_key.borrow().clone()
     }
 }
@@ -66,15 +65,15 @@ impl KeyboardEvent {
     fn new_inherited() -> KeyboardEvent {
         KeyboardEvent {
             uievent: UIEvent::new_inherited(),
-            key: DomRefCell::new(ServoSecure::<PreDOMString>::new_info_flow_struct(PreDOMString{s: String::new()}, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]))),
-            typed_key: DomRefCell::new(ServoSecure::<KeyWrapper>::new_info_flow_struct(KeyWrapper{k: Key::Unidentified}, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]))),
-            code: DomRefCell::new(ServoSecure::<PreDOMString>::new_info_flow_struct(PreDOMString{s: String::new()}, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]))),
-            location: DomRefCell::new(ServoSecure::<u32>::new_info_flow_struct(0, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]))),
-            modifiers: DomRefCell::new(ServoSecure::<ModifiersWrapper>::new_info_flow_struct(ModifiersWrapper{m: Modifiers::empty()}, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]))),
-            repeat: DomRefCell::new(ServoSecure::<bool>::new_info_flow_struct(false, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]))),
-            is_composing: DomRefCell::new(ServoSecure::<bool>::new_info_flow_struct(false, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]))),
-            char_code: DomRefCell::new(ServoSecure::<u32>::new_info_flow_struct(0, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]))),
-            key_code: DomRefCell::new(ServoSecure::<u32>::new_info_flow_struct(0, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]))),
+            key: DomRefCell::new(ServoSecureDynamic::<PreDOMString>::new_info_flow_struct(PreDOMString{s: String::new()}, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]))),
+            typed_key: DomRefCell::new(ServoSecureDynamic::<KeyWrapper>::new_info_flow_struct(KeyWrapper{k: Key::Unidentified}, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]))),
+            code: DomRefCell::new(ServoSecureDynamic::<PreDOMString>::new_info_flow_struct(PreDOMString{s: String::new()}, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]))),
+            location: DomRefCell::new(ServoSecureDynamic::<u32>::new_info_flow_struct(0, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]))),
+            modifiers: DomRefCell::new(ServoSecureDynamic::<ModifiersWrapper>::new_info_flow_struct(ModifiersWrapper{m: Modifiers::empty()}, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]))),
+            repeat: DomRefCell::new(ServoSecureDynamic::<bool>::new_info_flow_struct(false, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]))),
+            is_composing: DomRefCell::new(ServoSecureDynamic::<bool>::new_info_flow_struct(false, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]))),
+            char_code: DomRefCell::new(ServoSecureDynamic::<u32>::new_info_flow_struct(0, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]))),
+            key_code: DomRefCell::new(ServoSecureDynamic::<u32>::new_info_flow_struct(0, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]))),
         }
     }
 
@@ -104,7 +103,7 @@ impl KeyboardEvent {
             let unwrapped = unwrap_secret_ref(&secure);
             wrap_secret(std::clone::Clone::clone(&unwrapped.type_))
         });
-        let key: ServoSecure<KeyWrapper> = info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, secure.get_dynamic_secret_label_clone(), secure.get_dynamic_integrity_label_clone(), {
+        let key: ServoSecureDynamic<KeyWrapper> = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, secure.get_dynamic_secret_label_clone(), secure.get_dynamic_integrity_label_clone(), {
             let unwrapped = unwrap_secret_ref(&secure);
             wrap_secret(std::clone::Clone::clone(&unwrapped.key))
         });
@@ -146,7 +145,7 @@ impl KeyboardEvent {
             };
             wrap_secret(result);
         });*/
-        let key_to_string: ServoSecure<PreDOMString> = info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, secure.get_dynamic_secret_label_clone(), secure.get_dynamic_integrity_label_clone(), {
+        let key_to_string: ServoSecureDynamic<PreDOMString> = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, secure.get_dynamic_secret_label_clone(), secure.get_dynamic_integrity_label_clone(), {
             let unwrapped_s = unwrap_secret_ref(&secure);
             let a = keyboard_wrapper::to_string(&unwrapped_s.key);
             wrap_secret(PreDOMString{s: a})
@@ -221,7 +220,7 @@ impl KeyboardEvent {
             //0,
             //0,
         );
-        *event.key.borrow_mut() = ServoSecure::<PreDOMString>::new_info_flow_struct(PreDOMString{s: init.key.clone().to_string()}, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]));
+        *event.key.borrow_mut() = ServoSecureDynamic::<PreDOMString>::new_info_flow_struct(PreDOMString{s: init.key.clone().to_string()}, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]));
         Ok(event)
     }
     
@@ -231,14 +230,14 @@ impl KeyboardEvent {
 impl KeyboardEvent {
     fn InitKeyboardEvent2(
         &self,
-        type_arg: ServoSecure<PreDOMString>,
+        type_arg: ServoSecureDynamic<PreDOMString>,
         can_bubble_arg: bool,
         cancelable_arg: bool,
         view_arg: Option<&Window>,
-        key_arg: ServoSecure<PreDOMString>,
-        location_arg: ServoSecure::<u32>,
+        key_arg: ServoSecureDynamic<PreDOMString>,
+        location_arg: ServoSecureDynamic::<u32>,
         _modifiers_list_arg: DOMString,
-        repeat: ServoSecure<bool>,
+        repeat: ServoSecureDynamic<bool>,
         _locale: DOMString,
     ) {
         if self.upcast::<Event>().dispatching() {
@@ -275,9 +274,9 @@ impl KeyboardEventMethods for KeyboardEvent {
         panic!("Vincent: Can't call method InitKeyboardEvent");
         self.upcast::<UIEvent>()
         .InitUIEvent(type_arg, can_bubble_arg, cancelable_arg, view_arg, 0);
-        *self.key.borrow_mut() = ServoSecure::<PreDOMString>::new_info_flow_struct(PreDOMString{s: key_arg.to_string()}, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]));
-        *self.location.borrow_mut() = ServoSecure::<u32>::new_info_flow_struct(location_arg, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]));
-        *self.repeat.borrow_mut() = ServoSecure::<bool>::new_info_flow_struct(repeat, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]));
+        *self.key.borrow_mut() = ServoSecureDynamic::<PreDOMString>::new_info_flow_struct(PreDOMString{s: key_arg.to_string()}, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]));
+        *self.location.borrow_mut() = ServoSecureDynamic::<u32>::new_info_flow_struct(location_arg, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]));
+        *self.repeat.borrow_mut() = ServoSecureDynamic::<bool>::new_info_flow_struct(repeat, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]));
         //self.upcast::<UIEvent>()
         //    .InitUIEvent(type_arg, can_bubble_arg, cancelable_arg, view_arg, 0);
         //*self.key.borrow_mut() = key_arg;
