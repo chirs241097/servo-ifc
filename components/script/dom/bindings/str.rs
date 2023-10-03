@@ -19,6 +19,9 @@ use std::ops::{Deref, DerefMut};
 use std::str;
 use std::str::FromStr;
 
+use secret_macros::*;
+use secret_structs::secret::*;
+
 /// Encapsulates the IDL `ByteString` type.
 #[derive(Clone, Debug, Default, Eq, JSTraceable, MallocSizeOf, PartialEq)]
 pub struct ByteString(Vec<u8>);
@@ -186,57 +189,66 @@ pub fn is_token(s: &[u8]) -> bool {
 /// This type is currently `!Send`, in order to help with an independent
 /// experiment to store `JSString`s rather than Rust `String`s.
 #[derive(Clone, Debug, Eq, Hash, MallocSizeOf, Ord, PartialEq, PartialOrd)]
-pub struct DOMString(String, PhantomData<*const ()>);
+pub struct DOMString{s: String, p: PhantomData<*const ()>}
+
+unsafe impl InvisibleSideEffectFree for DOMString{}
 
 impl DOMString {
+    #[side_effect_free_attr_full(method)]
+    pub fn to_ref(&self) -> &str {
+        &self.s
+    }
+
     /// Creates a new `DOMString`.
+    #[side_effect_free_attr_full(method)]
     pub fn new() -> DOMString {
-        DOMString(String::new(), PhantomData)
+        DOMString{s: std::string::String::new(), p: PhantomData}
     }
 
     /// Creates a new `DOMString` from a `String`.
+    #[side_effect_free_attr_full(method)]
     pub fn from_string(s: String) -> DOMString {
-        DOMString(s, PhantomData)
+        DOMString{s: s, p: PhantomData}
     }
 
     /// Appends a given string slice onto the end of this String.
     pub fn push_str(&mut self, string: &str) {
-        self.0.push_str(string)
+        self.s.push_str(string)
     }
 
     /// Clears this `DOMString`, removing all contents.
     pub fn clear(&mut self) {
-        self.0.clear()
+        self.s.clear()
     }
 
     /// Shortens this String to the specified length.
     pub fn truncate(&mut self, new_len: usize) {
-        self.0.truncate(new_len);
+        self.s.truncate(new_len);
     }
 
     /// Removes newline characters according to <https://infra.spec.whatwg.org/#strip-newlines>.
     pub fn strip_newlines(&mut self) {
-        self.0.retain(|c| c != '\r' && c != '\n');
+        self.s.retain(|c| c != '\r' && c != '\n');
     }
 
     /// Removes leading and trailing ASCII whitespaces according to
     /// <https://infra.spec.whatwg.org/#strip-leading-and-trailing-ascii-whitespace>.
     pub fn strip_leading_and_trailing_ascii_whitespace(&mut self) {
-        if self.0.len() == 0 {
+        if self.s.len() == 0 {
             return;
         }
 
         let trailing_whitespace_len = self
-            .0
+            .s
             .trim_end_matches(|ref c| char::is_ascii_whitespace(c))
             .len();
-        self.0.truncate(trailing_whitespace_len);
-        if self.0.is_empty() {
+        self.s.truncate(trailing_whitespace_len);
+        if self.s.is_empty() {
             return;
         }
 
-        let first_non_whitespace = self.0.find(|ref c| !char::is_ascii_whitespace(c)).unwrap();
-        let _ = self.0.replace_range(0..first_non_whitespace, "");
+        let first_non_whitespace = self.s.find(|ref c| !char::is_ascii_whitespace(c)).unwrap();
+        let _ = self.s.replace_range(0..first_non_whitespace, "");
     }
 
     /// Validates this `DOMString` is a time string according to
@@ -323,7 +335,7 @@ impl DOMString {
 
     /// https://html.spec.whatwg.org/multipage/#parse-a-date-string
     pub fn parse_date_string(&self) -> Result<(i32, u32, u32), ()> {
-        let value = &self.0;
+        let value = &self.s;
         // Step 1, 2, 3
         let (year_int, month_int, day_int) = parse_date_component(value)?;
 
@@ -338,7 +350,7 @@ impl DOMString {
 
     /// https://html.spec.whatwg.org/multipage/#parse-a-time-string
     pub fn parse_time_string(&self) -> Result<(u32, u32, f64), ()> {
-        let value = &self.0;
+        let value = &self.s;
         // Step 1, 2, 3
         let (hour_int, minute_int, second_float) = parse_time_component(value)?;
 
@@ -381,7 +393,7 @@ impl DOMString {
 
     /// https://html.spec.whatwg.org/multipage/#parse-a-week-string
     pub fn parse_week_string(&self) -> Result<(i32, u32), ()> {
-        let value = &self.0;
+        let value = &self.s;
         // Step 1, 2, 3
         let mut iterator = value.split('-');
         let year = iterator.next().ok_or(())?;
@@ -428,7 +440,7 @@ impl DOMString {
             static ref RE: Regex =
                 Regex::new(r"^-?(?:\d+\.\d+|\d+|\.\d+)(?:(e|E)(\+|\-)?\d+)?$").unwrap();
         }
-        RE.is_match(&self.0) && self.parse_floating_point_number().is_ok()
+        RE.is_match(&self.s) && self.parse_floating_point_number().is_ok()
     }
 
     /// https://html.spec.whatwg.org/multipage/#rules-for-parsing-floating-point-number-values
@@ -438,7 +450,7 @@ impl DOMString {
         // compiler already matches them in any cases where
         // that actually matters. They are not
         // related to f64::round(), which is for rounding to integers.
-        let input = &self.0;
+        let input = &self.s;
         match input.trim().parse::<f64>() {
             Ok(val)
                 if !(
@@ -459,7 +471,7 @@ impl DOMString {
     /// https://html.spec.whatwg.org/multipage/#best-representation-of-the-number-as-a-floating-point-number
     pub fn set_best_representation_of_the_floating_point_number(&mut self) {
         if let Ok(val) = self.parse_floating_point_number() {
-            self.0 = val.to_string();
+            self.s = val.to_string();
         }
     }
 
@@ -470,20 +482,20 @@ impl DOMString {
         let ((year, month, day), (hour, minute, second)) =
             self.parse_local_date_and_time_string()?;
         if second == 0.0 {
-            self.0 = format!(
+            self.s = format!(
                 "{:04}-{:02}-{:02}T{:02}:{:02}",
                 year, month, day, hour, minute
             );
         } else if second < 10.0 {
             // we need exactly one leading zero on the seconds,
             // whatever their total string length might be
-            self.0 = format!(
+            self.s = format!(
                 "{:04}-{:02}-{:02}T{:02}:{:02}:0{}",
                 year, month, day, hour, minute, second
             );
         } else {
             // we need no leading zeroes on the seconds
-            self.0 = format!(
+            self.s = format!(
                 "{:04}-{:02}-{:02}T{:02}:{:02}:{}",
                 year, month, day, hour, minute, second
             );
@@ -529,13 +541,13 @@ impl DOMString {
             ))
             .unwrap();
         }
-        RE.is_match(&self.0)
+        RE.is_match(&self.s)
     }
 
     /// https://html.spec.whatwg.org/multipage/#valid-simple-colour
     pub fn is_valid_simple_color_string(&self) -> bool {
-        let mut chars = self.0.chars();
-        if self.0.len() == 7 && chars.next() == Some('#') {
+        let mut chars = self.s.chars();
+        if self.s.len() == 7 && chars.next() == Some('#') {
             chars.all(|c| c.is_digit(16))
         } else {
             false
@@ -546,13 +558,13 @@ impl DOMString {
 impl Borrow<str> for DOMString {
     #[inline]
     fn borrow(&self) -> &str {
-        &self.0
+        &self.s
     }
 }
 
 impl Default for DOMString {
     fn default() -> Self {
-        DOMString(String::new(), PhantomData)
+        DOMString{s: String::new(), p: PhantomData}
     }
 }
 
@@ -561,20 +573,20 @@ impl Deref for DOMString {
 
     #[inline]
     fn deref(&self) -> &str {
-        &self.0
+        &self.s
     }
 }
 
 impl DerefMut for DOMString {
     #[inline]
     fn deref_mut(&mut self) -> &mut str {
-        &mut self.0
+        &mut self.s
     }
 }
 
 impl AsRef<str> for DOMString {
     fn as_ref(&self) -> &str {
-        &self.0
+        &self.s
     }
 }
 
@@ -599,7 +611,7 @@ impl<'a> PartialEq<&'a str> for DOMString {
 
 impl From<String> for DOMString {
     fn from(contents: String) -> DOMString {
-        DOMString(contents, PhantomData)
+        DOMString{s: contents, p: PhantomData}
     }
 }
 
@@ -620,43 +632,43 @@ impl<'a> From<Cow<'a, str>> for DOMString {
 
 impl From<DOMString> for LocalName {
     fn from(contents: DOMString) -> LocalName {
-        LocalName::from(contents.0)
+        LocalName::from(contents.s)
     }
 }
 
 impl From<DOMString> for Namespace {
     fn from(contents: DOMString) -> Namespace {
-        Namespace::from(contents.0)
+        Namespace::from(contents.s)
     }
 }
 
 impl From<DOMString> for Atom {
     fn from(contents: DOMString) -> Atom {
-        Atom::from(contents.0)
+        Atom::from(contents.s)
     }
 }
 
 impl From<DOMString> for String {
     fn from(contents: DOMString) -> String {
-        contents.0
+        contents.s
     }
 }
 
 impl Into<Vec<u8>> for DOMString {
     fn into(self) -> Vec<u8> {
-        self.0.into()
+        self.s.into()
     }
 }
 
 impl<'a> Into<Cow<'a, str>> for DOMString {
     fn into(self) -> Cow<'a, str> {
-        self.0.into()
+        self.s.into()
     }
 }
 
 impl<'a> Into<CowRcStr<'a>> for DOMString {
     fn into(self) -> CowRcStr<'a> {
-        self.0.into()
+        self.s.into()
     }
 }
 
@@ -665,7 +677,7 @@ impl Extend<char> for DOMString {
     where
         I: IntoIterator<Item = char>,
     {
-        self.0.extend(iterable)
+        self.s.extend(iterable)
     }
 }
 

@@ -1761,10 +1761,10 @@ impl Document {
             let unwrapped_repeat = unwrap_secret_ref(r);
             let unwrapped_is_composing = unwrap_secret_ref(i_c);
             let unwrapped_modifiers = unwrap_secret_ref(m);
-            let result = SecurePart{
-                type_: PreDOMString{s: unchecked_operation(unwrapped_state.k.to_string()) /*key_state_to_string(&unwrapped_state)*/},
+            let result: SecurePart<DOMString> = SecurePart{
+                type_: DOMString::from_string(unchecked_operation(unwrapped_state.k.to_string())) /*key_state_to_string(&unwrapped_state)*/,
                 key: std::clone::Clone::clone(&unwrapped_key),
-                code: PreDOMString{s: unchecked_operation(unwrapped_code.c.to_string()) /*code_to_string(&unwrapped_code)*/},
+                code: DOMString::from_string(unchecked_operation(unwrapped_code.c.to_string())) /*code_to_string(&unwrapped_code)*/,
                 location: unwrapped_location.l as u32,
                 repeat: *unwrapped_repeat,
                 is_composing: *unwrapped_is_composing,
@@ -1782,7 +1782,7 @@ impl Document {
         let r = &(keyboard_event.repeat);
         let i_c = &(keyboard_event.is_composing);
         let m = &(keyboard_event.modifiers);
-        let cancelable_type = PreDOMString{s: String::from("keypress")};
+        let cancelable_type = DOMString::from_string(String::from("keypress"));
         let secure_2 = info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, label_s.clone(), label_i.clone(), {
             let unwrapped_state = unwrap_secret_ref(s);
             let unwrapped_key = unwrap_secret_ref(k);
@@ -1791,10 +1791,10 @@ impl Document {
             let unwrapped_repeat = unwrap_secret_ref(r);
             let unwrapped_is_composing = unwrap_secret_ref(i_c);
             let unwrapped_modifiers = unwrap_secret_ref(m);
-            let result = SecurePart{
+            let result: SecurePart<DOMString> = SecurePart{
                 type_: cancelable_type,
                 key: std::clone::Clone::clone(unwrapped_key),
-                code: PreDOMString{s: unchecked_operation(unwrapped_code.c.to_string())},
+                code: DOMString::from_string(unchecked_operation(unwrapped_code.c.to_string())),
                 location: unwrapped_location.l as u32,
                 repeat: *unwrapped_repeat,
                 is_composing: *unwrapped_is_composing,

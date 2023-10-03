@@ -87,7 +87,7 @@ impl UIEvent {
 impl UIEvent {
     pub fn InitUIEvent2(
         &self,
-        type_: ServoSecure<PreDOMString>,
+        type_: ServoSecure<DOMString>,
         can_bubble: bool,
         cancelable: bool,
         view: Option<&Window>,
@@ -99,10 +99,9 @@ impl UIEvent {
         }
         //Vincent: DECLASSIFY
         panic!("Vincent: Don't want to declassify here");
-        let new_type_pre_: PreDOMString = info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, type_.get_dynamic_secret_label_clone(), type_.get_dynamic_integrity_label_clone(), {
+        let new_type_: DOMString = info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, type_.get_dynamic_secret_label_clone(), type_.get_dynamic_integrity_label_clone(), {
             remove_label_wrapper(type_)
         });
-        let new_type_ = DOMString::from(new_type_pre_.s);
         event.init_event(Atom::from(new_type_), can_bubble, cancelable);
         //event.init_event(Atom::from(type_), can_bubble, cancelable);
         self.view.set(view);

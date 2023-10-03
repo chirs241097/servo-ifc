@@ -445,7 +445,7 @@ pub struct CodeWrapper {
 
 unsafe impl InvisibleSideEffectFree for CodeWrapper {}
 
-#[derive(Clone, Default, InvisibleSideEffectFreeDerive, MallocSizeOf)]
+/*#[derive(Clone, Default, InvisibleSideEffectFreeDerive, MallocSizeOf)]
 pub struct PreDOMString {
     pub s: String,
 }
@@ -458,7 +458,7 @@ impl From<PreDOMString> for String {
 
 /*pub struct CellWrapper<T> {
     pub c: std::cell::Cell<T>
-}
+}*/
 
 impl<T: MallocSizeOf + Copy + SecretValueSafe, L1: sec_lat::Label, L2: sec_lat::Label> MallocSizeOf for CellWrapper<InfoFlowStruct<T, L1, L2, DynamicSecretLabel, DynamicIntegrityLabel>> {
     fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
@@ -467,10 +467,10 @@ impl<T: MallocSizeOf + Copy + SecretValueSafe, L1: sec_lat::Label, L2: sec_lat::
 }*/
 
 #[derive(Clone, Default)]
-pub struct SecurePart {
-    pub type_: PreDOMString,         //this
+pub struct SecurePart<T> {
+    pub type_: T,         //this
     pub key: KeyWrapper,             //this
-    pub code: PreDOMString,          //this
+    pub code: T,          //this
     pub location: u32,               //this
     pub repeat: bool,                //this
     pub is_composing: bool,          //this
@@ -478,4 +478,4 @@ pub struct SecurePart {
     pub char_code: u32,              //this
     pub key_code: u32,               //this
 }
-unsafe impl InvisibleSideEffectFree for SecurePart {}
+unsafe impl<T: InvisibleSideEffectFree> InvisibleSideEffectFree for SecurePart<T> {}

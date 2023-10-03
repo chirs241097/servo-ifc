@@ -218,7 +218,7 @@ impl<'a, E: TextControlElement> TextControlSelection<'a, E> {
             //Vincent: FIX LABEL
             let r: String = (*replacement).to_string();
             textinput.replace_selection(info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {
-                wrap_secret(PreDOMString { s: r})
+                wrap_secret(DOMString::from_string(r))
             }) /*replacement*/);
         }
 

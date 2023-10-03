@@ -317,7 +317,7 @@ impl HTMLInputElement {
             size: Cell::new(DEFAULT_INPUT_SIZE),
             textinput: DomRefCell::new(TextInput::new(
                 Single,
-                PreDOMString{s: String::new()},
+                DOMString::new(),
                 chan,
                 None,
                 None,

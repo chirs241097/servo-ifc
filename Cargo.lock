@@ -5654,6 +5654,7 @@ version = "0.1.0"
 dependencies = [
  "secret_macros",
  "serde",
+ "unicode-segmentation",
 ]
 
 [[package]]

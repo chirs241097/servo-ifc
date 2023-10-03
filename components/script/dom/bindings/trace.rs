@@ -181,7 +181,6 @@ use webxr_api::{Finger, Hand, Ray, View};
 //Vincent: Added import
 use secret_structs::ternary_lattice::Label;
 use secret_structs::secret::StaticDynamicAll;
-use keyboard_wrapper::PreDOMString;
 use keyboard_wrapper::KeyWrapper;
 use keyboard_wrapper::ModifiersWrapper;
 use secret_structs::secret::DynamicSecretLabel;
@@ -330,21 +329,21 @@ unsafe impl<T: JSTraceable> JSTraceable for [T] {
 }
 
 //Vincent: Added the following specific implementations
-unsafe impl<L1, L2> JSTraceable for Vec<InfoFlowStruct<PreDOMString, L1, L2, DynamicSecretLabel, DynamicIntegrityLabel>>
+unsafe impl<L1, L2> JSTraceable for Vec<InfoFlowStruct<DOMString, L1, L2, DynamicSecretLabel, DynamicIntegrityLabel>>
     where L1: Label, L2: Label {
     unsafe fn trace(&self, trc: *mut JSTracer) {
         panic!("This should never be called");
         for e in self {
-            e.unwrap_unsafe_dynamic_all::<L1, L2>().s.trace(trc);
+            e.unwrap_unsafe_dynamic_all::<L1, L2>().trace(trc);
         }
         //unsafe {self.unwrap_unsafe_dynamic_all::<L1, L2>()}.trace(trc);
     }
 }
-unsafe impl<L1, L2> JSTraceable for DomRefCell<StaticDynamicAll<PreDOMString,L1,L2,DynamicSecretLabel,DynamicIntegrityLabel>> 
+unsafe impl<L1, L2> JSTraceable for DomRefCell<StaticDynamicAll<DOMString,L1,L2,DynamicSecretLabel,DynamicIntegrityLabel>> 
     where L1: Label, L2: Label {
     unsafe fn trace(&self, trc: *mut JSTracer) {
         panic!("This should never be called");
-        unsafe {self.borrow().clone().unwrap_unsafe_dynamic_all::<L1, L2>()}.s.trace(trc);
+        unsafe {self.borrow().clone().unwrap_unsafe_dynamic_all::<L1, L2>()}.trace(trc);
     }
 }
 
