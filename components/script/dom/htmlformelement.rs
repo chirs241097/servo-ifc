@@ -79,6 +79,14 @@ use time::{now, Duration, Tm};
 
 use crate::dom::bindings::codegen::Bindings::NodeBinding::{NodeConstants, NodeMethods};
 
+use keyboard_wrapper::*;
+use secret_macros::side_effect_free_attr_full;
+use secret_macros::info_flow_block_dynamic_all;
+use secret_structs::secret::*;
+use secret_structs::integrity_lattice as int_lat;
+use secret_structs::ternary_lattice as sec_lat;
+use secret_structs::info_flow_block_no_return_dynamic_all;
+
 #[derive(Clone, Copy, JSTraceable, MallocSizeOf, PartialEq)]
 pub struct GenerationId(u32);
 
@@ -654,17 +662,32 @@ impl HTMLFormElement {
     }
 
     // https://html.spec.whatwg.org/multipage/#text/plain-encoding-algorithm
-    fn encode_plaintext(&self, form_data: &mut Vec<FormDatum>) -> String {
+    fn encode_plaintext(&self, form_data: &mut Vec<FormDatum>) -> ServoSecureDynamic<String> {
         // Step 1
-        let mut result = String::new();
+        let mut result = ServoSecureDynamic::<String>::new_info_flow_struct(std::string::String::new(),
+            new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]));
 
         // Step 2
         for entry in form_data.iter() {
             let value = match &entry.value {
-                FormDatumValue::File(f) => f.name(),
-                FormDatumValue::String(s) => s,
+                FormDatumValue::File(f) => ServoSecureDynamic::<String>::new_info_flow_struct(f.name(),
+            new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![])),
+                FormDatumValue::String(s) => ServoSecureDynamic::<String>::new_info_flow_struct(s,
+            new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![])),
+                FormDatumValue::SecretString(ss) => ss,
             };
-            result.push_str(&format!("{}={}\r\n", entry.name, value));
+            let entname : &str = entry.name.into();
+            info_flow_block_no_return_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All,
+            value.get_dynamic_secret_label_clone(), value.get_dynamic_integrity_label_clone(), {
+                let r = unwrap_secret_mut_ref(&mut result);
+                let v = unwrap_secret_ref(&value);
+                //Chris: the original probably won't work, replaced with something much uglier
+                //r.push_str(&format!("{}={}\r\n", entry.name, v));
+                std::string::String::push_str(r, entname);
+                std::string::String::push(r, '=');
+                std::string::String::push_str(r, std::string::String::as_str(v));
+                std::string::String::push_str(r, "\r\n");
+            });
         }
 
         // Step 3
@@ -1155,36 +1178,44 @@ impl HTMLFormElement {
         submitter: Option<FormSubmitter>,
         encoding: Option<&'static Encoding>,
     ) -> Option<Vec<FormDatum>> {
-        fn clean_crlf(s: &str) -> DOMString {
+        #[side_effect_free_attr_full]
+        fn clean_crlf(s: &str) -> String {
             // Step 4
-            let mut buf = "".to_owned();
+            let mut buf = std::string::String::from(" ");
             let mut prev = ' ';
-            for ch in s.chars() {
+            for ch in std::string::String::chars(s) {
                 match ch {
                     '\n' if prev != '\r' => {
-                        buf.push('\r');
-                        buf.push('\n');
+                        std::string::String::push(buf, '\r');
+                        std::string::String::push(buf, '\n');
                     },
                     '\n' => {
-                        buf.push('\n');
+                        std::string::String::push(buf, '\n');
                     },
                     // This character isn't LF but is
                     // preceded by CR
                     _ if prev == '\r' => {
-                        buf.push('\r');
-                        buf.push('\n');
-                        buf.push(ch);
+                        std::string::String::push(buf, '\r');
+                        std::string::String::push(buf, '\n');
+                        std::string::String::push(buf, ch);
                     },
-                    _ => buf.push(ch),
+                    _ => std::string::String::push(buf, ch),
                 };
                 prev = ch;
             }
             // In case the last character was CR
             if prev == '\r' {
-                buf.push('\n');
+                std::string::String::push(buf, '\n');
             }
-            DOMString::from(buf)
+            buf
         }
+        fn clean_crlf_sec(s: ServoSecureDynamic<PreDOMString>) -> ServoSecureDynamic<PreDOMString> {
+            info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, s.get_dynamic_secret_label_clone(), s.get_dynamic_integrity_label_clone(), {
+                let ss = &unwrap_secret(s).s;
+                wrap_secret(PreDOMString{s: clean_crlf(ss)})
+            })
+        }
+
 
         // Step 1
         if self.constructing_entry_list.get() {
@@ -1200,11 +1231,12 @@ impl HTMLFormElement {
             match &*datum.ty {
                 "file" | "textarea" => (), // TODO
                 _ => {
-                    datum.name = clean_crlf(&datum.name);
-                    datum.value = FormDatumValue::String(clean_crlf(match datum.value {
-                        FormDatumValue::String(ref s) => s,
+                    datum.name = DOMString::from(clean_crlf(&datum.name));
+                    datum.value = match datum.value {
+                        FormDatumValue::SecretString(s) => FormDatumValue::SecretString(clean_crlf_sec(s)),
+                        FormDatumValue::String(ref s) => FormDatumValue::String(DOMString::from(clean_crlf(s))),
                         FormDatumValue::File(_) => unreachable!(),
-                    }));
+                    };
                 },
             }
         }
@@ -1313,6 +1345,7 @@ pub enum FormDatumValue {
     #[allow(dead_code)]
     File(DomRoot<File>),
     String(DOMString),
+    SecretString(ServoSecureDynamic<PreDOMString>),
 }
 
 #[derive(Clone, JSTraceable, MallocSizeOf)]

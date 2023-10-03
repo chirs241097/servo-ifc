@@ -84,7 +84,8 @@ use unicode_bidi::{bidi_class, BidiClass};
 use url::Url;
 
 use secret_structs::info_flow_block_declassify_dynamic_all;
-use secret_structs::secret::{new_dynamic_secret_label, new_dynamic_integrity_label};
+use secret_structs::info_flow_block_no_return_dynamic_all;
+use secret_structs::secret::*;
 use secret_structs::integrity_lattice as int_lat;
 use secret_structs::ternary_lattice as sec_lat;
 use keyboard_wrapper::*;
@@ -426,7 +427,7 @@ impl HTMLInputElement {
         self.sanitization_flag.set(true);
         let mut textinput = self.textinput.borrow_mut();
         let mut value = textinput.single_line_content().clone();
-        self.sanitize_value(&mut value);
+        self.sanitize_value_sec(&mut value);
         textinput.set_content(value);
     }
 
@@ -996,17 +997,12 @@ impl<'dom> LayoutDom<'dom, HTMLInputElement> {
     //(only other attributes derived from the content, e.g. length, are used)
     //for this reason, it's declassified in-place
     //TODO: maybe push declassification later?
-    fn get_raw_textinput_value(self) -> DOMString {
+    fn get_raw_textinput_value(self) -> ServoSecureDynamic<PreDOMString> {
         unsafe {
-            let domain = self.upcast::<HTMLElement>().unsafe_get().get_domain();
-            let dynamic_sec_label = new_dynamic_secret_label(vec![ScriptThread::get_secrecy_tag_for_domain(domain)]);
-            let dynamic_int_label = new_dynamic_integrity_label(vec![]);
-            info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, dynamic_sec_label, dynamic_int_label, {
-                unwrap_secret(self.unsafe_get()
-                              .textinput
-                              .borrow_for_layout()
-                              .get_content())
-            })
+            self.unsafe_get()
+                .textinput
+                .borrow_for_layout()
+                .get_content()
         }
     }
 
@@ -1048,23 +1044,43 @@ impl<'dom> LayoutHTMLInputElementHelpers<'dom> for LayoutDom<'dom, HTMLInputElem
             InputType::Submit => get_raw_attr_value(self, DEFAULT_SUBMIT_VALUE),
             InputType::Reset => get_raw_attr_value(self, DEFAULT_RESET_VALUE),
             InputType::Password => {
-                let text = self.get_raw_textinput_value();
-                if !text.is_empty() {
-                    text.chars()
-                        .map(|_| PASSWORD_REPLACEMENT_CHAR)
-                        .collect::<String>()
-                        .into()
-                } else {
-                    self.placeholder().into()
-                }
+                let domain = self.upcast::<HTMLElement>().unsafe_get().get_domain();
+                let dynamic_sec_label = new_dynamic_secret_label(vec![ScriptThread::get_secrecy_tag_for_domain(domain).unwrap()]);
+                let dynamic_int_label = new_dynamic_integrity_label(vec![]);
+                let sectext = self.get_raw_textinput_value();
+                let placeholder = String::from(self.placeholder());
+                let ret : String =
+                info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, dynamic_sec_label, dynamic_int_label, {
+                    let text = unwrap_secret_ref(&sectext).s;
+                    if unchecked_operation(!text.is_empty()) {
+                        unchecked_operation(
+                        text.chars()
+                            .map(|_| PASSWORD_REPLACEMENT_CHAR)
+                            .collect::<String>()
+                        )
+                    } else {
+                        placeholder
+                    }
+                });
+                ret.into()
             },
             _ => {
+                let domain = self.upcast::<HTMLElement>().unsafe_get().get_domain();
+                let dynamic_sec_label = new_dynamic_secret_label(vec![ScriptThread::get_secrecy_tag_for_domain(domain).unwrap()]);
+                let dynamic_int_label = new_dynamic_integrity_label(vec![]);
+                let sectext = self.get_raw_textinput_value();
+                let placeholder = String::from(self.placeholder());
                 let text = self.get_raw_textinput_value();
-                if !text.is_empty() {
-                    text.into()
-                } else {
-                    self.placeholder().into()
-                }
+                let ret : String =
+                info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, dynamic_sec_label, dynamic_int_label, {
+                    let text = unwrap_secret_ref(&sectext).s;
+                    if unchecked_operation(!text.is_empty()) {
+                        text
+                    } else {
+                        placeholder
+                    }
+                });
+                ret.into()
             },
         }
     }
@@ -1087,8 +1103,17 @@ impl<'dom> LayoutHTMLInputElementHelpers<'dom> for LayoutDom<'dom, HTMLInputElem
                 let sel = UTF8Bytes::unwrap_range(sorted_selection_offsets_range);
 
                 // Translate indices from the raw value to indices in the replacement value.
-                let char_start = text[..sel.start].chars().count();
-                let char_end = char_start + text[sel].chars().count();
+
+                //let char_start = text[..sel.start].chars().count();
+                //let char_end = char_start + text[sel].chars().count();
+                let char_start = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, text.get_dynamic_secret_label_clone(), text.get_dynamic_integrity_label_clone(), {
+                    let s = unwrap_secret_ref(&text).s;
+                    unchecked_operation(s[..sel.start].chars().count())
+                });
+                let char_end = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, text.get_dynamic_secret_label_clone(), text.get_dynamic_integrity_label_clone(), {
+                    let s = unwrap_secret_ref(&text).s;
+                    unchecked_operation(char_start + s[sel].chars().count())
+                });
 
                 let bytes_per_char = PASSWORD_REPLACEMENT_CHAR.len_utf8();
                 Some(char_start * bytes_per_char..char_end * bytes_per_char)
@@ -1244,13 +1269,16 @@ impl HTMLInputElementMethods for HTMLInputElement {
     make_atomic_setter!(SetType, "type");
 
     // https://html.spec.whatwg.org/multipage/#dom-input-value
+    // Chris: JavaScript bindings, can't change signature
+    // Have to either declassify in-place or return a placeholder value
     fn Value(&self) -> DOMString {
         match self.value_mode() {
             ValueMode::Value => {
                 let content = self.textinput.borrow().get_content();
-                info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, content.get_dynamic_secret_label().clone(), content.get_dynamic_integrity_label().clone(), {
-                    DOMString::from(unwrap(content).s.into())
-                })
+                let s = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, content.get_dynamic_secret_label_clone(), content.get_dynamic_integrity_label_clone(), {
+                    unwrap_secret(content).s
+                });
+                DOMString::from(s)
             },
             ValueMode::Default => self
                 .upcast::<Element>()
@@ -1294,9 +1322,15 @@ impl HTMLInputElementMethods for HTMLInputElement {
                 let mut textinput = self.textinput.borrow_mut();
 
                 // Step 5.
-                if *textinput.single_line_content() != value {
+                let content = *textinput.single_line_content();
+                let s = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, content.get_dynamic_secret_label_clone(), content.get_dynamic_integrity_label_clone(), {
+                    unwrap_secret(content).s
+                });
+                if DOMString::from(s) != value {
+                    let newval = PreDOMString{s: String::from(value)};
+                    let secnewval = ServoSecureDynamic::new_info_flow_struct(newval, content.get_dynamic_secret_label_clone(), content.get_dynamic_integrity_label_clone());
                     // Steps 1-2
-                    textinput.set_content(value);
+                    textinput.set_content(secnewval);
 
                     // Step 5.
                     textinput.clear_selection_to_limit(Direction::Forward);
@@ -1713,6 +1747,41 @@ impl HTMLInputElement {
         }
     }
 
+    fn value_for_form(&self) -> FormDatumValue {
+        match self.value_mode() {
+            ValueMode::Value => {
+                let content = self.textinput.borrow().get_content();
+                FormDatumValue::SecretString(content)
+            },
+            ValueMode::Default => self
+                .upcast::<Element>()
+                .get_attribute(&ns!(), &local_name!("value"))
+                .map_or(DOMString::from(""), |a| {
+                    FormDatumValue::String(DOMString::from(a.summarize().value))
+                }),
+            ValueMode::DefaultOn => self
+                .upcast::<Element>()
+                .get_attribute(&ns!(), &local_name!("value"))
+                .map_or(DOMString::from("on"), |a| {
+                    FormDatumValue::String(DOMString::from(a.summarize().value))
+                }),
+            ValueMode::Filename => {
+                let mut path = DOMString::from("");
+                FormDatumValue::String(match self.filelist.get() {
+                    Some(ref fl) => match fl.Item(0) {
+                        Some(ref f) => {
+                            path.push_str("C:\\fakepath\\");
+                            path.push_str(f.name());
+                            path
+                        },
+                        None => path,
+                    },
+                    None => path,
+                })
+            },
+        }
+    }
+
     /// <https://html.spec.whatwg.org/multipage/#constructing-the-form-data-set>
     /// Steps range from 5.1 to 5.10 (specific to HTMLInputElement)
     pub fn form_datums(
@@ -1803,7 +1872,7 @@ impl HTMLInputElement {
         vec![FormDatum {
             ty: ty.clone(),
             name: name,
-            value: FormDatumValue::String(self.Value()),
+            value: self.value_for_form(),
         }]
     }
 
@@ -1851,7 +1920,11 @@ impl HTMLInputElement {
             InputType::Image => (),
             _ => (),
         }
-        self.textinput.borrow_mut().set_content(self.DefaultValue());
+        let domain = self.upcast::<HTMLElement>().get_domain();
+        let dynamic_sec_label = new_dynamic_secret_label(vec![ScriptThread::get_secrecy_tag_for_domain(domain).unwrap()]);
+        let dynamic_int_label = new_dynamic_integrity_label(vec![]);
+        let secdefval = ServoSecureDynamic::new_info_flow_struct(PreDOMString{s: String::from(self.DefaultValue())}, dynamic_sec_label, dynamic_int_label);
+        self.textinput.borrow_mut().set_content(secdefval);
         self.value_dirty.set(false);
         self.upcast::<Node>().dirty(NodeDamage::OtherNodeDamage);
     }
@@ -1936,6 +2009,22 @@ impl HTMLInputElement {
             target.fire_bubbling_event(atom!("input"));
             target.fire_bubbling_event(atom!("change"));
         }
+    }
+
+    fn sanitize_value_sec(&self, value: &mut ServoSecureDynamic<PreDOMString>) {
+        let dynamic_sec_label = value.get_dynamic_secret_label_clone();
+        let dynamic_int_label = value.get_dynamic_integrity_label_clone();
+        let utext =
+        info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, dynamic_sec_label, dynamic_int_label, {
+            unwrap_secret_mut_ref(value).s
+        });
+        let mut vs = DOMString::from(utext);
+        self.sanitize_value(&mut vs);
+        let ns = String::from(vs);
+        info_flow_block_no_return_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, dynamic_sec_label.clone(), dynamic_int_label.clone(), {
+                    unwrap_secret_mut_ref(value).s = ns;
+        });
+
     }
 
     // https://html.spec.whatwg.org/multipage/#value-sanitization-algorithm
@@ -2403,7 +2492,7 @@ impl VirtualMethods for HTMLInputElement {
                         // Step 6
                         let mut textinput = self.textinput.borrow_mut();
                         let mut value = textinput.single_line_content().clone();
-                        self.sanitize_value(&mut value);
+                        self.sanitize_value_sec(&mut value);
                         textinput.set_content(value);
 
                         // Steps 7-9
@@ -2430,7 +2519,11 @@ impl VirtualMethods for HTMLInputElement {
                 let mut value = value.map_or(DOMString::new(), DOMString::from);
 
                 self.sanitize_value(&mut value);
-                self.textinput.borrow_mut().set_content(value);
+                let domain = self.upcast::<HTMLElement>().get_domain();
+                let dynamic_sec_label = new_dynamic_secret_label(vec![ScriptThread::get_secrecy_tag_for_domain(domain).unwrap()]);
+                let dynamic_int_label = new_dynamic_integrity_label(vec![]);
+                let secnewval = ServoSecureDynamic::new_info_flow_struct(PreDOMString{s: String::from(value)}, dynamic_sec_label, dynamic_int_label);
+                self.textinput.borrow_mut().set_content(secnewval);
                 self.update_placeholder_shown_state();
             },
             &local_name!("name") if self.input_type() == InputType::Radio => {

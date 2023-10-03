@@ -87,7 +87,7 @@ impl UIEvent {
 impl UIEvent {
     pub fn InitUIEvent2(
         &self,
-        type_: ServoSecure<DOMString>,
+        type_: ServoSecureDynamic<DOMString>,
         can_bubble: bool,
         cancelable: bool,
         view: Option<&Window>,
