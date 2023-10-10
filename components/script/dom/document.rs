@@ -1753,7 +1753,7 @@ impl Document {
         let r = &(keyboard_event.repeat);
         let i_c = &(keyboard_event.is_composing);
         let m = &(keyboard_event.modifiers);
-        let secure_1 = info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, label_s.clone(), label_i.clone(), {
+        let secure_1 = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, label_s.clone(), label_i.clone(), {
             let unwrapped_state = unwrap_secret_ref(s);
             let unwrapped_key = unwrap_secret_ref(k);
             let unwrapped_code = unwrap_secret_ref(c);
@@ -1761,17 +1761,17 @@ impl Document {
             let unwrapped_repeat = unwrap_secret_ref(r);
             let unwrapped_is_composing = unwrap_secret_ref(i_c);
             let unwrapped_modifiers = unwrap_secret_ref(m);
-            let result: SecurePart<DOMString> = SecurePart{
-                type_: DOMString::from_string(unchecked_operation(unwrapped_state.k.to_string())) /*key_state_to_string(&unwrapped_state)*/,
-                key: std::clone::Clone::clone(&unwrapped_key),
-                code: DOMString::from_string(unchecked_operation(unwrapped_code.c.to_string())) /*code_to_string(&unwrapped_code)*/,
-                location: unwrapped_location.l as u32,
-                repeat: *unwrapped_repeat,
-                is_composing: *unwrapped_is_composing,
-                modifiers: std::clone::Clone::clone(&unwrapped_modifiers),
-                char_code: 0,
-                key_code: unchecked_operation(unwrapped_key.k.legacy_keycode())
-            };
+            let result = SecurePart::<DOMString>::new(
+                DOMString::from_string(unchecked_operation(unwrapped_state.k.to_string())) /*key_state_to_string(&unwrapped_state)*/,
+                std::clone::Clone::clone(&unwrapped_key),
+                DOMString::from_string(unchecked_operation(unwrapped_code.c.to_string())) /*code_to_string(&unwrapped_code)*/,
+                unwrapped_location.l as u32,
+                *unwrapped_repeat,
+                *unwrapped_is_composing,
+                std::clone::Clone::clone(&unwrapped_modifiers),
+                0,
+                unchecked_operation(unwrapped_key.k.legacy_keycode())
+            );
             wrap_secret(result)
         });
 
@@ -1783,7 +1783,7 @@ impl Document {
         let i_c = &(keyboard_event.is_composing);
         let m = &(keyboard_event.modifiers);
         let cancelable_type = DOMString::from_string(String::from("keypress"));
-        let secure_2 = info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, label_s.clone(), label_i.clone(), {
+        let secure_2 = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, label_s.clone(), label_i.clone(), {
             let unwrapped_state = unwrap_secret_ref(s);
             let unwrapped_key = unwrap_secret_ref(k);
             let unwrapped_code = unwrap_secret_ref(c);

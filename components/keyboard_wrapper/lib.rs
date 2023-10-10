@@ -486,4 +486,21 @@ pub struct SecurePart<T> {
     pub char_code: u32,              //this
     pub key_code: u32,               //this
 }
+
+impl<T: InvisibleSideEffectFree> SecurePart<T> {
+    #[side_effect_free_attr_full(method)]
+    pub fn new(t: T, k: KeyWrapper, c: T, l: u32, r: bool, ic: bool, m: ModifiersWrapper, cc: u32, kc: u32) -> SecurePart<T>{
+        SecurePart{
+            type_: t,
+            key: k,
+            code: c,
+            location: l,
+            repeat: r,
+            is_composing: ic,
+            modifiers: m,
+            char_code: cc,
+            key_code: kc
+        }
+    }
+}
 unsafe impl<T: InvisibleSideEffectFree> InvisibleSideEffectFree for SecurePart<T> {}

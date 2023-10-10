@@ -602,7 +602,6 @@ impl<T: ClipboardProvider> TextInput<T> {
             } else {
                 let lines_ref = &self.lines;
                 let a = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, self.lines[start.line].get_dynamic_secret_label_clone(), self.lines[start.line].get_dynamic_integrity_label_clone(), {
-                    let lines_ref = &self.lines;
                     let a = unwrap_secret_ref(&lines_ref[start.line]);
                     let b = &DOMString::to_ref(a)[start_offset..];
                     wrap_secret(b)
@@ -626,7 +625,7 @@ impl<T: ClipboardProvider> TextInput<T> {
                 let lines_ref = &self.lines;
                 let a = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, self.lines[end.line].get_dynamic_secret_label_clone(), self.lines[end.line].get_dynamic_integrity_label_clone(), {
                     let a = unwrap_secret_ref(&lines_ref[end.line]);
-                    let b = DOMString::to_ref(&a)[..end_offset];
+                    let b = &DOMString::to_ref(a)[..end_offset];
                     wrap_secret(b)
                 }); //Vincent: EXPERIMENTAL RETURN REFERENCE TO SECRET
                 f(&mut acc, a/*&self.lines[end.line][..end_offset]*/)
@@ -731,7 +730,11 @@ impl<T: ClipboardProvider> TextInput<T> {
             });
 
             let last_insert_lines_index = insert_lines.len() - 1;
-            self.edit_point.index = insert_lines[last_insert_lines_index].len_utf8();
+            self.edit_point.index = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, insert_lines[last_insert_lines_index].get_dynamic_secret_label_clone(), insert_lines[last_insert_lines_index].get_dynamic_integrity_label_clone(), {
+                let unwrapped = unwrap_secret_ref(&insert_lines[last_insert_lines_index]);
+                unchecked_operation(unwrapped.len_utf8())
+            });
+            //self.edit_point.index = insert_lines[last_insert_lines_index].len_utf8();
             self.edit_point.line = start.line + last_insert_lines_index;
 
             // FIXME(ajeffrey): effecient append for DOMStrings
@@ -743,11 +746,9 @@ impl<T: ClipboardProvider> TextInput<T> {
             });
             //insert_lines[last_insert_lines_index].push_str(suffix);
 
-            let a = *insert_lines;
-            let b = &a;
             let mut new_lines = vec![];
             new_lines.extend_from_slice(lines_prefix);
-            new_lines.extend_from_slice(b);
+            new_lines.extend_from_slice(&*insert_lines);
             new_lines.extend_from_slice(lines_suffix);
             new_lines
         };
@@ -1024,8 +1025,8 @@ impl<T: ClipboardProvider> TextInput<T> {
                     if current_index == UTF8Bytes::zero() && current_line > 0 {
                         let lines_ref = &self.lines;
                         input = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, self.lines[current_line - 1].get_dynamic_secret_label_clone(), self.lines[current_line - 1].get_dynamic_integrity_label_clone(), {
-                            let u = unwrap_secret_ref(&lines_ref[current_line - 1]);
-                            wrap_secret(std::string::String::as_str(&u))
+                            let u = &**unwrap_secret_ref(&lines_ref[current_line - 1]);
+                            wrap_secret(u)
                         })/*&self.lines[current_line - 1]*/;
                         newline_adjustment = UTF8Bytes::one();
                     } else {
@@ -1079,8 +1080,8 @@ impl<T: ClipboardProvider> TextInput<T> {
                     if remaining == UTF8Bytes::zero() && self.lines.len() > self.edit_point.line + 1
                     {
                         input = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, self.lines[current_line + 1].get_dynamic_secret_label_clone(), self.lines[current_line + 1].get_dynamic_integrity_label_clone(), {
-                            let u = unwrap_secret_ref(&self.lines[current_line + 1]);
-                            wrap_secret(std::string::String::as_str(&u))
+                            let u = &**unwrap_secret_ref(&self.lines[current_line + 1]);
+                            wrap_secret(u)
                         })/*&self.lines[current_line + 1]*/;
                         ;
                         newline_adjustment = UTF8Bytes::one();

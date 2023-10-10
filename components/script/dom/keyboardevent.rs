@@ -96,42 +96,42 @@ impl KeyboardEvent {
         //modifiers: Modifiers, //this
         //char_code: u32, //this
         //key_code: u32, //this
-        secure: StaticDynamicAll<SecurePart<DOMString>,sec_lat::Label_A,int_lat::Label_All,DynamicSecretLabel,DynamicIntegrityLabel>
+        secure: StaticDynamicAll<SecurePart<DOMString>,sec_lat::Label_Empty,int_lat::Label_All,DynamicSecretLabel,DynamicIntegrityLabel>
     ) -> DomRoot<KeyboardEvent> { 
 
-        let type_ = info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, secure.get_dynamic_secret_label_clone(), secure.get_dynamic_integrity_label_clone(), {
+        let type_ = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, secure.get_dynamic_secret_label_clone(), secure.get_dynamic_integrity_label_clone(), {
             let unwrapped = unwrap_secret_ref(&secure);
             wrap_secret(std::clone::Clone::clone(&unwrapped.type_))
         });
         let key: ServoSecureDynamic<KeyWrapper> = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, secure.get_dynamic_secret_label_clone(), secure.get_dynamic_integrity_label_clone(), {
-            let unwrapped = unwrap_secret_ref(&secure);
+            let unwrapped: &SecurePart<DOMString> = unwrap_secret_ref(&secure);
             wrap_secret(std::clone::Clone::clone(&unwrapped.key))
         });
-        let code = info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, secure.get_dynamic_secret_label_clone(), secure.get_dynamic_integrity_label_clone(), {
+        let code = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, secure.get_dynamic_secret_label_clone(), secure.get_dynamic_integrity_label_clone(), {
             let unwrapped = unwrap_secret_ref(&secure);
             wrap_secret(std::clone::Clone::clone(&unwrapped.code))
         });
-        let location = info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, secure.get_dynamic_secret_label_clone(), secure.get_dynamic_integrity_label_clone(), {
+        let location = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, secure.get_dynamic_secret_label_clone(), secure.get_dynamic_integrity_label_clone(), {
             let unwrapped = unwrap_secret_ref(&secure);
             wrap_secret(unwrapped.location)
         });
-        let repeat = info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, secure.get_dynamic_secret_label_clone(), secure.get_dynamic_integrity_label_clone(), {
+        let repeat = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, secure.get_dynamic_secret_label_clone(), secure.get_dynamic_integrity_label_clone(), {
             let unwrapped = unwrap_secret_ref(&secure);
             wrap_secret(unwrapped.repeat)
         });
-        let is_composing = info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, secure.get_dynamic_secret_label_clone(), secure.get_dynamic_integrity_label_clone(), {
+        let is_composing = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, secure.get_dynamic_secret_label_clone(), secure.get_dynamic_integrity_label_clone(), {
             let unwrapped = unwrap_secret_ref(&secure);
             wrap_secret(unwrapped.is_composing)
         });
-        let modifiers = info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, secure.get_dynamic_secret_label_clone(), secure.get_dynamic_integrity_label_clone(), {
+        let modifiers = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, secure.get_dynamic_secret_label_clone(), secure.get_dynamic_integrity_label_clone(), {
             let unwrapped = unwrap_secret_ref(&secure);
             wrap_secret(std::clone::Clone::clone(&unwrapped.modifiers))
         });
-        let char_code = info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, secure.get_dynamic_secret_label_clone(), secure.get_dynamic_integrity_label_clone(), {
+        let char_code = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, secure.get_dynamic_secret_label_clone(), secure.get_dynamic_integrity_label_clone(), {
             let unwrapped = unwrap_secret_ref(&secure);
             wrap_secret(unwrapped.char_code)
         });
-        let key_code = info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, secure.get_dynamic_secret_label_clone(), secure.get_dynamic_integrity_label_clone(), {
+        let key_code = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, secure.get_dynamic_secret_label_clone(), secure.get_dynamic_integrity_label_clone(), {
             let unwrapped = unwrap_secret_ref(&secure);
             wrap_secret(unwrapped.key_code)
         });
@@ -146,7 +146,7 @@ impl KeyboardEvent {
             wrap_secret(result);
         });*/
         let key_to_string: ServoSecureDynamic<DOMString> = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, secure.get_dynamic_secret_label_clone(), secure.get_dynamic_integrity_label_clone(), {
-            let unwrapped_s = unwrap_secret_ref(&secure);
+            let unwrapped_s: &SecurePart<DOMString> = unwrap_secret_ref(&secure);
             let a = keyboard_wrapper::to_string(&unwrapped_s.key);
             wrap_secret(DOMString::from_string(a))
         });
@@ -200,7 +200,7 @@ impl KeyboardEvent {
         };
         let s: DynamicSecretLabel = new_dynamic_secret_label(vec![]);
         let i: DynamicIntegrityLabel = new_dynamic_integrity_label(vec![]);
-        let secure_1 = info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, s, i,  {
+        let secure_1 = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, s, i,  {
             wrap_secret(result)
         });
         let event = KeyboardEvent::new(
