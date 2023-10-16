@@ -49,6 +49,68 @@ use std::rc::Rc;
 use std::str;
 use url::form_urlencoded;
 
+use keyboard_wrapper::*;
+use secret_macros::info_flow_block_no_return_dynamic_all;
+use secret_macros::info_flow_block_dynamic_all;
+use secret_structs::secret::*;
+use secret_structs::integrity_lattice as int_lat;
+use secret_structs::ternary_lattice as sec_lat;
+
+pub enum MaybeSecret<T> where T: InteriorImmutable + InvisibleSideEffectFree {
+    Secret(ServoSecureDynamic<T>),
+    NonSecret(T)
+}
+
+impl MaybeSecret<Vec<u8>> {
+    pub fn append(&mut self, other: &mut MaybeSecret<Vec<u8>>) -> Self
+    {
+        match self
+        {
+            MaybeSecret::Secret(secself) =>
+                match other
+                {
+                    MaybeSecret::Secret(secother) => {
+                        let sla = secself.get_dynamic_secret_label_clone();
+                        let slb = secother.get_dynamic_secret_label_clone();
+                        let sl = sla.dynamic_union(&slb);
+                        let ila = secself.get_dynamic_integrity_label_clone();
+                        let ilb = secother.get_dynamic_integrity_label_clone();
+                        let il = ila.dynamic_intersection(&ilb);
+                        info_flow_block_no_return_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, sl, il, {
+                            let uself = unwrap_secret_mut_ref(secself);
+                            let uother = unwrap_secret_mut_ref(secother);
+                            std::vec::Vec::<u8>::append(uself, uother);
+                        });
+                        MaybeSecret::Secret(*secself)
+                    },
+                    MaybeSecret::NonSecret(ref mut nother) => {
+                        info_flow_block_no_return_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All,
+                        secself.get_dynamic_secret_label_clone(), secself.get_dynamic_integrity_label_clone(), {
+                            let uself = unwrap_secret_mut_ref(secself);
+                            std::vec::Vec::<u8>::append(uself, nother);
+                        });
+                        MaybeSecret::Secret(*secself)
+                    }
+                },
+            MaybeSecret::NonSecret(ref mut nself) =>
+                match other
+                {
+                    MaybeSecret::Secret(secother) => MaybeSecret::Secret(
+                        info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All,
+                        secother.get_dynamic_secret_label_clone(), secother.get_dynamic_integrity_label_clone(), {
+                            let uother = unwrap_secret_mut_ref(secother);
+                            std::vec::Vec::<u8>::append(nself, uother);
+                            wrap_secret(*nself)
+                        })),
+                    MaybeSecret::NonSecret(nother) => {
+                        nself.append(nother);
+                        MaybeSecret::NonSecret(*nself)
+                    }
+                }
+        }
+    }
+}
+
 /// The Dom object, or ReadableStream, that is the source of a body.
 /// <https://fetch.spec.whatwg.org/#concept-body-source>
 #[derive(Clone, PartialEq)]

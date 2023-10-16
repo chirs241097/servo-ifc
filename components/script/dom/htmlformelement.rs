@@ -3,6 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 use crate::body::Extractable;
+use crate::body::MaybeSecret;
 use crate::dom::bindings::cell::DomRefCell;
 use crate::dom::bindings::codegen::Bindings::AttrBinding::AttrBinding::AttrMethods;
 use crate::dom::bindings::codegen::Bindings::BlobBinding::BlobMethods;
@@ -1210,7 +1211,7 @@ impl HTMLFormElement {
             buf
         }
         fn clean_crlf_sec(s: ServoSecureDynamic<PreDOMString>) -> ServoSecureDynamic<PreDOMString> {
-            info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, s.get_dynamic_secret_label_clone(), s.get_dynamic_integrity_label_clone(), {
+            info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, s.get_dynamic_secret_label_clone(), s.get_dynamic_integrity_label_clone(), {
                 let ss = &unwrap_secret(s).s;
                 wrap_secret(PreDOMString{s: clean_crlf(ss)})
             })
@@ -1356,14 +1357,21 @@ pub struct FormDatum {
 }
 
 impl FormDatum {
-    pub fn replace_value(&self, charset: &str) -> String {
+    pub fn replace_value(&self, charset: &str) -> MaybeSecret<String> {
         if self.name.to_ascii_lowercase() == "_charset_" && self.ty == "hidden" {
             return charset.to_string();
         }
 
         match self.value {
-            FormDatumValue::File(ref f) => String::from(f.name().clone()),
-            FormDatumValue::String(ref s) => String::from(s.clone()),
+            FormDatumValue::File(ref f) => MaybeSecret::NonSecret(String::from(f.name().clone())),
+            FormDatumValue::String(ref s) => MaybeSecret::NonSecret(String::from(s.clone())),
+            FormDatumValue::SecretString(ref ss) => MaybeSecret::Secret(
+                info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All,
+                ss.get_dynamic_secret_label_clone(), ss.get_dynamic_integrity_label_clone(), {
+                    let s = unwrap_secret(ss).s;
+                    wrap_secret(s)
+                })
+            )
         }
     }
 }
@@ -1772,9 +1780,9 @@ pub fn encode_multipart_form_data(
     form_data: &mut Vec<FormDatum>,
     boundary: String,
     encoding: &'static Encoding,
-) -> Vec<u8> {
+) -> MaybeSecret<Vec<u8>> {
     // Step 1
-    let mut result = vec![];
+    let mut result = MaybeSecret::NonSecret(vec![]);
 
     // Step 2
     for entry in form_data.iter_mut() {
@@ -1795,6 +1803,19 @@ pub fn encode_multipart_form_data(
                 let mut bytes =
                     format!("Content-Disposition: {}\r\n\r\n{}", content_disposition, s)
                         .into_bytes();
+                result.append(&mut bytes);
+            },
+            FormDatumValue::SecretString(ref ss) =>
+            {
+                let content_disposition = format!("form-data; name=\"{}\"", entry.name);
+                let mut bytes =
+                info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, ss.get_dynamic_secret_label_clone(), ss.get_dynamic_integrity_label_clone(), {
+                    let mut r = String::from("Content-Dispopsition: ");
+                    std::string::String::push_str(r, &content_disposition);
+                    std::string::String::push_str(r, "\r\n\r\n");
+                    std::string::String::push_str(r, &unwrap_secret(ss).s);
+                    wrap_secret(std::string::String::into_bytes(r))
+                });
                 result.append(&mut bytes);
             },
             FormDatumValue::File(ref f) => {
