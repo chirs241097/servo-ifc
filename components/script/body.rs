@@ -50,7 +50,6 @@ use std::str;
 use url::form_urlencoded;
 
 use keyboard_wrapper::*;
-use secret_macros::info_flow_block_no_return_dynamic_all;
 use secret_macros::info_flow_block_dynamic_all;
 use secret_structs::secret::*;
 use secret_structs::integrity_lattice as int_lat;
@@ -62,7 +61,7 @@ pub enum MaybeSecret<T> where T: InteriorImmutable + InvisibleSideEffectFree {
 }
 
 impl MaybeSecret<Vec<u8>> {
-    pub fn append(&mut self, other: &mut MaybeSecret<Vec<u8>>) -> Self
+    pub fn concat(self, other: MaybeSecret<Vec<u8>>) -> Self
     {
         match self
         {
@@ -76,35 +75,40 @@ impl MaybeSecret<Vec<u8>> {
                         let ila = secself.get_dynamic_integrity_label_clone();
                         let ilb = secother.get_dynamic_integrity_label_clone();
                         let il = ila.dynamic_intersection(&ilb);
-                        info_flow_block_no_return_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, sl, il, {
-                            let uself = unwrap_secret_mut_ref(secself);
-                            let uother = unwrap_secret_mut_ref(secother);
-                            std::vec::Vec::<u8>::append(uself, uother);
-                        });
-                        MaybeSecret::Secret(*secself)
+                        MaybeSecret::Secret(
+                        info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, sl, il, {
+                            let mut uself = unwrap_secret(secself);
+                            let mut uother = unwrap_secret(secother);
+                            std::vec::Vec::append(&mut uself, &mut uother);
+                            wrap_secret(uself)
+                        }))
                     },
-                    MaybeSecret::NonSecret(ref mut nother) => {
-                        info_flow_block_no_return_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All,
+                    MaybeSecret::NonSecret(nother) => MaybeSecret::Secret(
+                        info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All,
                         secself.get_dynamic_secret_label_clone(), secself.get_dynamic_integrity_label_clone(), {
-                            let uself = unwrap_secret_mut_ref(secself);
-                            std::vec::Vec::<u8>::append(uself, nother);
-                        });
-                        MaybeSecret::Secret(*secself)
-                    }
+                            let mut uself = unwrap_secret(secself);
+                            for v in <[_]>::iter(&nother) {
+                                std::vec::Vec::push(&mut uself, *v);
+                            }
+                            wrap_secret(uself)
+                        }))
                 },
-            MaybeSecret::NonSecret(ref mut nself) =>
+            MaybeSecret::NonSecret(mut nself) =>
                 match other
                 {
                     MaybeSecret::Secret(secother) => MaybeSecret::Secret(
                         info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All,
                         secother.get_dynamic_secret_label_clone(), secother.get_dynamic_integrity_label_clone(), {
-                            let uother = unwrap_secret_mut_ref(secother);
-                            std::vec::Vec::<u8>::append(nself, uother);
-                            wrap_secret(*nself)
+                            let mut cself = std::clone::Clone::clone(&nself);
+                            let uother = unwrap_secret(secother);
+                            for v in <[_]>::iter(&uother) {
+                                std::vec::Vec::push(&mut cself, *v);
+                            }
+                            wrap_secret(cself)
                         })),
-                    MaybeSecret::NonSecret(nother) => {
-                        nself.append(nother);
-                        MaybeSecret::NonSecret(*nself)
+                    MaybeSecret::NonSecret(mut nother) => {
+                        nself.append(&mut nother);
+                        MaybeSecret::NonSecret(nself)
                     }
                 }
         }

@@ -198,6 +198,10 @@ impl DOMString {
     pub fn to_ref(&self) -> &str {
         &self.s
     }
+    #[side_effect_free_attr_full(method)]
+    pub fn to_owned(self) -> String {
+        self.s
+    }
 
     /// Creates a new `DOMString`.
     #[side_effect_free_attr_full(method)]
