@@ -997,7 +997,7 @@ impl<'dom> LayoutDom<'dom, HTMLInputElement> {
     //(only other attributes derived from the content, e.g. length, are used)
     //for this reason, it's declassified in-place
     //TODO: maybe push declassification later?
-    fn get_raw_textinput_value(self) -> ServoSecureDynamic<PreDOMString> {
+    fn get_raw_textinput_value(self) -> ServoSecureDynamic<DOMString> {
         unsafe {
             self.unsafe_get()
                 .textinput
@@ -1051,7 +1051,7 @@ impl<'dom> LayoutHTMLInputElementHelpers<'dom> for LayoutDom<'dom, HTMLInputElem
                 let placeholder = String::from(self.placeholder());
                 let ret : String =
                 info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, dynamic_sec_label, dynamic_int_label, {
-                    let text = unwrap_secret_ref(&sectext).s;
+                    let text = unwrap_secret_ref(&sectext);
                     if unchecked_operation(!text.is_empty()) {
                         unchecked_operation(
                         text.chars()
@@ -1073,7 +1073,7 @@ impl<'dom> LayoutHTMLInputElementHelpers<'dom> for LayoutDom<'dom, HTMLInputElem
                 let text = self.get_raw_textinput_value();
                 let ret : String =
                 info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, dynamic_sec_label, dynamic_int_label, {
-                    let text = unwrap_secret_ref(&sectext).s;
+                    let text = DOMString::to_owned(unwrap_secret(sectext));
                     if unchecked_operation(!text.is_empty()) {
                         text
                     } else {
@@ -1107,11 +1107,11 @@ impl<'dom> LayoutHTMLInputElementHelpers<'dom> for LayoutDom<'dom, HTMLInputElem
                 //let char_start = text[..sel.start].chars().count();
                 //let char_end = char_start + text[sel].chars().count();
                 let char_start = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, text.get_dynamic_secret_label_clone(), text.get_dynamic_integrity_label_clone(), {
-                    let s = unwrap_secret_ref(&text).s;
+                    let s = DOMString::to_ref(unwrap_secret_ref(&text));
                     unchecked_operation(s[..sel.start].chars().count())
                 });
                 let char_end = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, text.get_dynamic_secret_label_clone(), text.get_dynamic_integrity_label_clone(), {
-                    let s = unwrap_secret_ref(&text).s;
+                    let s = DOMString::to_ref(unwrap_secret_ref(&text));
                     unchecked_operation(char_start + s[sel].chars().count())
                 });
 
@@ -1275,10 +1275,9 @@ impl HTMLInputElementMethods for HTMLInputElement {
         match self.value_mode() {
             ValueMode::Value => {
                 let content = self.textinput.borrow().get_content();
-                let s = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, content.get_dynamic_secret_label_clone(), content.get_dynamic_integrity_label_clone(), {
-                    unwrap_secret(content).s
-                });
-                DOMString::from(s)
+                info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, content.get_dynamic_secret_label_clone(), content.get_dynamic_integrity_label_clone(), {
+                    unwrap_secret(content)
+                })
             },
             ValueMode::Default => self
                 .upcast::<Element>()
@@ -1324,11 +1323,10 @@ impl HTMLInputElementMethods for HTMLInputElement {
                 // Step 5.
                 let content = *textinput.single_line_content();
                 let s = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, content.get_dynamic_secret_label_clone(), content.get_dynamic_integrity_label_clone(), {
-                    unwrap_secret(content).s
+                    unwrap_secret(content)
                 });
-                if DOMString::from(s) != value {
-                    let newval = PreDOMString{s: String::from(value)};
-                    let secnewval = ServoSecureDynamic::new_info_flow_struct(newval, content.get_dynamic_secret_label_clone(), content.get_dynamic_integrity_label_clone());
+                if s != value {
+                    let secnewval = ServoSecureDynamic::new_info_flow_struct(value, content.get_dynamic_secret_label_clone(), content.get_dynamic_integrity_label_clone());
                     // Steps 1-2
                     textinput.set_content(secnewval);
 
@@ -1756,13 +1754,13 @@ impl HTMLInputElement {
             ValueMode::Default => self
                 .upcast::<Element>()
                 .get_attribute(&ns!(), &local_name!("value"))
-                .map_or(DOMString::from(""), |a| {
+                .map_or(FormDatumValue::String(DOMString::from("")), |a| {
                     FormDatumValue::String(DOMString::from(a.summarize().value))
                 }),
             ValueMode::DefaultOn => self
                 .upcast::<Element>()
                 .get_attribute(&ns!(), &local_name!("value"))
-                .map_or(DOMString::from("on"), |a| {
+                .map_or(FormDatumValue::String(DOMString::from("on")), |a| {
                     FormDatumValue::String(DOMString::from(a.summarize().value))
                 }),
             ValueMode::Filename => {
@@ -1923,7 +1921,7 @@ impl HTMLInputElement {
         let domain = self.upcast::<HTMLElement>().get_domain();
         let dynamic_sec_label = new_dynamic_secret_label(vec![ScriptThread::get_secrecy_tag_for_domain(domain).unwrap()]);
         let dynamic_int_label = new_dynamic_integrity_label(vec![]);
-        let secdefval = ServoSecureDynamic::new_info_flow_struct(PreDOMString{s: String::from(self.DefaultValue())}, dynamic_sec_label, dynamic_int_label);
+        let secdefval = ServoSecureDynamic::new_info_flow_struct(self.DefaultValue(), dynamic_sec_label, dynamic_int_label);
         self.textinput.borrow_mut().set_content(secdefval);
         self.value_dirty.set(false);
         self.upcast::<Node>().dirty(NodeDamage::OtherNodeDamage);
@@ -2011,18 +2009,16 @@ impl HTMLInputElement {
         }
     }
 
-    fn sanitize_value_sec(&self, value: &mut ServoSecureDynamic<PreDOMString>) {
+    fn sanitize_value_sec(&self, value: &mut ServoSecureDynamic<DOMString>) {
         let dynamic_sec_label = value.get_dynamic_secret_label_clone();
         let dynamic_int_label = value.get_dynamic_integrity_label_clone();
-        let utext =
+        let mut utext =
         info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, dynamic_sec_label, dynamic_int_label, {
-            unwrap_secret_mut_ref(value).s
+            std::clone::Clone::clone(unwrap_secret_mut_ref(value))
         });
-        let mut vs = DOMString::from(utext);
-        self.sanitize_value(&mut vs);
-        let ns = String::from(vs);
-        info_flow_block_no_return_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, dynamic_sec_label.clone(), dynamic_int_label.clone(), {
-                    unwrap_secret_mut_ref(value).s = ns;
+        self.sanitize_value(&mut utext);
+        info_flow_block_no_return_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, dynamic_sec_label, dynamic_int_label, {
+            DOMString::replace_content(unwrap_secret_mut_ref(value), DOMString::to_owned(utext));
         });
 
     }
@@ -2522,7 +2518,7 @@ impl VirtualMethods for HTMLInputElement {
                 let domain = self.upcast::<HTMLElement>().get_domain();
                 let dynamic_sec_label = new_dynamic_secret_label(vec![ScriptThread::get_secrecy_tag_for_domain(domain).unwrap()]);
                 let dynamic_int_label = new_dynamic_integrity_label(vec![]);
-                let secnewval = ServoSecureDynamic::new_info_flow_struct(PreDOMString{s: String::from(value)}, dynamic_sec_label, dynamic_int_label);
+                let secnewval = ServoSecureDynamic::new_info_flow_struct(value, dynamic_sec_label, dynamic_int_label);
                 self.textinput.borrow_mut().set_content(secnewval);
                 self.update_placeholder_shown_state();
             },

@@ -87,9 +87,8 @@ impl MaybeSecret<Vec<u8>> {
                         info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All,
                         secself.get_dynamic_secret_label_clone(), secself.get_dynamic_integrity_label_clone(), {
                             let mut uself = unwrap_secret(secself);
-                            for v in <[_]>::iter(&nother) {
-                                std::vec::Vec::push(&mut uself, *v);
-                            }
+                            let mut moved_other = nother;
+                            std::vec::Vec::append(&mut uself, &mut moved_other);
                             wrap_secret(uself)
                         }))
                 },
@@ -99,12 +98,10 @@ impl MaybeSecret<Vec<u8>> {
                     MaybeSecret::Secret(secother) => MaybeSecret::Secret(
                         info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All,
                         secother.get_dynamic_secret_label_clone(), secother.get_dynamic_integrity_label_clone(), {
-                            let mut cself = std::clone::Clone::clone(&nself);
-                            let uother = unwrap_secret(secother);
-                            for v in <[_]>::iter(&uother) {
-                                std::vec::Vec::push(&mut cself, *v);
-                            }
-                            wrap_secret(cself)
+                            let mut moved_self = nself;
+                            let mut uother = unwrap_secret(secother);
+                            std::vec::Vec::append(&mut moved_self, &mut uother);
+                            wrap_secret(moved_self)
                         })),
                     MaybeSecret::NonSecret(mut nother) => {
                         nself.append(&mut nother);

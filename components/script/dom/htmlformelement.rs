@@ -671,11 +671,11 @@ impl HTMLFormElement {
         // Step 2
         for entry in form_data.iter() {
             let value = match &entry.value {
-                FormDatumValue::File(f) => ServoSecureDynamic::<String>::new_info_flow_struct(f.name().to_string(),
+                FormDatumValue::File(f) => ServoSecureDynamic::<DOMString>::new_info_flow_struct(f.name().clone(),
             new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![])),
-                FormDatumValue::String(s) => ServoSecureDynamic::<String>::new_info_flow_struct(s.to_string(),
+                FormDatumValue::String(s) => ServoSecureDynamic::<DOMString>::new_info_flow_struct(s.clone(),
             new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![])),
-                FormDatumValue::SecretString(ss) => ss,
+                FormDatumValue::SecretString(ss) => ss.clone(),
             };
             let entname : &str = entry.name.to_string().as_str();
             info_flow_block_no_return_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All,
@@ -686,7 +686,7 @@ impl HTMLFormElement {
                 //r.push_str(&format!("{}={}\r\n", entry.name, v));
                 std::string::String::push_str(r, entname);
                 std::string::String::push(r, '=');
-                std::string::String::push_str(r, std::string::String::as_str(v));
+                std::string::String::push_str(r, DOMString::to_ref(v));
                 std::string::String::push_str(r, "\r\n");
             });
         }
@@ -1212,7 +1212,7 @@ impl HTMLFormElement {
         }
         fn clean_crlf_sec(s: ServoSecureDynamic<DOMString>) -> ServoSecureDynamic<DOMString> {
             info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, s.get_dynamic_secret_label_clone(), s.get_dynamic_integrity_label_clone(), {
-                let ss : &str = DOMString::to_ref(unwrap_secret(s));
+                let ss : &str = DOMString::to_ref(&unwrap_secret(s));
                 wrap_secret(DOMString::from_string(clean_crlf(ss)))
             })
         }
@@ -1814,7 +1814,7 @@ pub fn encode_multipart_form_data(
                     let mut r = std::string::String::from("Content-Dispopsition: ");
                     std::string::String::push_str(&mut r, &content_disposition);
                     std::string::String::push_str(&mut r, "\r\n\r\n");
-                    std::string::String::push_str(&mut r, DOMString::to_ref(unwrap_secret(ss)));
+                    std::string::String::push_str(&mut r, DOMString::to_ref(unwrap_secret_ref(ss)));
                     wrap_secret(std::string::String::into_bytes(r))
                 });
                 result = result.concat(MaybeSecret::Secret(bytes));

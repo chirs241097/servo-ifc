@@ -202,6 +202,10 @@ impl DOMString {
     pub fn to_owned(self) -> String {
         self.s
     }
+    #[side_effect_free_attr_full(method)]
+    pub fn replace_content(&mut self, s: String) {
+        self.s = s;
+    }
 
     /// Creates a new `DOMString`.
     #[side_effect_free_attr_full(method)]
