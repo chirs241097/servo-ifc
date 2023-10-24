@@ -198,6 +198,14 @@ impl DOMString {
     pub fn to_str_ref(&self) -> &str {
         &self.s
     }
+    #[side_effect_free_attr_full(method)]
+    pub fn to_owned(self) -> String {
+        self.s
+    }
+    #[side_effect_free_attr_full(method)]
+    pub fn replace_content(&mut self, s: String) {
+        self.s = s;
+    }
 
     #[side_effect_free_attr_full(method)]
     pub fn to_string_ref(&self) -> &String {

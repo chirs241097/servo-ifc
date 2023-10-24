@@ -3,6 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 use crate::body::Extractable;
+use crate::body::MaybeSecret;
 use crate::dom::bindings::cell::DomRefCell;
 use crate::dom::bindings::codegen::Bindings::AttrBinding::AttrBinding::AttrMethods;
 use crate::dom::bindings::codegen::Bindings::BlobBinding::BlobMethods;
@@ -670,13 +671,13 @@ impl HTMLFormElement {
         // Step 2
         for entry in form_data.iter() {
             let value = match &entry.value {
-                FormDatumValue::File(f) => ServoSecureDynamic::<String>::new_info_flow_struct(f.name(),
+                FormDatumValue::File(f) => ServoSecureDynamic::<DOMString>::new_info_flow_struct(f.name().clone(),
             new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![])),
-                FormDatumValue::String(s) => ServoSecureDynamic::<String>::new_info_flow_struct(s,
+                FormDatumValue::String(s) => ServoSecureDynamic::<DOMString>::new_info_flow_struct(s.clone(),
             new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![])),
-                FormDatumValue::SecretString(ss) => ss,
+                FormDatumValue::SecretString(ss) => ss.clone(),
             };
-            let entname : &str = entry.name.into();
+            let entname : &str = entry.name.to_string().as_str();
             info_flow_block_no_return_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All,
             value.get_dynamic_secret_label_clone(), value.get_dynamic_integrity_label_clone(), {
                 let r = unwrap_secret_mut_ref(&mut result);
@@ -685,7 +686,7 @@ impl HTMLFormElement {
                 //r.push_str(&format!("{}={}\r\n", entry.name, v));
                 std::string::String::push_str(r, entname);
                 std::string::String::push(r, '=');
-                std::string::String::push_str(r, std::string::String::as_str(v));
+                std::string::String::push_str(r, DOMString::to_ref(v));
                 std::string::String::push_str(r, "\r\n");
             });
         }
@@ -1183,36 +1184,36 @@ impl HTMLFormElement {
             // Step 4
             let mut buf = std::string::String::from(" ");
             let mut prev = ' ';
-            for ch in std::string::String::chars(s) {
+            for ch in str::chars(s) {
                 match ch {
                     '\n' if prev != '\r' => {
-                        std::string::String::push(buf, '\r');
-                        std::string::String::push(buf, '\n');
+                        std::string::String::push(&mut buf, '\r');
+                        std::string::String::push(&mut buf, '\n');
                     },
                     '\n' => {
-                        std::string::String::push(buf, '\n');
+                        std::string::String::push(&mut buf, '\n');
                     },
                     // This character isn't LF but is
                     // preceded by CR
                     _ if prev == '\r' => {
-                        std::string::String::push(buf, '\r');
-                        std::string::String::push(buf, '\n');
-                        std::string::String::push(buf, ch);
+                        std::string::String::push(&mut buf, '\r');
+                        std::string::String::push(&mut buf, '\n');
+                        std::string::String::push(&mut buf, ch);
                     },
-                    _ => std::string::String::push(buf, ch),
+                    _ => std::string::String::push(&mut buf, ch),
                 };
                 prev = ch;
             }
             // In case the last character was CR
             if prev == '\r' {
-                std::string::String::push(buf, '\n');
+                std::string::String::push(&mut buf, '\n');
             }
             buf
         }
-        fn clean_crlf_sec(s: ServoSecureDynamic<PreDOMString>) -> ServoSecureDynamic<PreDOMString> {
-            info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, s.get_dynamic_secret_label_clone(), s.get_dynamic_integrity_label_clone(), {
-                let ss = &unwrap_secret(s).s;
-                wrap_secret(PreDOMString{s: clean_crlf(ss)})
+        fn clean_crlf_sec(s: ServoSecureDynamic<DOMString>) -> ServoSecureDynamic<DOMString> {
+            info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, s.get_dynamic_secret_label_clone(), s.get_dynamic_integrity_label_clone(), {
+                let ss : &str = DOMString::to_ref(&unwrap_secret(s));
+                wrap_secret(DOMString::from_string(clean_crlf(ss)))
             })
         }
 
@@ -1345,7 +1346,7 @@ pub enum FormDatumValue {
     #[allow(dead_code)]
     File(DomRoot<File>),
     String(DOMString),
-    SecretString(ServoSecureDynamic<PreDOMString>),
+    SecretString(ServoSecureDynamic<DOMString>),
 }
 
 #[derive(Clone, JSTraceable, MallocSizeOf)]
@@ -1356,14 +1357,22 @@ pub struct FormDatum {
 }
 
 impl FormDatum {
-    pub fn replace_value(&self, charset: &str) -> String {
+    pub fn replace_value(&self, charset: &str) -> MaybeSecret<String> {
         if self.name.to_ascii_lowercase() == "_charset_" && self.ty == "hidden" {
-            return charset.to_string();
+            return MaybeSecret::NonSecret(charset.to_string());
         }
 
         match self.value {
-            FormDatumValue::File(ref f) => String::from(f.name().clone()),
-            FormDatumValue::String(ref s) => String::from(s.clone()),
+            FormDatumValue::File(ref f) => MaybeSecret::NonSecret(String::from(f.name().clone())),
+            FormDatumValue::String(ref s) => MaybeSecret::NonSecret(String::from(s.clone())),
+            FormDatumValue::SecretString(ref ss) => MaybeSecret::Secret(
+                info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All,
+                ss.get_dynamic_secret_label_clone(), ss.get_dynamic_integrity_label_clone(), {
+                    let s = unwrap_secret_ref(ss);
+                    let sc = std::clone::Clone::clone(s);
+                    wrap_secret(DOMString::to_owned(sc))
+                })
+            )
         }
     }
 }
@@ -1772,9 +1781,9 @@ pub fn encode_multipart_form_data(
     form_data: &mut Vec<FormDatum>,
     boundary: String,
     encoding: &'static Encoding,
-) -> Vec<u8> {
+) -> MaybeSecret<Vec<u8>> {
     // Step 1
-    let mut result = vec![];
+    let mut result = MaybeSecret::NonSecret(vec![]);
 
     // Step 2
     for entry in form_data.iter_mut() {
@@ -1784,18 +1793,31 @@ pub fn encode_multipart_form_data(
         // https://tools.ietf.org/html/rfc7578#section-4
         // NOTE(izgzhen): The encoding here expected by most servers seems different from
         // what spec says (that it should start with a '\r\n').
-        let mut boundary_bytes = format!("--{}\r\n", boundary).into_bytes();
-        result.append(&mut boundary_bytes);
+        let boundary_bytes = format!("--{}\r\n", boundary).into_bytes();
+        result = result.concat(MaybeSecret::NonSecret(boundary_bytes));
 
         // TODO(eijebong): Everthing related to content-disposition it to redo once typed headers
         // are capable of it.
         match entry.value {
             FormDatumValue::String(ref s) => {
                 let content_disposition = format!("form-data; name=\"{}\"", entry.name);
-                let mut bytes =
+                let bytes =
                     format!("Content-Disposition: {}\r\n\r\n{}", content_disposition, s)
                         .into_bytes();
-                result.append(&mut bytes);
+                result = result.concat(MaybeSecret::NonSecret(bytes));
+            },
+            FormDatumValue::SecretString(ref ss) =>
+            {
+                let content_disposition = format!("form-data; name=\"{}\"", entry.name);
+                let bytes =
+                info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, ss.get_dynamic_secret_label_clone(), ss.get_dynamic_integrity_label_clone(), {
+                    let mut r = std::string::String::from("Content-Dispopsition: ");
+                    std::string::String::push_str(&mut r, &content_disposition);
+                    std::string::String::push_str(&mut r, "\r\n\r\n");
+                    std::string::String::push_str(&mut r, DOMString::to_ref(unwrap_secret_ref(ss)));
+                    wrap_secret(std::string::String::into_bytes(r))
+                });
+                result = result.concat(MaybeSecret::Secret(bytes));
             },
             FormDatumValue::File(ref f) => {
                 let charset = encoding.name();
@@ -1819,22 +1841,22 @@ pub fn encode_multipart_form_data(
                     .Type()
                     .parse()
                     .unwrap_or(mime::TEXT_PLAIN);
-                let mut type_bytes = format!(
+                let type_bytes = format!(
                     "Content-Disposition: {}\r\ncontent-type: {}\r\n\r\n",
                     content_disposition, content_type
                 )
                 .into_bytes();
-                result.append(&mut type_bytes);
+                result = result.concat(MaybeSecret::NonSecret(type_bytes));
 
-                let mut bytes = f.upcast::<Blob>().get_bytes().unwrap_or(vec![]);
+                let bytes = f.upcast::<Blob>().get_bytes().unwrap_or(vec![]);
 
-                result.append(&mut bytes);
+                result = result.concat(MaybeSecret::NonSecret(bytes));
             },
         }
     }
 
-    let mut boundary_bytes = format!("\r\n--{}--\r\n", boundary).into_bytes();
-    result.append(&mut boundary_bytes);
+    let boundary_bytes = format!("\r\n--{}--\r\n", boundary).into_bytes();
+    result = result.concat(MaybeSecret::NonSecret(boundary_bytes));
 
     result
 }
