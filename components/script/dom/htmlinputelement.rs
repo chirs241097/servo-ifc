@@ -2012,6 +2012,7 @@ impl HTMLInputElement {
     fn sanitize_value_sec(&self, value: &mut ServoSecureDynamic<DOMString>) {
         let dynamic_sec_label = value.get_dynamic_secret_label_clone();
         let dynamic_int_label = value.get_dynamic_integrity_label_clone();
+        //undesired declassification
         let mut utext =
         info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, dynamic_sec_label, dynamic_int_label, {
             std::clone::Clone::clone(unwrap_secret_mut_ref(value))
