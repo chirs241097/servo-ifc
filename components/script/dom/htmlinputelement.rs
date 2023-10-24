@@ -1107,11 +1107,11 @@ impl<'dom> LayoutHTMLInputElementHelpers<'dom> for LayoutDom<'dom, HTMLInputElem
                 //let char_start = text[..sel.start].chars().count();
                 //let char_end = char_start + text[sel].chars().count();
                 let char_start = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, text.get_dynamic_secret_label_clone(), text.get_dynamic_integrity_label_clone(), {
-                    let s = DOMString::to_ref(unwrap_secret_ref(&text));
+                    let s = DOMString::to_str_ref(unwrap_secret_ref(&text));
                     unchecked_operation(s[..sel.start].chars().count())
                 });
                 let char_end = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, text.get_dynamic_secret_label_clone(), text.get_dynamic_integrity_label_clone(), {
-                    let s = DOMString::to_ref(unwrap_secret_ref(&text));
+                    let s = DOMString::to_str_ref(unwrap_secret_ref(&text));
                     unchecked_operation(char_start + s[sel].chars().count())
                 });
 

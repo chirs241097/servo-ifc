@@ -686,7 +686,7 @@ impl HTMLFormElement {
                 //r.push_str(&format!("{}={}\r\n", entry.name, v));
                 std::string::String::push_str(r, entname);
                 std::string::String::push(r, '=');
-                std::string::String::push_str(r, DOMString::to_ref(v));
+                std::string::String::push_str(r, DOMString::to_str_ref(v));
                 std::string::String::push_str(r, "\r\n");
             });
         }
