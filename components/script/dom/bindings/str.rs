@@ -195,8 +195,18 @@ unsafe impl InvisibleSideEffectFree for DOMString{}
 
 impl DOMString {
     #[side_effect_free_attr_full(method)]
-    pub fn to_ref(&self) -> &str {
+    pub fn to_str_ref(&self) -> &str {
         &self.s
+    }
+
+    #[side_effect_free_attr_full(method)]
+    pub fn to_string_ref(&self) -> &String {
+        &self.s
+    }
+
+    #[side_effect_free_attr_full(method)]
+    pub fn to_mut_string_ref(&mut self) -> &mut String {
+        &mut self.s
     }
 
     /// Creates a new `DOMString`.
