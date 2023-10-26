@@ -51,6 +51,7 @@ use url::form_urlencoded;
 
 use keyboard_wrapper::*;
 use secret_macros::info_flow_block_dynamic_all;
+use secret_macros::info_flow_block_declassify_dynamic_all;
 use secret_structs::secret::*;
 use secret_structs::integrity_lattice as int_lat;
 use secret_structs::ternary_lattice as sec_lat;
@@ -609,12 +610,16 @@ impl Extractable for FormData {
     fn extract(&self, global: &GlobalScope) -> Fallible<ExtractedBody> {
         let boundary = generate_boundary();
         let bytes = encode_multipart_form_data(&mut self.datums(), boundary.clone(), UTF_8);
-        let total_bytes = bytes.len();
+        let unwrapped_bytes = match bytes {
+            MaybeSecret::NonSecret(b) => b,
+            MaybeSecret::Secret(sb) => info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, sb.get_dynamic_secret_label_clone(), sb.get_dynamic_integrity_label_clone(), { unwrap_secret(sb) })
+        };
+        let total_bytes = unwrapped_bytes.len();
         let content_type = Some(DOMString::from(format!(
             "multipart/form-data;boundary={}",
             boundary
         )));
-        let stream = ReadableStream::new_from_bytes(&global, bytes);
+        let stream = ReadableStream::new_from_bytes(&global, unwrapped_bytes);
         Ok(ExtractedBody {
             stream,
             total_bytes: Some(total_bytes),

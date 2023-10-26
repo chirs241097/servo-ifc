@@ -83,10 +83,11 @@ use crate::dom::bindings::codegen::Bindings::NodeBinding::{NodeConstants, NodeMe
 use keyboard_wrapper::*;
 use secret_macros::side_effect_free_attr_full;
 use secret_macros::info_flow_block_dynamic_all;
+use secret_structs::info_flow_block_declassify_dynamic_all;
+use secret_structs::info_flow_block_no_return_dynamic_all;
 use secret_structs::secret::*;
 use secret_structs::integrity_lattice as int_lat;
 use secret_structs::ternary_lattice as sec_lat;
-use secret_structs::info_flow_block_no_return_dynamic_all;
 
 #[derive(Clone, Copy, JSTraceable, MallocSizeOf, PartialEq)]
 pub struct GenerationId(u32);
@@ -924,7 +925,7 @@ impl HTMLFormElement {
                         .map(|field| (&*field.name, field.replace_value(charset))),
                 );
 
-                url.query().unwrap_or("").to_string().into_bytes()
+                MaybeSecret::NonSecret(url.query().unwrap_or("").to_string().into_bytes())
             },
             FormEncType::FormDataEncoded => {
                 let mime: Mime = format!("multipart/form-data; boundary={}", boundary)
@@ -937,13 +938,18 @@ impl HTMLFormElement {
                 load_data
                     .headers
                     .typed_insert(ContentType::from(mime::TEXT_PLAIN));
-                self.encode_plaintext(form_data).into_bytes()
+                let encsec = self.encode_plaintext(form_data);
+                MaybeSecret::Secret(info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, encsec.get_dynamic_secret_label_clone(), encsec.get_dynamic_integrity_label_clone(), { wrap_secret(std::string::String::into_bytes(unwrap_secret(encsec))) }))
             },
         };
 
         let global = self.global();
+        let unwrapped_bytes = match bytes {
+            MaybeSecret::NonSecret(b) => b,
+            MaybeSecret::Secret(sb) => info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, sb.get_dynamic_secret_label_clone(), sb.get_dynamic_integrity_label_clone(), { unwrap_secret(sb) })
+        };
 
-        let request_body = bytes
+        let request_body = unwrapped_bytes
             .extract(&global)
             .expect("Couldn't extract body.")
             .into_net_request_body()
@@ -956,14 +962,20 @@ impl HTMLFormElement {
     fn set_url_query_pairs<'a>(
         &self,
         url: &mut servo_url::ServoUrl,
-        pairs: impl Iterator<Item = (&'a str, String)>,
+        pairs: impl Iterator<Item = (&'a str, MaybeSecret<String>)>,
     ) {
         let encoding = self.pick_encoding();
+        let declassified_pairs = pairs.map(|(k, v)| {
+            match v {
+                MaybeSecret::NonSecret(vs) => (k, vs),
+                MaybeSecret::Secret(svs) => (k, info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, svs.get_dynamic_secret_label_clone(), svs.get_dynamic_integrity_label_clone(), { unwrap_secret(svs) }))
+            }
+        });
         url.as_mut_url()
             .query_pairs_mut()
             .encoding_override(Some(&|s| encoding.encode(s).0))
             .clear()
-            .extend_pairs(pairs);
+            .extend_pairs(declassified_pairs);
     }
 
     /// [Planned navigation](https://html.spec.whatwg.org/multipage/#planned-navigation)
