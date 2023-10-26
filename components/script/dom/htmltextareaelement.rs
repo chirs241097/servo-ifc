@@ -44,6 +44,15 @@ use std::ops::Range;
 use style::attr::AttrValue;
 use style::element_state::ElementState;
 
+use crate::script_thread::ScriptThread;
+use secret_structs::info_flow_block_declassify_dynamic_all;
+use secret_structs::info_flow_block_no_return_dynamic_all;
+use secret_structs::info_flow_block_dynamic_all;
+use secret_structs::secret::*;
+use secret_structs::integrity_lattice as int_lat;
+use secret_structs::ternary_lattice as sec_lat;
+use keyboard_wrapper::*;
+
 #[dom_struct]
 pub struct HTMLTextAreaElement {
     htmlelement: HTMLElement,
@@ -66,7 +75,7 @@ pub trait LayoutHTMLTextAreaElementHelpers {
 
 #[allow(unsafe_code)]
 impl<'dom> LayoutDom<'dom, HTMLTextAreaElement> {
-    fn textinput_content(self) -> DOMString {
+    fn textinput_content(self) -> ServoSecureDynamic<DOMString> {
         unsafe {
             self.unsafe_get()
                 .textinput
@@ -92,7 +101,13 @@ impl<'dom> LayoutDom<'dom, HTMLTextAreaElement> {
 impl LayoutHTMLTextAreaElementHelpers for LayoutDom<'_, HTMLTextAreaElement> {
     fn value_for_layout(self) -> String {
         let text = self.textinput_content();
-        if text.is_empty() {
+        let boolean_test = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, text.get_dynamic_secret_label_clone(), text.get_dynamic_integrity_label_clone(), {
+            let unwrapped = unwrap_secret_ref(&text);
+            wrap_secret(std::string::String::is_empty(DOMString::to_string_ref(unwrapped)))
+        });
+        if info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, boolean_test.get_dynamic_secret_label_clone(), boolean_test.get_dynamic_integrity_label_clone(), {
+            unwrap_secret(boolean_test)
+        }) {
             // FIXME(nox): Would be cool to not allocate a new string if the
             // placeholder is single line, but that's an unimportant detail.
             self.placeholder()
@@ -100,7 +115,9 @@ impl LayoutHTMLTextAreaElementHelpers for LayoutDom<'_, HTMLTextAreaElement> {
                 .replace("\r", "\n")
                 .into()
         } else {
-            text.into()
+            info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, text.get_dynamic_secret_label_clone(), text.get_dynamic_integrity_label_clone(), {
+                unwrap_secret(text)
+            }).into()
         }
     }
 
@@ -315,7 +332,10 @@ impl HTMLTextAreaElementMethods for HTMLTextAreaElement {
 
     // https://html.spec.whatwg.org/multipage/#dom-textarea-value
     fn Value(&self) -> DOMString {
-        self.textinput.borrow().get_content()
+        let v = self.textinput.borrow().get_content();
+        info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, v.get_dynamic_secret_label_clone(), v.get_dynamic_integrity_label_clone(), {
+            unwrap_secret(v)
+        })
     }
 
     // https://html.spec.whatwg.org/multipage/#dom-textarea-value
@@ -326,12 +346,22 @@ impl HTMLTextAreaElementMethods for HTMLTextAreaElement {
         let old_value = textinput.get_content();
 
         // Step 2
-        textinput.set_content(value);
+        let secnewval = ServoSecureDynamic::new_info_flow_struct(value, old_value.get_dynamic_secret_label_clone(), old_value.get_dynamic_integrity_label_clone());
+        textinput.set_content(secnewval);
 
         // Step 3
         self.value_dirty.set(true);
 
-        if old_value != textinput.get_content() {
+        let new_value = textinput.get_content();
+
+        let boolean_test = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, old_value.get_dynamic_secret_label_clone(), old_value.get_dynamic_integrity_label_clone(), {
+            let unwrapped_old = unwrap_secret_ref(&old_value);
+            let unwrapped_new = unwrap_secret_ref(&new_value);
+            wrap_secret(*DOMString::to_str_ref(unwrapped_old) != *DOMString::to_str_ref(unwrapped_new))
+        });
+        if info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, boolean_test.get_dynamic_secret_label_clone(), boolean_test.get_dynamic_integrity_label_clone(), {
+            unwrap_secret(boolean_test)
+        }) {
             // Step 4
             textinput.clear_selection_to_limit(Direction::Forward);
         }
@@ -441,8 +471,13 @@ impl HTMLTextAreaElementMethods for HTMLTextAreaElement {
 impl HTMLTextAreaElement {
     pub fn reset(&self) {
         // https://html.spec.whatwg.org/multipage/#the-textarea-element:concept-form-reset-control
+        let domain = self.upcast::<HTMLElement>().get_domain();
+        let dynamic_sec_label = new_dynamic_secret_label(vec![ScriptThread::get_secrecy_tag_for_domain(domain).unwrap()]);
+        let dynamic_int_label = new_dynamic_integrity_label(vec![]);
+        let secdefval = ServoSecureDynamic::new_info_flow_struct(self.DefaultValue(), dynamic_sec_label, dynamic_int_label);
+
         let mut textinput = self.textinput.borrow_mut();
-        textinput.set_content(self.DefaultValue());
+        textinput.set_content(secdefval);
         self.value_dirty.set(false);
     }
 
