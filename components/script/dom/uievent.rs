@@ -98,7 +98,6 @@ impl UIEvent {
             return;
         }
         //Vincent: DECLASSIFY
-        panic!("Vincent: Don't want to declassify here");
         let new_type_: DOMString = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, type_.get_dynamic_secret_label_clone(), type_.get_dynamic_integrity_label_clone(), {
             remove_label_wrapper(type_)
         });
