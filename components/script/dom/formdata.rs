@@ -109,6 +109,7 @@ impl FormDataMethods for FormData {
                     FileOrUSVString::USVString(USVString(s.to_string()))
                 },
                 FormDatumValue::File(ref b) => FileOrUSVString::File(DomRoot::from_ref(&*b)),
+                FormDatumValue::SecretString(_) => FileOrUSVString::USVString(USVString(String::from("(secret string)")))
             })
     }
 
@@ -127,6 +128,7 @@ impl FormDataMethods for FormData {
                         FileOrUSVString::USVString(USVString(s.to_string()))
                     },
                     FormDatumValue::File(ref b) => FileOrUSVString::File(DomRoot::from_ref(&*b)),
+                    FormDatumValue::SecretString(_) => FileOrUSVString::USVString(USVString(String::from("(secret string)")))
                 })
             })
             .collect()
@@ -228,6 +230,7 @@ impl Iterable for FormData {
         match &datum.value {
             FormDatumValue::String(ref s) => FileOrUSVString::USVString(USVString(s.to_string())),
             FormDatumValue::File(ref b) => FileOrUSVString::File(DomRoot::from_ref(b)),
+            FormDatumValue::SecretString(_) => FileOrUSVString::USVString(USVString(String::from("(secret string)")))
         }
     }
 

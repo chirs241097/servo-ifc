@@ -1025,6 +1025,7 @@ impl<'dom> LayoutDom<'dom, HTMLInputElement> {
 }
 
 impl<'dom> LayoutHTMLInputElementHelpers<'dom> for LayoutDom<'dom, HTMLInputElement> {
+    #[allow(unsafe_code)]
     fn value_for_layout(self) -> Cow<'dom, str> {
         fn get_raw_attr_value<'dom>(
             input: LayoutDom<'dom, HTMLInputElement>,
@@ -1070,7 +1071,6 @@ impl<'dom> LayoutHTMLInputElementHelpers<'dom> for LayoutDom<'dom, HTMLInputElem
                 let dynamic_int_label = new_dynamic_integrity_label(vec![]);
                 let sectext = self.get_raw_textinput_value();
                 let placeholder = String::from(self.placeholder());
-                let text = self.get_raw_textinput_value();
                 let ret : String =
                 info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, dynamic_sec_label, dynamic_int_label, {
                     let text = DOMString::to_owned(unwrap_secret(sectext));
@@ -2015,9 +2015,10 @@ impl HTMLInputElement {
         let dynamic_sec_label = value.get_dynamic_secret_label_clone();
         let dynamic_int_label = value.get_dynamic_integrity_label_clone();
         //undesired declassification
+        let cval = value.clone();
         let mut utext =
         info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, dynamic_sec_label.clone(), dynamic_int_label.clone(), {
-            std::clone::Clone::clone(unwrap_secret_mut_ref(value))
+            unwrap_secret(cval)
         });
         self.sanitize_value(&mut utext);
         info_flow_block_no_return_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, dynamic_sec_label, dynamic_int_label, {

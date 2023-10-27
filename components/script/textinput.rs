@@ -1374,9 +1374,9 @@ impl<T: ClipboardProvider> TextInput<T> {
                 });
                 let string_wrapped = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, key.get_dynamic_secret_label_clone(), key.get_dynamic_integrity_label_clone(), {
                     let unwrapped = unwrap_secret_ref(&key);
-                    let mut s: &str = "";
+                    let mut s = std::string::String::from("");
                     unchecked_operation(if let Key::Character(ref c) = unwrapped.k {
-                        s = c.as_str();
+                        s = c.as_str().into();
                     });
                     wrap_secret(s)
                 });

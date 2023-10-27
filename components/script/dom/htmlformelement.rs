@@ -678,14 +678,14 @@ impl HTMLFormElement {
             new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![])),
                 FormDatumValue::SecretString(ss) => ss.clone(),
             };
-            let entname : &str = entry.name.to_string().as_str();
+            let entname = entry.name.to_string();
             info_flow_block_no_return_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All,
             value.get_dynamic_secret_label_clone(), value.get_dynamic_integrity_label_clone(), {
                 let r = unwrap_secret_mut_ref(&mut result);
                 let v = unwrap_secret_ref(&value);
                 //Chris: the original probably won't work, replaced with something much uglier
                 //r.push_str(&format!("{}={}\r\n", entry.name, v));
-                std::string::String::push_str(r, entname);
+                std::string::String::push_str(r, std::string::String::as_str(&entname));
                 std::string::String::push(r, '=');
                 std::string::String::push_str(r, DOMString::to_str_ref(v));
                 std::string::String::push_str(r, "\r\n");
@@ -1194,7 +1194,7 @@ impl HTMLFormElement {
         #[side_effect_free_attr_full]
         fn clean_crlf(s: &str) -> String {
             // Step 4
-            let mut buf = std::string::String::from(" ");
+            let mut buf = std::string::String::from("");
             let mut prev = ' ';
             for ch in str::chars(s) {
                 match ch {
@@ -1222,9 +1222,9 @@ impl HTMLFormElement {
             }
             buf
         }
-        fn clean_crlf_sec(s: ServoSecureDynamic<DOMString>) -> ServoSecureDynamic<DOMString> {
+        fn clean_crlf_sec(s: &ServoSecureDynamic<DOMString>) -> ServoSecureDynamic<DOMString> {
             info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, s.get_dynamic_secret_label_clone(), s.get_dynamic_integrity_label_clone(), {
-                let ss : &str = DOMString::to_str_ref(&unwrap_secret(s));
+                let ss : &str = DOMString::to_str_ref(unwrap_secret_ref(s));
                 wrap_secret(DOMString::from_string(clean_crlf(ss)))
             })
         }
@@ -1246,7 +1246,7 @@ impl HTMLFormElement {
                 _ => {
                     datum.name = DOMString::from(clean_crlf(&datum.name));
                     datum.value = match datum.value {
-                        FormDatumValue::SecretString(s) => FormDatumValue::SecretString(clean_crlf_sec(s)),
+                        FormDatumValue::SecretString(ref s) => FormDatumValue::SecretString(clean_crlf_sec(s)),
                         FormDatumValue::String(ref s) => FormDatumValue::String(DOMString::from(clean_crlf(s))),
                         FormDatumValue::File(_) => unreachable!(),
                     };
