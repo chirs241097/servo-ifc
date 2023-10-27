@@ -415,13 +415,13 @@ impl<T: ClipboardProvider> TextInput<T> {
     }
 
     //Vincent: added new function
-    pub fn insert_secret_string<S: Into<String> + SecretValueSafe>(&mut self, s: ServoSecureDynamic<S>) {
+    pub fn insert_secret_string<S: Into<String> + SecretValueSafe + SideEffectFree>(&mut self, s: ServoSecureDynamic<S>) {
         if self.selection_origin.is_none() {
             self.selection_origin = Some(self.edit_point);
         }
         self.replace_selection(info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {
-            let unwrapped = unwrap_secret_ref(&s);
-            wrap_secret(DOMString::from_string(unchecked_operation(<S as Into<String>>::into(*unwrapped)/*.into()*/)))
+            let unwrapped = unwrap_secret(s);
+            wrap_secret(DOMString::from_string(unchecked_operation(<S as Into<String>>::into(unwrapped)/*.into()*/)))
         }) /*DOMString::from(s.into())*/);
     }
 
@@ -700,21 +700,23 @@ impl<T: ClipboardProvider> TextInput<T> {
             });
             //let mut new_line = prefix.to_owned();
 
+            let insert_zero_ref = &insert_lines[0];
             info_flow_block_no_return_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_line.get_dynamic_secret_label_clone(), new_line.get_dynamic_integrity_label_clone(), {
                 let mut mut_unwrapped = unwrap_secret_mut_ref(&mut new_line);
-                let unwrapped = unwrap_secret_ref(&insert_lines[0]);
+                let unwrapped = unwrap_secret_ref(insert_zero_ref);
                 std::string::String::push_str(mut_unwrapped, std::string::String::as_str(DOMString::to_string_ref(unwrapped)));
             });
             //new_line.push_str(&insert_lines[0]);
             //insert_lines[0] = DOMString::from(new_line);
             insert_lines[0] = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_line.get_dynamic_secret_label_clone(), new_line.get_dynamic_integrity_label_clone(), {
-                let unwrapped = unwrap_secret_ref(&new_line);
-                wrap_secret(DOMString::from_string(*unwrapped))
+                let unwrapped = unwrap_secret(new_line);
+                wrap_secret(DOMString::from_string(unwrapped))
             });
 
             let last_insert_lines_index = insert_lines.len() - 1;
+            let last_insert_lines_ref = &insert_lines[insert_lines.len() - 1];
             self.edit_point.index = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, insert_lines[last_insert_lines_index].get_dynamic_secret_label_clone(), insert_lines[last_insert_lines_index].get_dynamic_integrity_label_clone(), {
-                let unwrapped = unwrap_secret_ref(&insert_lines[last_insert_lines_index]);
+                let unwrapped = unwrap_secret_ref(last_insert_lines_ref);
                 len_utf8_str(&DOMString::to_str_ref(unwrapped))
             });
             //self.edit_point.index = insert_lines[last_insert_lines_index].len_utf8();
@@ -723,7 +725,7 @@ impl<T: ClipboardProvider> TextInput<T> {
             // FIXME(ajeffrey): effecient append for DOMStrings
             let lines_ref = &self.lines;
             let to_unwrap = &mut insert_lines[last_insert_lines_index];
-            info_flow_block_no_return_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, insert_lines[last_insert_lines_index].get_dynamic_secret_label_clone().dynamic_union(self.lines[end.line].get_dynamic_secret_label_reference()), insert_lines[last_insert_lines_index].get_dynamic_integrity_label_clone().dynamic_intersection(self.lines[end.line].get_dynamic_integrity_label_reference()), {
+            info_flow_block_no_return_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, to_unwrap.get_dynamic_secret_label_clone().dynamic_union(self.lines[end.line].get_dynamic_secret_label_reference()), to_unwrap.get_dynamic_integrity_label_clone().dynamic_intersection(self.lines[end.line].get_dynamic_integrity_label_reference()), {
                 let mut mut_unwrapped = unwrap_secret_mut_ref(to_unwrap);
                 let mut mut_string = DOMString::to_mut_string_ref(mut_unwrapped);
                 let unwrapped = unwrap_secret_ref(&lines_ref[end.line]);
@@ -1372,7 +1374,7 @@ impl<T: ClipboardProvider> TextInput<T> {
                 });
                 let string_wrapped = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, key.get_dynamic_secret_label_clone(), key.get_dynamic_integrity_label_clone(), {
                     let unwrapped = unwrap_secret_ref(&key);
-                    let mut s: &str;
+                    let mut s: &str = "";
                     unchecked_operation(if let Key::Character(ref c) = unwrapped.k {
                         s = c.as_str();
                     });
@@ -1480,13 +1482,11 @@ impl<T: ClipboardProvider> TextInput<T> {
     /// any \n encountered will be stripped and force a new logical line.
     pub fn set_content(&mut self, content: InfoFlowStruct<DOMString, sec_lat::Label_Empty, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>) {
         self.lines = if self.multiline {
-            let s_label = content.get_dynamic_secret_label_clone();
-            let i_label = content.get_dynamic_integrity_label_clone();
             let result = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, content.get_dynamic_secret_label_clone(), content.get_dynamic_integrity_label_clone(), {
                 let unwrapped = unwrap_secret_ref(&content);
                 let replaced: String = str::replace(DOMString::to_str_ref(unwrapped), "\r\n", "\n");
                 let split = str::split(&replaced, |c| c == '\n' || c == '\r');
-                let mapped = std::str::Split::map(split, |s| secret_structs::info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, s_label, i_label, { wrap_secret(DOMString::from_string(str::to_string(s))) }));
+                let mapped = std::str::Split::map(split, |s| secret_structs::info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, secret_structs::secret::InfoFlowStruct::get_dynamic_secret_label_clone(&content), secret_structs::secret::InfoFlowStruct::get_dynamic_integrity_label_clone(&content), { wrap_secret(DOMString::from_string(str::to_string(s))) }));
                 let collected = std::iter::Map::collect(mapped);
                 wrap_secret(collected)
             });
