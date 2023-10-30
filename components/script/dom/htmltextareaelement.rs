@@ -471,8 +471,8 @@ impl HTMLTextAreaElementMethods for HTMLTextAreaElement {
 impl HTMLTextAreaElement {
     pub fn reset(&self) {
         // https://html.spec.whatwg.org/multipage/#the-textarea-element:concept-form-reset-control
-        let domain = self.upcast::<HTMLElement>().get_domain();
-        let dynamic_sec_label = new_dynamic_secret_label(vec![ScriptThread::get_secrecy_tag_for_domain(domain).unwrap()]);
+        let domain_tag = self.upcast::<HTMLElement>().get_domain_secrecy_tag().unwrap();
+        let dynamic_sec_label = new_dynamic_secret_label(vec![domain_tag]);
         let dynamic_int_label = new_dynamic_integrity_label(vec![]);
         let secdefval = ServoSecureDynamic::new_info_flow_struct(self.DefaultValue(), dynamic_sec_label, dynamic_int_label);
 

@@ -1045,9 +1045,9 @@ impl<'dom> LayoutHTMLInputElementHelpers<'dom> for LayoutDom<'dom, HTMLInputElem
             InputType::Submit => get_raw_attr_value(self, DEFAULT_SUBMIT_VALUE),
             InputType::Reset => get_raw_attr_value(self, DEFAULT_RESET_VALUE),
             InputType::Password => {
-                //let domain = unsafe { self.upcast::<HTMLElement>().unsafe_get().get_domain() };
-                //let dynamic_sec_label = new_dynamic_secret_label(vec![ScriptThread::get_secrecy_tag_for_domain(domain).unwrap()]);
-                //let dynamic_int_label = new_dynamic_integrity_label(vec![]);
+                let domain_tag = unsafe { self.upcast::<HTMLElement>().unsafe_get() }.get_domain_secrecy_tag().unwrap();
+                let dynamic_sec_label = new_dynamic_secret_label(vec![domain_tag]);
+                let dynamic_int_label = new_dynamic_integrity_label(vec![]);
                 let sectext = self.get_raw_textinput_value();
                 let dynamic_sec_label = sectext.get_dynamic_secret_label_clone();
                 let dynamic_int_label = sectext.get_dynamic_integrity_label_clone();
@@ -1068,8 +1068,8 @@ impl<'dom> LayoutHTMLInputElementHelpers<'dom> for LayoutDom<'dom, HTMLInputElem
                 ret.into()
             },
             _ => {
-                //let domain = unsafe { self.upcast::<HTMLElement>().unsafe_get().get_domain() };
-                //let dynamic_sec_label = new_dynamic_secret_label(vec![ScriptThread::get_secrecy_tag_for_domain(domain).unwrap()]);
+                let domain_tag = unsafe { self.upcast::<HTMLElement>().unsafe_get() }.get_domain_secrecy_tag().unwrap();
+                let dynamic_sec_label = new_dynamic_secret_label(vec![domain_tag]);
                 //let dynamic_int_label = new_dynamic_integrity_label(vec![]);
                 let sectext = self.get_raw_textinput_value();
                 let dynamic_sec_label = sectext.get_dynamic_secret_label_clone();
@@ -1924,8 +1924,8 @@ impl HTMLInputElement {
             InputType::Image => (),
             _ => (),
         }
-        let domain = self.upcast::<HTMLElement>().get_domain();
-        let dynamic_sec_label = new_dynamic_secret_label(vec![ScriptThread::get_secrecy_tag_for_domain(domain).unwrap()]);
+        let domain_tag = self.upcast::<HTMLElement>().get_domain_secrecy_tag().unwrap();
+        let dynamic_sec_label = new_dynamic_secret_label(vec![domain_tag]);
         let dynamic_int_label = new_dynamic_integrity_label(vec![]);
         let secdefval = ServoSecureDynamic::new_info_flow_struct(self.DefaultValue(), dynamic_sec_label, dynamic_int_label);
         self.textinput.borrow_mut().set_content(secdefval);
@@ -2523,8 +2523,8 @@ impl VirtualMethods for HTMLInputElement {
                 let mut value = value.map_or(DOMString::new(), DOMString::from);
 
                 self.sanitize_value(&mut value);
-                let domain = self.upcast::<HTMLElement>().get_domain();
-                let dynamic_sec_label = new_dynamic_secret_label(vec![ScriptThread::get_secrecy_tag_for_domain(domain).unwrap()]);
+                let domain_tag = self.upcast::<HTMLElement>().get_domain_secrecy_tag().unwrap();
+                let dynamic_sec_label = new_dynamic_secret_label(vec![domain_tag]);
                 let dynamic_int_label = new_dynamic_integrity_label(vec![]);
                 let secnewval = ServoSecureDynamic::new_info_flow_struct(value, dynamic_sec_label, dynamic_int_label);
                 self.textinput.borrow_mut().set_content(secnewval);

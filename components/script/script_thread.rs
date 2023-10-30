@@ -930,9 +930,8 @@ impl ScriptThread {
         SCRIPT_THREAD_ROOT.with(|root| {
             if let Some(script_thread) = root.get() {
                 let script_thread = unsafe { &*script_thread };
-                return Some(script_thread.get_secrecy_tag_for_domain_impl(d));
-            }
-            None
+                Some(script_thread.get_secrecy_tag_for_domain_impl(d))
+            } else { None }
         })
     }
 

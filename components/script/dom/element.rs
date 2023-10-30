@@ -140,6 +140,8 @@ use xml5ever::serialize::TraversalScope as XmlTraversalScope;
 use xml5ever::serialize::TraversalScope::ChildrenOnly as XmlChildrenOnly;
 use xml5ever::serialize::TraversalScope::IncludeNode as XmlIncludeNode;
 
+use secret_structs::secret::DynamicSecretComponent;
+
 // TODO: Update focus state when the top-level browsing context gains or loses system focus,
 // and when the element enters or leaves a browsing context container.
 // https://html.spec.whatwg.org/multipage/#selector-focus
@@ -166,6 +168,7 @@ pub struct Element {
     #[ignore_malloc_size_of = "bitflags defined in rust-selectors"]
     selector_flags: Cell<ElementSelectorFlags>,
     rare_data: DomRefCell<Option<Box<ElementRareData>>>,
+    domain_tag: Option<DynamicSecretComponent>,
 }
 
 impl fmt::Debug for Element {
@@ -282,6 +285,7 @@ impl Element {
             state: Cell::new(state),
             selector_flags: Cell::new(ElementSelectorFlags::empty()),
             rare_data: Default::default(),
+            domain_tag: ScriptThread::get_secrecy_tag_for_domain(document.Domain()),
         }
     }
 
@@ -565,6 +569,10 @@ impl Element {
                 let node = self.upcast::<Node>();
                 node.parent_directionality()
             })
+    }
+
+    pub fn get_domain_secrecy_tag(&self) -> Option<DynamicSecretComponent> {
+        self.domain_tag.clone()
     }
 }
 

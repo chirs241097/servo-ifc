@@ -44,6 +44,8 @@ use std::rc::Rc;
 use style::attr::AttrValue;
 use style::element_state::*;
 
+use secret_structs::secret::DynamicSecretComponent;
+
 #[dom_struct]
 pub struct HTMLElement {
     element: Element,
@@ -95,6 +97,10 @@ impl HTMLElement {
         let node = self.element.upcast::<Node>();
         let doc = node.owner_doc();
         doc.Domain()
+    }
+
+    pub fn get_domain_secrecy_tag(&self) -> Option<DynamicSecretComponent> {
+        self.element.get_domain_secrecy_tag()
     }
 
     fn is_body_or_frameset(&self) -> bool {
