@@ -58,6 +58,7 @@ use crate::dom::validitystate::ValidationFlags;
 use crate::dom::virtualmethods::VirtualMethods;
 use crate::dom::window::Window;
 use crate::task_source::TaskSource;
+use crate::script_thread::ScriptThread;
 use dom_struct::dom_struct;
 use encoding_rs::{Encoding, UTF_8};
 use headers::{ContentType, HeaderMapExt};
@@ -73,6 +74,8 @@ use std::borrow::ToOwned;
 use std::cell::Cell;
 use style::attr::AttrValue;
 use style::str::split_html_space_chars;
+use url::Url;
+use std::str::FromStr;
 
 use crate::dom::bindings::codegen::UnionTypes::RadioNodeListOrElement;
 use std::collections::HashMap;
@@ -944,9 +947,17 @@ impl HTMLFormElement {
         };
 
         let global = self.global();
+        let action_url = Url::from_str(&self.Action());
+        let host = match action_url {
+            Ok(u) => DOMString::from_string(u.host_str().unwrap_or_default().to_owned()),
+            Err(_) => DOMString::from_string(String::from(""))
+        };
+        let dec_sec_label = new_dynamic_secret_label(vec![ScriptThread::get_secrecy_tag_for_domain(host).unwrap()]);
+        let dec_int_label = new_dynamic_integrity_label(vec![]);
+
         let unwrapped_bytes = match bytes {
             MaybeSecret::NonSecret(b) => b,
-            MaybeSecret::Secret(sb) => info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, sb.get_dynamic_secret_label_clone(), sb.get_dynamic_integrity_label_clone(), { unwrap_secret(sb) })
+            MaybeSecret::Secret(sb) => info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, dec_sec_label, dec_int_label, { unwrap_secret(sb) })
         };
 
         let request_body = unwrapped_bytes
@@ -964,11 +975,18 @@ impl HTMLFormElement {
         url: &mut servo_url::ServoUrl,
         pairs: impl Iterator<Item = (&'a str, MaybeSecret<String>)>,
     ) {
+        let action_url = Url::from_str(&self.Action());
+        let host = match action_url {
+            Ok(u) => DOMString::from_string(u.host_str().unwrap_or_default().to_owned()),
+            Err(_) => DOMString::from_string(String::from(""))
+        };
+        let dec_sec_label = new_dynamic_secret_label(vec![ScriptThread::get_secrecy_tag_for_domain(host).unwrap()]);
+        let dec_int_label = new_dynamic_integrity_label(vec![]);
         let encoding = self.pick_encoding();
         let declassified_pairs = pairs.map(|(k, v)| {
             match v {
                 MaybeSecret::NonSecret(vs) => (k, vs),
-                MaybeSecret::Secret(svs) => (k, info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, svs.get_dynamic_secret_label_clone(), svs.get_dynamic_integrity_label_clone(), { unwrap_secret(svs) }))
+                MaybeSecret::Secret(svs) => (k, info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, dec_sec_label.clone(), dec_int_label.clone(), { unwrap_secret(svs) }))
             }
         });
         url.as_mut_url()
