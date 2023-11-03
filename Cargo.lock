@@ -5579,7 +5579,10 @@ version = "0.0.1"
 dependencies = [
  "euclid",
  "keyboard-types",
+ "keyboard_wrapper",
  "script",
+ "secret_macros",
+ "secret_structs",
  "servo_url",
 ]
 

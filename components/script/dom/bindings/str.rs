@@ -229,6 +229,12 @@ impl DOMString {
         DOMString{s: s, p: PhantomData}
     }
 
+    /// Creates a new `DOMString` from a `&str`.
+    #[side_effect_free_attr_full(method)]
+    pub fn from_str(contents: &str) -> DOMString {
+        DOMString::from_string(std::string::String::from(contents))
+    }
+
     /// Appends a given string slice onto the end of this String.
     pub fn push_str(&mut self, string: &str) {
         self.s.push_str(string)

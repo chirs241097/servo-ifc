@@ -14,3 +14,7 @@ euclid = "0.22"
 keyboard-types = "0.6"
 script = {path = "../../../components/script"}
 servo_url = {path = "../../../components/url"}
+
+secret_structs = {path = "../../../info-flow-library/ifc_library/secret_structs", package = "secret_structs"}
+secret_macros = {path = "../../../info-flow-library/ifc_library/macros", package = "secret_macros"}
+keyboard_wrapper = { path = "../../../components/keyboard_wrapper"}
