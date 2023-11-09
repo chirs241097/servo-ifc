@@ -419,7 +419,7 @@ impl<T: ClipboardProvider> TextInput<T> {
         if self.selection_origin.is_none() {
             self.selection_origin = Some(self.edit_point);
         }
-        self.replace_selection(info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {
+        self.replace_selection(info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, s.get_dynamic_secret_label_clone(), s.get_dynamic_integrity_label_clone(), {
             let unwrapped = unwrap_secret(s);
             wrap_secret(DOMString::from_string(unchecked_operation(<S as Into<String>>::into(unwrapped)/*.into()*/)))
         }) /*DOMString::from(s.into())*/);
@@ -648,7 +648,6 @@ impl<T: ClipboardProvider> TextInput<T> {
         //let UTF8Bytes(end_offset) = end.index;
 
         let new_lines = {
-            let mut l: Vec<DOMString>;
             //let prefix = &l[start.line][..start_offset];
             //let suffix  = &self.lines[end.line][end_offset..];
             let lines_prefix = &self.lines[..start.line];
@@ -693,7 +692,9 @@ impl<T: ClipboardProvider> TextInput<T> {
             // FIXME(ajeffrey): effecient append for DOMStrings
             //Vincent: deleted prefix and new_line initializations to instead have one initialization for secret new_line
             let lines_ref = &self.lines;
-            let mut new_line = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, self.lines[start.line].get_dynamic_secret_label_clone(), self.lines[start.line].get_dynamic_integrity_label_clone(), {
+            let merged_sec_label = self.lines[start.line].get_dynamic_secret_label_clone().dynamic_union(insert_lines[0].get_dynamic_secret_label_reference());
+            let merged_int_label = self.lines[start.line].get_dynamic_integrity_label_clone().dynamic_intersection(insert_lines[0].get_dynamic_integrity_label_reference());
+            let mut new_line = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, merged_sec_label.clone(), merged_int_label.clone(), {
                 let unwrapped = unwrap_secret_ref(&lines_ref[start.line]);
                 let pre_string = &DOMString::to_str_ref(unwrapped)[..start_offset];
                 wrap_secret(unchecked_operation(unsafe {String::from_utf8_unchecked(pre_string.as_bytes().to_owned())}))
@@ -701,14 +702,14 @@ impl<T: ClipboardProvider> TextInput<T> {
             //let mut new_line = prefix.to_owned();
 
             let insert_zero_ref = &insert_lines[0];
-            info_flow_block_no_return_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_line.get_dynamic_secret_label_clone(), new_line.get_dynamic_integrity_label_clone(), {
+            info_flow_block_no_return_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, merged_sec_label.clone(), merged_int_label.clone(), {
                 let mut mut_unwrapped = unwrap_secret_mut_ref(&mut new_line);
                 let unwrapped = unwrap_secret_ref(insert_zero_ref);
                 std::string::String::push_str(mut_unwrapped, std::string::String::as_str(DOMString::to_string_ref(unwrapped)));
             });
             //new_line.push_str(&insert_lines[0]);
             //insert_lines[0] = DOMString::from(new_line);
-            insert_lines[0] = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_line.get_dynamic_secret_label_clone(), new_line.get_dynamic_integrity_label_clone(), {
+            insert_lines[0] = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, merged_sec_label.clone(), merged_int_label.clone(), {
                 let unwrapped = unwrap_secret(new_line);
                 wrap_secret(DOMString::from_string(unwrapped))
             });
