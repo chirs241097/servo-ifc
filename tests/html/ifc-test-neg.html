@@ -1,5 +1,18 @@
 <!DOCTYPE html>
 <html>
+<!--
+Negative test for IFC policy
+Page based on https://www.w3schools.com/html/tryit.asp?filename=tryhtml5_input_formenctype
+To run the test, execute ./mach run tests/html/ifc-test-neg.html from the project root directory.
+
+Expected result is a panic originated from the IFC library, as it has detected a flow explicitly
+disallowed by our custom policy (where keyboard input can only be sent to the same domain that
+the page was loaded from).
+
+For a positive test, use
+./mach run "https://www.w3schools.com/html/tryit.asp?filename=tryhtml5_input_formenctype"
+instead.
+-->
 <body>
 
 <h1>The input formenctype attribute</h1>
