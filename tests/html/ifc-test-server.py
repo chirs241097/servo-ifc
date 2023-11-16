@@ -2,10 +2,15 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 
 class Server(BaseHTTPRequestHandler):
     def do_GET(self):
+        if self.path not in ['/pos', '/neg']:
+            self.send_response(404)
+            self.send_header('Content-type', 'text/html')
+            self.end_headers()
+            self.wfile.write("not found".encode('utf-8'))
         self.send_response(200)
         self.send_header('Content-type', 'text/html')
         self.end_headers()
-        with open('ifc-test-pos.html', 'rb') as f:
+        with open('ifc-test-pos.html' if self.path == '/pos' else 'ifc-test-neg.html', 'rb') as f:
             self.wfile.write(f.read())
 
     def do_POST(self):

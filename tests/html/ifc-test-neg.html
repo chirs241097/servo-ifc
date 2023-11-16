@@ -3,7 +3,8 @@
 <!--
 Negative test for IFC policy
 Page based on https://www.w3schools.com/html/tryit.asp?filename=tryhtml5_input_formenctype
-To run the test, execute ./mach run tests/html/ifc-test-neg.html from the project root directory.
+To run the test, first run python3 ifc-test-server.py in this directory, then execute
+./mach run http://127.0.0.1:8000/neg from the project root directory.
 
 Expected result is a panic originated from the IFC library, as it has detected a flow explicitly
 disallowed by our custom policy (where keyboard input can only be sent to the same domain that
