@@ -1279,10 +1279,12 @@ impl HTMLInputElementMethods for HTMLInputElement {
     fn Value(&self) -> DOMString {
         match self.value_mode() {
             ValueMode::Value => {
-                let content = self.textinput.borrow().get_content();
-                info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, content.get_dynamic_secret_label_clone(), content.get_dynamic_integrity_label_clone(), {
+                /*let content = self.textinput.borrow().get_content();
+                let xc = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, content.get_dynamic_secret_label_clone(), content.get_dynamic_integrity_label_clone(), {
                     unwrap_secret(content)
-                })
+                });*/
+                println!("declassify not allowed for JavaScript binding, returning a placeholder value");
+                String::from("(secret value)").into()
             },
             ValueMode::Default => self
                 .upcast::<Element>()
@@ -2438,7 +2440,23 @@ impl VirtualMethods for HTMLInputElement {
                         let new_type = InputType::from(attr.value().as_atom());
 
                         // https://html.spec.whatwg.org/multipage/#input-type-change
-                        let (old_value_mode, old_idl_value) = (self.value_mode(), self.Value());
+                        //let (old_value_mode, old_idl_value) = (self.value_mode(), self.Value());
+
+                        let (old_value_mode, old_idl_value) = (self.value_mode(),
+                            if !new_type.is_textual() {
+                                if self.value_mode() == ValueMode::Value {
+                                    let content = self.textinput.borrow().get_content();
+                                    info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, content.get_dynamic_secret_label_clone(), content.get_dynamic_integrity_label_clone(), {
+                                        unwrap_secret(content)
+                                    })
+                                } else {
+                                    self.Value()
+                                }
+                            }
+                            else {
+                                Into::<DOMString>::into(String::from("(old secure value)"))
+                            }
+                        );
                         let previously_selectable = self.selection_api_applies();
 
                         self.input_type.set(new_type);

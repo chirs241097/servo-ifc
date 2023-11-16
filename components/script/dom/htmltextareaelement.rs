@@ -332,10 +332,12 @@ impl HTMLTextAreaElementMethods for HTMLTextAreaElement {
 
     // https://html.spec.whatwg.org/multipage/#dom-textarea-value
     fn Value(&self) -> DOMString {
-        let v = self.textinput.borrow().get_content();
+        /*let v = self.textinput.borrow().get_content();
         info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, v.get_dynamic_secret_label_clone(), v.get_dynamic_integrity_label_clone(), {
             unwrap_secret(v)
-        })
+        })*/
+        println!("declassify not allowed for JavaScript binding, returning a placeholder value");
+        String::from("(secret value)").into()
     }
 
     // https://html.spec.whatwg.org/multipage/#dom-textarea-value
