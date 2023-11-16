@@ -85,6 +85,7 @@ use url::Url;
 
 use secret_structs::info_flow_block_declassify_dynamic_all;
 use secret_structs::info_flow_block_no_return_dynamic_all;
+use secret_structs::info_flow_block_dynamic_all;
 use secret_structs::secret::*;
 use secret_structs::integrity_lattice as int_lat;
 use secret_structs::ternary_lattice as sec_lat;
@@ -1326,13 +1327,15 @@ impl HTMLInputElementMethods for HTMLInputElement {
 
                 // Step 5.
                 let content = textinput.single_line_content().clone();
-                let s_label = content.get_dynamic_secret_label_clone();
-                let i_label = content.get_dynamic_integrity_label_clone();
-                let s = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, content.get_dynamic_secret_label_clone(), content.get_dynamic_integrity_label_clone(), {
-                    unwrap_secret(content)
+                let secnewval = ServoSecureDynamic::new_info_flow_struct(value, content.get_dynamic_secret_label_clone(), content.get_dynamic_integrity_label_clone());
+                let cond = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, content.get_dynamic_secret_label_clone(), content.get_dynamic_integrity_label_clone(), {
+                    let unwrapped_old = unwrap_secret_ref(&content);
+                    let unwrapped_new = unwrap_secret_ref(&secnewval);
+                    wrap_secret(*DOMString::to_str_ref(unwrapped_old) != *DOMString::to_str_ref(unwrapped_new))
                 });
-                if s != value {
-                    let secnewval = ServoSecureDynamic::new_info_flow_struct(value, s_label, i_label);
+                if info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, cond.get_dynamic_secret_label_clone(), cond.get_dynamic_integrity_label_clone(), {
+                    unwrap_secret(cond)
+                }) {
                     // Steps 1-2
                     textinput.set_content(secnewval);
 
