@@ -89,6 +89,7 @@ use secret_structs::info_flow_block_dynamic_all;
 use secret_structs::secret::*;
 use secret_structs::integrity_lattice as int_lat;
 use secret_structs::ternary_lattice as sec_lat;
+use secret_macros::side_effect_free_attr_full;
 use keyboard_wrapper::*;
 
 const DEFAULT_SUBMIT_VALUE: &'static str = "Submit";
@@ -1749,6 +1750,20 @@ fn in_same_group(
     }
 }
 
+struct SanitizeValueParam {
+    sanitization_flag: bool,
+    input_type: InputType,
+    default_range_value: f64,
+    max: Option<f64>,
+    min: Option<f64>,
+    allowed_value_step: Option<f64>,
+    step_base: f64,
+    stepped_max: Option<f64>,
+    stepped_min: Option<f64>,
+    multi: bool,
+}
+unsafe impl InvisibleSideEffectFree for SanitizeValueParam{}
+
 impl HTMLInputElement {
     fn radio_group_updated(&self, group: Option<&Atom>) {
         if self.Checked() {
@@ -2023,74 +2038,100 @@ impl HTMLInputElement {
     fn sanitize_value_sec(&self, value: &mut ServoSecureDynamic<DOMString>) {
         let dynamic_sec_label = value.get_dynamic_secret_label_clone();
         let dynamic_int_label = value.get_dynamic_integrity_label_clone();
-        //undesired declassification
+        let p = SanitizeValueParam {
+            sanitization_flag: self.sanitization_flag.get(),
+            input_type: self.input_type(),
+            default_range_value: self.default_range_value(),
+            max: self.maximum(),
+            min: self.minimum(),
+            allowed_value_step: self.allowed_value_step(),
+            step_base: self.step_base(),
+            stepped_max: self.stepped_maximum(),
+            stepped_min: self.stepped_minimum(),
+            multi: self.Multiple(),
+        };
         let cval = value.clone();
-        let mut utext =
-        info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, dynamic_sec_label.clone(), dynamic_int_label.clone(), {
-            unwrap_secret(cval)
-        });
-        self.sanitize_value(&mut utext);
         info_flow_block_no_return_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, dynamic_sec_label, dynamic_int_label, {
-            DOMString::replace_content(unwrap_secret_mut_ref(value), DOMString::to_owned(utext));
+            let new_value = HTMLInputElement::sanitize_value_impl(unwrap_secret(cval), p);
+            DOMString::replace_content(unwrap_secret_mut_ref(value), DOMString::to_owned(new_value));
         });
 
     }
 
     // https://html.spec.whatwg.org/multipage/#value-sanitization-algorithm
     fn sanitize_value(&self, value: &mut DOMString) {
+        let p = SanitizeValueParam {
+            sanitization_flag: self.sanitization_flag.get(),
+            input_type: self.input_type(),
+            default_range_value: self.default_range_value(),
+            max: self.maximum(),
+            min: self.minimum(),
+            allowed_value_step: self.allowed_value_step(),
+            step_base: self.step_base(),
+            stepped_max: self.stepped_maximum(),
+            stepped_min: self.stepped_minimum(),
+            multi: self.Multiple(),
+        };
+        let new_value = HTMLInputElement::sanitize_value_impl(value.clone(), p);
+        value.replace_content(new_value.into());
+    }
+
+    #[side_effect_free_attr_full(method)]
+    fn sanitize_value_impl(value: DOMString, p: SanitizeValueParam) -> DOMString{
         // if sanitization_flag is false, we are setting content attributes
         // on an element we haven't really finished creating; we will
         // enable the flag and really sanitize before this element becomes
         // observable.
-        if !self.sanitization_flag.get() {
-            return;
+        if !p.sanitization_flag {
+            return value;
         }
-        match self.input_type() {
+        let mut ret = std::clone::Clone::clone(&value);
+        match p.input_type {
             InputType::Text | InputType::Search | InputType::Tel | InputType::Password => {
-                value.strip_newlines();
+                DOMString::strip_newlines(&mut ret);
             },
             InputType::Url => {
-                value.strip_newlines();
-                value.strip_leading_and_trailing_ascii_whitespace();
+                DOMString::strip_newlines(&mut ret);
+                unsafe { ret.strip_leading_and_trailing_ascii_whitespace()}
             },
             InputType::Date => {
-                if !value.is_valid_date_string() {
-                    value.clear();
+                if ! unsafe { ret.is_valid_date_string() } {
+                    DOMString::clear(&mut ret);
                 }
             },
             InputType::Month => {
-                if !value.is_valid_month_string() {
-                    value.clear();
+                if ! unsafe { ret.is_valid_month_string() } {
+                    DOMString::clear(&mut ret);
                 }
             },
             InputType::Week => {
-                if !value.is_valid_week_string() {
-                    value.clear();
+                if ! unsafe { ret.is_valid_week_string() } {
+                    DOMString::clear(&mut ret);
                 }
             },
             InputType::Color => {
-                if value.is_valid_simple_color_string() {
-                    value.make_ascii_lowercase();
+                if unsafe { ret.is_valid_simple_color_string() } {
+                    unsafe { ret.make_ascii_lowercase(); }
                 } else {
-                    *value = "#000000".into();
+                    ret = DOMString::from_str("#000000");
                 }
             },
             InputType::Time => {
-                if !value.is_valid_time_string() {
-                    value.clear();
+                if ! unsafe { ret.is_valid_time_string() } {
+                    DOMString::clear(&mut ret);
                 }
             },
             InputType::DatetimeLocal => {
-                if value
+                if unsafe { ret
                     .convert_valid_normalized_local_date_and_time_string()
-                    .is_err()
+                    .is_err() }
                 {
-                    value.clear();
+                    DOMString::clear(&mut ret);
                 }
             },
             InputType::Number => {
-                if !value.is_valid_floating_point_number_string() {
-                    value.clear();
+                if ! unsafe { ret.is_valid_floating_point_number_string() } {
+                    DOMString::clear(&mut ret);
                 }
                 // Spec says that user agent "may" round the value
                 // when it's suffering a step mismatch, but WPT tests
@@ -2101,71 +2142,73 @@ impl HTMLInputElement {
             },
             // https://html.spec.whatwg.org/multipage/#range-state-(type=range):value-sanitization-algorithm
             InputType::Range => {
-                if !value.is_valid_floating_point_number_string() {
-                    *value = DOMString::from(self.default_range_value().to_string());
+                if ! unsafe { ret.is_valid_floating_point_number_string() } {
+                    ret = DOMString::from_string(f64::to_string(&p.default_range_value));
                 }
-                if let Ok(fval) = &value.parse::<f64>() {
-                    let mut fval = *fval;
-                    // comparing max first, because if they contradict
-                    // the spec wants min to be the one that applies
-                    if let Some(max) = self.maximum() {
-                        if fval > max {
-                            fval = max;
+                match unsafe { ret.parse::<f64>() } {
+                    Ok(fval) => {
+                        let mut fval = fval;
+                        // comparing max first, because if they contradict
+                        // the spec wants min to be the one that applies
+                        match p.max {
+                            Some(max) => if fval > max { fval = max; },
+                            None => ()
                         }
-                    }
-                    if let Some(min) = self.minimum() {
-                        if fval < min {
-                            fval = min;
+                        match p.min {
+                            Some(min) => if fval < min { fval = min; },
+                            None => ()
                         }
-                    }
-                    // https://html.spec.whatwg.org/multipage/#range-state-(type=range):suffering-from-a-step-mismatch
-                    // Spec does not describe this in a way that lends itself to
-                    // reproducible handling of floating-point rounding;
-                    // Servo may fail a WPT test because .1 * 6 == 6.000000000000001
-                    if let Some(allowed_value_step) = self.allowed_value_step() {
-                        let step_base = self.step_base();
-                        let steps_from_base = (fval - step_base) / allowed_value_step;
-                        if steps_from_base.fract() != 0.0 {
-                            // not an integer number of steps, there's a mismatch
-                            // round the number of steps...
-                            let int_steps = round_halves_positive(steps_from_base);
-                            // and snap the value to that rounded value...
-                            fval = int_steps * allowed_value_step + step_base;
+                        // https://html.spec.whatwg.org/multipage/#range-state-(type=range):suffering-from-a-step-mismatch
+                        // Spec does not describe this in a way that lends itself to
+                        // reproducible handling of floating-point rounding;
+                        // Servo may fail a WPT test because .1 * 6 == 6.000000000000001
+                        match p.allowed_value_step {
+                            Some(allowed_value_step) => {
+                                let step_base = p.step_base;
+                                let steps_from_base = (fval - step_base) / allowed_value_step;
+                                if unsafe { steps_from_base.fract() } != 0.0 {
+                                    // not an integer number of steps, there's a mismatch
+                                    // round the number of steps...
+                                    let int_steps = unsafe { round_halves_positive(steps_from_base) };
+                                    // and snap the value to that rounded value...
+                                    fval = int_steps * allowed_value_step + step_base;
 
-                            // but if after snapping we're now outside min..max
-                            // we have to adjust! (adjusting to min last because
-                            // that "wins" over max in the spec)
-                            if let Some(stepped_maximum) = self.stepped_maximum() {
-                                if fval > stepped_maximum {
-                                    fval = stepped_maximum;
+                                    // but if after snapping we're now outside min..max
+                                    // we have to adjust! (adjusting to min last because
+                                    // that "wins" over max in the spec)
+                                    match p.stepped_max {
+                                        Some(stepped_maximum) => if fval > stepped_maximum { fval = stepped_maximum; },
+                                        None => ()
+                                    }
+                                    match p.stepped_min {
+                                        Some(stepped_minimum) => if fval < stepped_minimum { fval = stepped_minimum; },
+                                        None => ()
+                                    }
                                 }
-                            }
-                            if let Some(stepped_minimum) = self.stepped_minimum() {
-                                if fval < stepped_minimum {
-                                    fval = stepped_minimum;
-                                }
-                            }
+                            },
+                            None => ()
                         }
-                    }
-                    *value = DOMString::from(fval.to_string());
+                        ret = DOMString::from_string(f64::to_string(&fval));
+                    },
+                    _ => ()
                 };
             },
             InputType::Email => {
-                if !self.Multiple() {
-                    value.strip_newlines();
-                    value.strip_leading_and_trailing_ascii_whitespace();
+                if !p.multi {
+                    DOMString::strip_newlines(&mut ret);
+                    unsafe { ret.strip_leading_and_trailing_ascii_whitespace(); }
                 } else {
-                    let sanitized = str_join(
-                        split_commas(value).map(|token| {
+                    let sanitized = unsafe { str_join(
+                        split_commas(ret.to_str_ref()).map(|token| {
                             let mut token = DOMString::from_string(token.to_string());
                             token.strip_newlines();
                             token.strip_leading_and_trailing_ascii_whitespace();
                             token
                         }),
                         ",",
-                    );
-                    value.clear();
-                    value.push_str(sanitized.as_str());
+                    )};
+                    DOMString::clear(&mut ret);
+                    DOMString::push_str(&mut ret, std::string::String::as_str(&sanitized));
                 }
             },
             // The following inputs don't have a value sanitization algorithm.
@@ -2179,6 +2222,7 @@ impl HTMLInputElement {
             InputType::Reset |
             InputType::Submit => (),
         }
+        return ret;
     }
 
     #[allow(unrooted_must_root)]

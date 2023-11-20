@@ -236,13 +236,15 @@ impl DOMString {
     }
 
     /// Appends a given string slice onto the end of this String.
+    #[side_effect_free_attr_full(method)]
     pub fn push_str(&mut self, string: &str) {
-        self.s.push_str(string)
+        std::string::String::push_str(&mut self.s, string)
     }
 
     /// Clears this `DOMString`, removing all contents.
+    #[side_effect_free_attr_full(method)]
     pub fn clear(&mut self) {
-        self.s.clear()
+        std::string::String::clear(&mut self.s)
     }
 
     /// Shortens this String to the specified length.
@@ -251,8 +253,9 @@ impl DOMString {
     }
 
     /// Removes newline characters according to <https://infra.spec.whatwg.org/#strip-newlines>.
+    #[side_effect_free_attr_full(method)]
     pub fn strip_newlines(&mut self) {
-        self.s.retain(|c| c != '\r' && c != '\n');
+        std::string::String::retain(&mut self.s, |c| c != '\r' && c != '\n');
     }
 
     /// Removes leading and trailing ASCII whitespaces according to
