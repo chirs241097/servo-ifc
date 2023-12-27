@@ -7,24 +7,24 @@
 use embedder_traits::{EmbedderProxy, EventLoopWaker};
 use euclid::Scale;
 use keyboard_types::KeyboardEvent;
-use keyboard_wrapper::SecKeyboardEvent;
 use msg::constellation_msg::{PipelineId, TopLevelBrowsingContextId, TraversalDirection};
 use script_traits::{MediaSessionActionType, MouseButton, TouchEventType, TouchId, WheelDelta};
-use secret_structs::integrity_lattice as int_lat;
-use secret_structs::ternary_lattice as sec_lat;
 use servo_geometry::DeviceIndependentPixel;
 use servo_media::player::context::{GlApi, GlContext, NativeDisplay};
 use servo_url::ServoUrl;
 use std::fmt::{Debug, Error, Formatter};
 use std::time::Duration;
 use style_traits::DevicePixel;
-//use secret_structs::secret::secret::SecretBlockSafe;
-//use secret_structs::secret::secret::{StaticDynamicAll,DynamicSecretLabel, DynamicIntegrityLabel};
 
 use webrender_api::units::DevicePoint;
 use webrender_api::units::{DeviceIntPoint, DeviceIntRect, DeviceIntSize};
 use webrender_api::ScrollLocation;
 use webrender_surfman::WebrenderSurfman;
+
+//Carapace: Add imports
+use keyboard_wrapper::SecKeyboardEvent;
+use secret_structs::integrity_lattice as int_lat;
+use secret_structs::ternary_lattice as sec_lat;
 
 #[derive(Clone)]
 pub enum MouseWindowEvent {
@@ -84,6 +84,7 @@ pub enum WindowEvent {
     /// Sent when the user exits from fullscreen mode
     ExitFullScreen(TopLevelBrowsingContextId),
     /// Sent when a key input state changes
+    //Carapace: Change Keyboard to hold a secret value.
     Keyboard(SecKeyboardEvent<sec_lat::Label_A, int_lat::Label_All>),
     /// Sent when Ctr+R/Apple+R is called to reload the current page.
     Reload(TopLevelBrowsingContextId),

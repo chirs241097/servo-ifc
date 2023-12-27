@@ -2233,6 +2233,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "glam"
+version = "0.18.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "525a3e490ba77b8e326fb67d4b44b4bd2f920f44d4cc73ccec50adc68e3bee34"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "gleam"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3143,6 +3152,7 @@ dependencies = [
  "secret_structs",
  "serde",
  "toml",
+ "unicode-segmentation",
 ]
 
 [[package]]
@@ -5655,6 +5665,7 @@ dependencies = [
 name = "secret_structs"
 version = "0.1.0"
 dependencies = [
+ "glam",
  "secret_macros",
  "serde",
  "unicode-segmentation",

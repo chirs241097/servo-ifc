@@ -2,6 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+//Carapace: Allow unsafe code
 //#![deny(unsafe_code)]
 
 #[macro_use]
@@ -15,7 +16,6 @@ use embedder_traits::Cursor;
 use gfx_traits::Epoch;
 use ipc_channel::ipc::IpcSender;
 use keyboard_types::KeyboardEvent;
-use keyboard_wrapper::SecKeyboardEvent;
 use msg::constellation_msg::PipelineId;
 use msg::constellation_msg::TopLevelBrowsingContextId;
 use msg::constellation_msg::{BrowsingContextId, TraversalDirection};
@@ -30,10 +30,10 @@ use std::collections::HashMap;
 use std::fmt;
 use std::time::Duration;
 
+//Carapace: Add imports
 use secret_structs::integrity_lattice as int_lat;
 use secret_structs::ternary_lattice as sec_lat;
-//use secret_structs::secret::secret::SecretBlockSafe;
-//use secret_structs::secret::secret::{StaticDynamicAll,DynamicSecretLabel, DynamicIntegrityLabel};
+use keyboard_wrapper::SecKeyboardEvent;
 
 mod compositor;
 pub mod compositor_thread;
@@ -72,6 +72,7 @@ pub enum ConstellationMsg {
     /// Query the constellation to see if the current compositor output is stable
     IsReadyToSaveImage(HashMap<PipelineId, Epoch>),
     /// Inform the constellation of a key event.
+    //Carapace: Change Keyboard to hold a secret value.
     Keyboard(SecKeyboardEvent<sec_lat::Label_A, int_lat::Label_All>),
     /// Whether to allow script to navigate.
     AllowNavigationResponse(PipelineId, bool),

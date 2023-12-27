@@ -6,14 +6,14 @@
 #![feature(drain_filter)]
 #![feature(plugin)]
 #![feature(register_tool)]
-//Vincent: allow unsafe code
+//Carapace: allow unsafe code
 //#![deny(unsafe_code)]
 #![doc = "The script crate contains all matters DOM."]
 #![cfg_attr(not(feature = "unrooted_must_root_lint"), allow(unknown_lints))]
 #![allow(deprecated)] // FIXME: Can we make `allow` only apply to the `plugin` crate attribute?
 #![plugin(script_plugins)]
 #![register_tool(unrooted_must_root_lint)]
-#![feature(negative_impls)] //Vincent: Added so we can use SecretBlockSafeDerive
+#![feature(negative_impls)] //Carapace: Added so we can use SecretBlockSafeDerive
 
 #[macro_use]
 extern crate bitflags;

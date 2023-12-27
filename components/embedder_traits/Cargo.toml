@@ -24,5 +24,6 @@ servo_url = { path = "../url" }
 webrender_api = { git = "https://github.com/servo/webrender" }
 webxr-api = { git = "https://github.com/servo/webxr", features = ["ipc"] }
 
+#Carapace: Add paths to Carapace secret_structs and servo-local additions to API
 keyboard_wrapper = { path = "../keyboard_wrapper" }
 secret_structs = { path = "../../info-flow-library/ifc_library/secret_structs/", package="secret_structs" }

@@ -101,15 +101,17 @@ impl KeyboardEvent {
 
         let type_ = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, secure.get_dynamic_secret_label_clone(), secure.get_dynamic_integrity_label_clone(), {
             let unwrapped = unwrap_secret_ref(&secure);
-            wrap_secret(std::clone::Clone::clone(&unwrapped.type_))
+            //DOMString::from_string(std::string::String::clone(DOMString::to_string_ref(&unwrapped.type)))
+            wrap_secret(DOMString::from_string(std::string::String::clone(DOMString::to_string_ref(&unwrapped.type_))))
+            //wrap_secret(std::clone::Clone::clone(&unwrapped.type_))
         });
         let key: ServoSecureDynamic<KeyWrapper> = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, secure.get_dynamic_secret_label_clone(), secure.get_dynamic_integrity_label_clone(), {
             let unwrapped: &SecurePart<DOMString> = unwrap_secret_ref(&secure);
-            wrap_secret(std::clone::Clone::clone(&unwrapped.key))
+            wrap_secret(custom_clone_key_wrapper(&unwrapped.key))
         });
         let code = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, secure.get_dynamic_secret_label_clone(), secure.get_dynamic_integrity_label_clone(), {
             let unwrapped = unwrap_secret_ref(&secure);
-            wrap_secret(std::clone::Clone::clone(&unwrapped.code))
+            wrap_secret(DOMString::from_string(std::string::String::clone(DOMString::to_string_ref(&unwrapped.code))))
         });
         let location = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, secure.get_dynamic_secret_label_clone(), secure.get_dynamic_integrity_label_clone(), {
             let unwrapped = unwrap_secret_ref(&secure);
@@ -125,7 +127,7 @@ impl KeyboardEvent {
         });
         let modifiers = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, secure.get_dynamic_secret_label_clone(), secure.get_dynamic_integrity_label_clone(), {
             let unwrapped = unwrap_secret_ref(&secure);
-            wrap_secret(std::clone::Clone::clone(&unwrapped.modifiers))
+            wrap_secret(custom_clone_modifiers_wrapper(&unwrapped.modifiers))
         });
         let char_code = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, secure.get_dynamic_secret_label_clone(), secure.get_dynamic_integrity_label_clone(), {
             let unwrapped = unwrap_secret_ref(&secure);
@@ -286,111 +288,80 @@ impl KeyboardEventMethods for KeyboardEvent {
 
     // https://w3c.github.io/uievents/#widl-KeyboardEvent-key
     fn Key(&self) -> DOMString {
-        //Vincent: Replaced with a default value since it's secret.
-        panic!("Vincent: Can't call method Key");
-        /*self.key.borrow().clone()*/
+        //Carapace: Don't allow this Javascript API to release secret data.
+        panic!("Carapace: Can't call method Key");
     }
 
     // https://w3c.github.io/uievents/#widl-KeyboardEvent-code
     fn Code(&self) -> DOMString {
-        //Vincent: Replaced with a default value since it's secret.
-        panic!("Vincent: Can't call method Code");
-        /*self.code.borrow().clone()*/
+        //Carapace: Don't allow this Javascript API to release secret data.
+        panic!("Carapace: Can't call method Code");
     }
 
     // https://w3c.github.io/uievents/#widl-KeyboardEvent-location
     fn Location(&self) -> u32 {
-        //Vincent: Replaced with a default value since it's secret.
-        panic!("Vincent: Can't call method Location");
-        /*self.location.get()*/
+        //Carapace: Don't allow this Javascript API to release secret data.
+        panic!("Carapace: Can't call method Location");
     }
 
     // https://w3c.github.io/uievents/#widl-KeyboardEvent-ctrlKey
     fn CtrlKey(&self) -> bool {
-        //Vincent: Replaced with a default value since it's secret.
-        panic!("Vincent: Can't call method CtrlKey");
-        /*self.modifiers.get().contains(Modifiers::CONTROL)*/
+        //Carapace: Don't allow this Javascript API to release secret data.
+        panic!("Carapace: Can't call method CtrlKey");
     }
 
     // https://w3c.github.io/uievents/#widl-KeyboardEvent-shiftKey
     fn ShiftKey(&self) -> bool {
-        //Vincent: Replaced with a default value since it's secret.
-        panic!("Vincent: Can't call method ShiftKey");
-        /*self.modifiers.get().contains(Modifiers::SHIFT)*/
+        //Carapace: Don't allow this Javascript API to release secret data.
+        panic!("Carapace: Can't call method ShiftKey");
     }
 
     // https://w3c.github.io/uievents/#widl-KeyboardEvent-altKey
     fn AltKey(&self) -> bool {
-        //Vincent: Replaced with a default value since it's secret.
-        panic!("Vincent: Can't call method AltKey");
-        /*self.modifiers.get().contains(Modifiers::ALT)*/
+        //Carapace: Don't allow this Javascript API to release secret data.
+        panic!("Carapace: Can't call method AltKey");
     }
 
     // https://w3c.github.io/uievents/#widl-KeyboardEvent-metaKey
     fn MetaKey(&self) -> bool {
-        //Vincent: Replaced with a default value since it's secret.
-        panic!("Vincent: Can't call method MetaKey");
-        /*self.modifiers.get().contains(Modifiers::META)*/
+        //Carapace: Don't allow this Javascript API to release secret data.
+        panic!("Carapace: Can't call method MetaKey");
     }
 
     // https://w3c.github.io/uievents/#widl-KeyboardEvent-repeat
     fn Repeat(&self) -> bool {
-        //Vincent: Replaced with a default value since it's secret.
-        panic!("Vincent: Can't call method Repeat");
-        /*self.repeat.get()*/
+        //Carapace: Don't allow this Javascript API to release secret data.
+        panic!("Carapace: Can't call method Repeat");
     }
 
     // https://w3c.github.io/uievents/#widl-KeyboardEvent-isComposing
     fn IsComposing(&self) -> bool {
-        //Vincent: Replaced with a default value since it's secret.
-        panic!("Vincent: Can't call method IsComposing");
-        /*self.is_composing.get()*/
+        //Carapace: Don't allow this Javascript API to release secret data.
+        panic!("Carapace: Can't call method IsComposing");
     }
 
     // https://w3c.github.io/uievents/#dom-keyboardevent-getmodifierstate
     fn GetModifierState(&self, key_arg: DOMString) -> bool {
-        //Vincent: Replaced with a default value since it's secret.
-        panic!("Vincent: Can't call method GetModifierState");
-        /*self.modifiers.get().contains(match &*key_arg {
-            "Alt" => Modifiers::ALT,
-            "AltGraph" => Modifiers::ALT_GRAPH,
-            "CapsLock" => Modifiers::CAPS_LOCK,
-            "Control" => Modifiers::CONTROL,
-            "Fn" => Modifiers::FN,
-            "FnLock" => Modifiers::FN_LOCK,
-            "Meta" => Modifiers::META,
-            "NumLock" => Modifiers::NUM_LOCK,
-            "ScrollLock" => Modifiers::SCROLL_LOCK,
-            "Shift" => Modifiers::SHIFT,
-            "Symbol" => Modifiers::SYMBOL,
-            "SymbolLock" => Modifiers::SYMBOL_LOCK,
-            _ => return false,
-        })*/
+        //Carapace: Don't allow this Javascript API to release secret data.
+        panic!("Carapace: Can't call method GetModifierState");
     }
 
     // https://w3c.github.io/uievents/#widl-KeyboardEvent-charCode
     fn CharCode(&self) -> u32 {
-        //Vincent: Replaced with a default value since it's secret.
-        panic!("Vincent: Can't call method CharCode");
-        /*self.char_code.get()*/
+        //Carapace: Don't allow this Javascript API to release secret data.
+        panic!("Carapace: Can't call method CharCode");
     }
 
     // https://w3c.github.io/uievents/#widl-KeyboardEvent-keyCode
     fn KeyCode(&self) -> u32 {
-        //Vincent: Replaced with a default value since it's secret.
-        panic!("Vincent: Can't call method KeyCode");
-        /*self.key_code.get()*/
+        //Carapace: Don't allow this Javascript API to release secret data.
+        panic!("Carapace: Can't call method KeyCode");
     }
 
     // https://w3c.github.io/uievents/#widl-KeyboardEvent-which
     fn Which(&self) -> u32 {
-        //Vincent: Replaced with a default value since it's secret.
-        panic!("Vincent: Can't call method Which");
-        /*if self.char_code.get() != 0 {
-            self.char_code.get()
-        } else {
-            self.key_code.get()
-        }*/
+        //Carapace: Don't allow this Javascript API to release secret data.
+        panic!("Carapace: Can't call method Which");
     }
 
     // https://dom.spec.whatwg.org/#dom-event-istrusted

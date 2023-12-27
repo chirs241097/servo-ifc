@@ -28,7 +28,7 @@ use std::rc::Rc;
 use std::thread;
 use std::time::Duration;
 use tinyfiledialogs::{self, MessageBoxIcon, OkCancel, YesNo};
-use keyboard_wrapper::SecKeyboardEvent;
+use keyboard_wrapper::*;
 use secret_structs::ternary_lattice as sec_lat;
 use secret_structs::integrity_lattice as int_lat;
 use secret_structs::secret::*;
@@ -105,25 +105,25 @@ where
         //Vincent: DECLASSIFY
         let k2 = KeyboardEvent {
             state: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.state.get_dynamic_secret_label_clone(), key_event.state.get_dynamic_integrity_label_clone(), {
-                remove_label_wrapper(std::clone::Clone::clone(&(&key_event).state))
+                custom_clone_key_state_wrapper(unwrap_secret_ref(&key_event.state))
             }).k,
             key: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.key.get_dynamic_secret_label_clone(), key_event.key.get_dynamic_integrity_label_clone(), {
-                remove_label_wrapper(std::clone::Clone::clone(&(&key_event).key))
+                custom_clone_key_wrapper(unwrap_secret_ref(&key_event.key))
             }).k,
             code: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.code.get_dynamic_secret_label_clone(), key_event.code.get_dynamic_integrity_label_clone(), {
-                remove_label_wrapper(std::clone::Clone::clone(&(&key_event).code))
+                custom_clone_code_wrapper(unwrap_secret_ref(&key_event.code))
             }).c,
             location: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.location.get_dynamic_secret_label_clone(), key_event.location.get_dynamic_integrity_label_clone(), {
-                remove_label_wrapper(std::clone::Clone::clone(&(&key_event).location))
+                custom_clone_location_wrapper(unwrap_secret_ref(&key_event.location))
             }).l,
             modifiers: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.modifiers.get_dynamic_secret_label_clone(), key_event.modifiers.get_dynamic_integrity_label_clone(), {
-                remove_label_wrapper(std::clone::Clone::clone(&(&key_event).modifiers))
+                custom_clone_modifiers_wrapper(unwrap_secret_ref(&key_event.modifiers))
             }).m,
             repeat: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.repeat.get_dynamic_secret_label_clone(), key_event.repeat.get_dynamic_integrity_label_clone(), {
-                remove_label_wrapper(std::clone::Clone::clone(&(&key_event).repeat))
+                *unwrap_secret_ref(&key_event.repeat)
             }),
             is_composing: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.is_composing.get_dynamic_secret_label_clone(), key_event.is_composing.get_dynamic_integrity_label_clone(), {
-                remove_label_wrapper(std::clone::Clone::clone(&(&key_event).is_composing))
+                *unwrap_secret_ref(&key_event.is_composing)
             }),
         };
         ShortcutMatcher::from_event(/*key_event*/k2.clone())
@@ -215,25 +215,25 @@ where
             //Vincent: DECLASSIFY
             let k2 = KeyboardEvent {
                 state: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.state.get_dynamic_secret_label_clone(), key_event.state.get_dynamic_integrity_label_clone(), {
-                    remove_label_wrapper(std::clone::Clone::clone(&(&key_event).state))
+                    custom_clone_key_state_wrapper(unwrap_secret_ref(&key_event.state))
                 }).k,
                 key: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.key.get_dynamic_secret_label_clone(), key_event.key.get_dynamic_integrity_label_clone(), {
-                    remove_label_wrapper(std::clone::Clone::clone(&(&key_event).key))
+                    custom_clone_key_wrapper(unwrap_secret_ref(&key_event.key))
                 }).k,
                 code: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.code.get_dynamic_secret_label_clone(), key_event.code.get_dynamic_integrity_label_clone(), {
-                    remove_label_wrapper(std::clone::Clone::clone(&(&key_event).code))
+                    custom_clone_code_wrapper(unwrap_secret_ref(&key_event.code))
                 }).c,
                 location: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.location.get_dynamic_secret_label_clone(), key_event.location.get_dynamic_integrity_label_clone(), {
-                    remove_label_wrapper(std::clone::Clone::clone(&(&key_event).location))
+                    custom_clone_location_wrapper(unwrap_secret_ref(&key_event.location))
                 }).l,
                 modifiers: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.modifiers.get_dynamic_secret_label_clone(), key_event.modifiers.get_dynamic_integrity_label_clone(), {
-                    remove_label_wrapper(std::clone::Clone::clone(&(&key_event).modifiers))
+                    custom_clone_modifiers_wrapper(unwrap_secret_ref(&key_event.modifiers))
                 }).m,
                 repeat: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.repeat.get_dynamic_secret_label_clone(), key_event.repeat.get_dynamic_integrity_label_clone(), {
-                    remove_label_wrapper(std::clone::Clone::clone(&(&key_event).repeat))
+                    *unwrap_secret_ref(&key_event.repeat)
                 }),
                 is_composing: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.is_composing.get_dynamic_secret_label_clone(), key_event.is_composing.get_dynamic_integrity_label_clone(), {
-                    remove_label_wrapper(std::clone::Clone::clone(&(&key_event).is_composing))
+                    *unwrap_secret_ref(&key_event.is_composing)
                 }),
             };
             if let Some(event) = ShortcutMatcher::from_event(k2.clone())
@@ -258,25 +258,25 @@ where
         //Vincent: DECLASSIFY
         let e2 = KeyboardEvent {
             state: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, event.state.get_dynamic_secret_label_clone(), event.state.get_dynamic_integrity_label_clone(), {
-                remove_label_wrapper(std::clone::Clone::clone(&(&event).state))
+                custom_clone_key_state_wrapper(unwrap_secret_ref(&event.state))
             }).k,
             key: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, event.key.get_dynamic_secret_label_clone(), event.key.get_dynamic_integrity_label_clone(), {
-                remove_label_wrapper(std::clone::Clone::clone(&(&event).key))
+                custom_clone_key_wrapper(unwrap_secret_ref(&event.key))
             }).k,
             code: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, event.code.get_dynamic_secret_label_clone(), event.code.get_dynamic_integrity_label_clone(), {
-                remove_label_wrapper(std::clone::Clone::clone(&(&event).code))
+                custom_clone_code_wrapper(unwrap_secret_ref(&event.code))
             }).c,
             location: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, event.location.get_dynamic_secret_label_clone(), event.location.get_dynamic_integrity_label_clone(), {
-                remove_label_wrapper(std::clone::Clone::clone(&(&event).location))
+                custom_clone_location_wrapper(unwrap_secret_ref(&event.location))
             }).l,
             modifiers: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, event.modifiers.get_dynamic_secret_label_clone(), event.modifiers.get_dynamic_integrity_label_clone(), {
-                remove_label_wrapper(std::clone::Clone::clone(&(&event).modifiers))
+                custom_clone_modifiers_wrapper(unwrap_secret_ref(&event.modifiers))
             }).m,
             repeat: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, event.repeat.get_dynamic_secret_label_clone(), event.repeat.get_dynamic_integrity_label_clone(), {
-                remove_label_wrapper(std::clone::Clone::clone(&(&event).repeat))
+                *unwrap_secret_ref(&event.repeat)
             }),
             is_composing: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, event.is_composing.get_dynamic_secret_label_clone(), event.is_composing.get_dynamic_integrity_label_clone(), {
-                remove_label_wrapper(std::clone::Clone::clone(&(&event).is_composing))
+                *unwrap_secret_ref(&event.is_composing)
             }),
         };
         ShortcutMatcher::from_event(e2)

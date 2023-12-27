@@ -1214,7 +1214,7 @@ impl HTMLFormElement {
             // Step 4
             let mut buf = std::string::String::from("");
             let mut prev = ' ';
-            for ch in str::chars(s) {
+            for ch in core::primitive::str::chars(s) {
                 match ch {
                     '\n' if prev != '\r' => {
                         std::string::String::push(&mut buf, '\r');
@@ -1399,7 +1399,8 @@ impl FormDatum {
                 info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All,
                 ss.get_dynamic_secret_label_clone(), ss.get_dynamic_integrity_label_clone(), {
                     let s = unwrap_secret_ref(ss);
-                    let sc = std::clone::Clone::clone(s);
+                    let sc = DOMString::from_string(std::string::String::clone(DOMString::to_string_ref(&s)));
+                    //let sc = std::clone::Clone::clone(s);
                     wrap_secret(DOMString::to_owned(sc))
                 })
             )

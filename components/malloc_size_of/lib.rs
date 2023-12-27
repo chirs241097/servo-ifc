@@ -59,7 +59,7 @@ use std::os::raw::c_void;
 use uuid::Uuid;
 use void::Void;
 
-//Vincent: Add imports
+//Carapace: Add imports
 use secret_structs::integrity_lattice::*;
 use secret_structs::secret::*;
 use secret_structs::ternary_lattice::*;
@@ -252,7 +252,7 @@ where
     }
 }
 
-//Vincent: add impls for ifc structs
+//Carapace: add impls for Carapace structs
 impl<T, L1, L2, D1, D2> MallocSizeOf for InfoFlowStruct<T, L1, L2, D1, D2>
 where
     T: SecretValueSafe + MallocSizeOf,

@@ -1763,12 +1763,12 @@ impl Document {
             let unwrapped_modifiers = unwrap_secret_ref(m);
             let result = SecurePart::<DOMString>::new(
                 DOMString::from_string(unchecked_operation(unwrapped_state.k.to_string())) /*key_state_to_string(&unwrapped_state)*/,
-                std::clone::Clone::clone(&unwrapped_key),
+                custom_clone_key_wrapper(&unwrapped_key),
                 DOMString::from_string(unchecked_operation(unwrapped_code.c.to_string())) /*code_to_string(&unwrapped_code)*/,
                 unwrapped_location.l as u32,
                 *unwrapped_repeat,
                 *unwrapped_is_composing,
-                std::clone::Clone::clone(&unwrapped_modifiers),
+                custom_clone_modifiers_wrapper(&unwrapped_modifiers),
                 0,
                 unchecked_operation(unwrapped_key.k.legacy_keycode())
             );
@@ -1793,13 +1793,12 @@ impl Document {
             let unwrapped_modifiers = unwrap_secret_ref(m);
             let result: SecurePart<DOMString> = SecurePart{
                 type_: cancelable_type,
-                key: std::clone::Clone::clone(unwrapped_key),
+                key: custom_clone_key_wrapper(&unwrapped_key),
                 code: DOMString::from_string(unchecked_operation(unwrapped_code.c.to_string())),
                 location: unwrapped_location.l as u32,
                 repeat: *unwrapped_repeat,
                 is_composing: *unwrapped_is_composing,
-                modifiers: std::clone::Clone::clone(unwrapped_modifiers),
-                //Vincent: TODO, make this not need unchecked
+                modifiers: custom_clone_modifiers_wrapper(&unwrapped_modifiers),
                 char_code: unchecked_operation(unwrapped_key.k.legacy_charcode()),
                 key_code: 0
             };
@@ -1844,7 +1843,7 @@ impl Document {
         });
 
         let conditional = info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, label_s.clone(), label_i.clone(), {
-            remove_label_wrapper(cond)
+            unwrap_secret(cond)
         });
         // https://w3c.github.io/uievents/#keys-cancelable-keys
         if conditional //Vincent: Computed conditional in above block and used it here. 
@@ -1896,7 +1895,7 @@ impl Document {
                 wrap_secret((unchecked_operation(unwrapped_key.k == Key::Enter) /*(is_enter(unwrapped_key)*/ || unchecked_operation(unwrapped_code.c == Code::Space) /*is_space(unwrapped_code)*/) && unchecked_operation(unwrapped_state.k == KeyState::Up) /*is_up(unwrapped_state)*/)
             });
             let conditional2 = info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, label_s.clone(), label_i.clone(), {
-                remove_label_wrapper(cond)
+                unwrap_secret(cond)
             });
             if conditional2 //Vincent: Computed conditional in above block and used it here
             {

@@ -130,6 +130,7 @@
 //! (error/enum.Error.html).
 
 #![allow(unsafe_code)]
+//Carapace: allow missing docs
 //#![deny(missing_docs)]
 #![deny(non_snake_case)]
 

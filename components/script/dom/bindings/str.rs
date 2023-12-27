@@ -19,8 +19,22 @@ use std::ops::{Deref, DerefMut};
 use std::str;
 use std::str::FromStr;
 
+//Carapace: Add imports
 use secret_macros::*;
 use secret_structs::secret::*;
+use secret_structs::ternary_lattice as sec_lat;
+use secret_structs::integrity_lattice as int_lat;
+
+#[side_effect_free_attr_full]
+//Map<Split<'_, Fn(char) -> bool>, FnMut(&str) -> DOMString>
+pub fn custom_collect_unwrapped<F1: Fn(char) -> bool, F2: FnMut(&str) -> DOMString>(self_: std::iter::Map<std::str::Split<'_, F1>, F2>) -> Vec<DOMString> {
+    unchecked_operation(self_.collect())
+}
+
+#[side_effect_free_attr_full]
+pub fn custom_collect_wrapped<F1: Fn(char) -> bool, F2: FnMut(&str) -> InfoFlowStruct<DOMString, sec_lat::Label_Empty, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>>(self_: std::iter::Map<std::str::Split<'_, F1>, F2>) -> Vec<InfoFlowStruct<DOMString, sec_lat::Label_Empty, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>> {
+    unchecked_operation(self_.collect())
+}
 
 /// Encapsulates the IDL `ByteString` type.
 #[derive(Clone, Debug, Default, Eq, JSTraceable, MallocSizeOf, PartialEq)]
@@ -189,11 +203,13 @@ pub fn is_token(s: &[u8]) -> bool {
 /// This type is currently `!Send`, in order to help with an independent
 /// experiment to store `JSString`s rather than Rust `String`s.
 #[derive(Clone, Debug, Eq, Hash, MallocSizeOf, Ord, PartialEq, PartialOrd)]
+//Carapace: Change DOMString to have named fields.
 pub struct DOMString{s: String, p: PhantomData<*const ()>}
-
+//Carapace: Impl InvisibleSideEffectFree for DOMString so it can be used in IFC blocks.
 unsafe impl InvisibleSideEffectFree for DOMString{}
 
 impl DOMString {
+    //Carapace: Add functions to replace Deref Coerction
     #[side_effect_free_attr_full(method)]
     pub fn to_str_ref(&self) -> &str {
         &self.s
@@ -218,20 +234,26 @@ impl DOMString {
     }
 
     /// Creates a new `DOMString`.
+    //Carapace: Tag function as side_effect_free
     #[side_effect_free_attr_full(method)]
     pub fn new() -> DOMString {
+        //Carapace: Use DOMString with named fields
         DOMString{s: std::string::String::new(), p: PhantomData}
     }
 
     /// Creates a new `DOMString` from a `String`.
+    //Carapace: Tag function as side_effect_free
     #[side_effect_free_attr_full(method)]
     pub fn from_string(s: String) -> DOMString {
+        //Carapace: Use DOMString with named fields
         DOMString{s: s, p: PhantomData}
     }
 
     /// Creates a new `DOMString` from a `&str`.
+    //Carapace: Tag function as side_effect_free
     #[side_effect_free_attr_full(method)]
     pub fn from_str(contents: &str) -> DOMString {
+        //Carapace: Use DOMString with named fields
         DOMString::from_string(std::string::String::from(contents))
     }
 

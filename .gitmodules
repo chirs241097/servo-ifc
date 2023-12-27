@@ -2,3 +2,4 @@
 	path = info-flow-library
 	url = https://github.com/PLaSSticity/info-flow-library.git
 	branch = dynamic
+#Carapace: Add info-flow-library as submodule

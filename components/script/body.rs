@@ -49,6 +49,7 @@ use std::rc::Rc;
 use std::str;
 use url::form_urlencoded;
 
+//Carapace: Add imports
 use keyboard_wrapper::*;
 use secret_macros::info_flow_block_dynamic_all;
 use secret_macros::info_flow_block_declassify_dynamic_all;
@@ -56,6 +57,7 @@ use secret_structs::secret::*;
 use secret_structs::integrity_lattice as int_lat;
 use secret_structs::ternary_lattice as sec_lat;
 
+//Carapace: Add MaybeSecret enum to handle a possibility of both secret and non-secret data flowing through this section.
 pub enum MaybeSecret<T> where T: InteriorImmutable + InvisibleSideEffectFree {
     Secret(ServoSecureDynamic<T>),
     NonSecret(T)
@@ -610,6 +612,7 @@ impl Extractable for FormData {
     fn extract(&self, global: &GlobalScope) -> Fallible<ExtractedBody> {
         let boundary = generate_boundary();
         let bytes = encode_multipart_form_data(&mut self.datums(), boundary.clone(), UTF_8);
+        //Carapace: Explicit declassify of secret data here.
         let unwrapped_bytes = match bytes {
             MaybeSecret::NonSecret(b) => b,
             MaybeSecret::Secret(sb) => info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, sb.get_dynamic_secret_label_clone(), sb.get_dynamic_integrity_label_clone(), { unwrap_secret(sb) })
@@ -619,6 +622,7 @@ impl Extractable for FormData {
             "multipart/form-data;boundary={}",
             boundary
         )));
+        //Carapace: Change name from bytes to unwrapped_bytes to reflect earlier changes.
         let stream = ReadableStream::new_from_bytes(&global, unwrapped_bytes);
         Ok(ExtractedBody {
             stream,

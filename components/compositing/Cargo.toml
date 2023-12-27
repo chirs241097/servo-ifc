@@ -25,7 +25,6 @@ gleam = { version = "0.12", optional = true }
 image = "0.24"
 ipc-channel = "0.14"
 keyboard-types = "0.6"
-keyboard_wrapper = {path = "../keyboard_wrapper"}
 libc = "0.2"
 log = "0.4"
 msg = { path = "../msg" }
@@ -43,6 +42,9 @@ webrender = { git = "https://github.com/servo/webrender", features = ["capture"]
 webrender_api = { git = "https://github.com/servo/webrender" }
 webrender_surfman = { path = "../webrender_surfman" }
 webxr = { git = "https://github.com/servo/webxr" }
+
+#Carapace: Add paths to Carapace secret_structs and servo-local additions to API
+keyboard_wrapper = {path = "../keyboard_wrapper"}
 secret_structs = { path = "../../info-flow-library/ifc_library/secret_structs/", package="secret_structs" }
 
 [build-dependencies]

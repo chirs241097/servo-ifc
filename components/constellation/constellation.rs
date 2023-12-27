@@ -181,11 +181,10 @@ use style_traits::CSSPixel;
 use webgpu::{self, WebGPU, WebGPURequest};
 use webrender_traits::WebrenderExternalImageRegistry;
 
+//Carapace: Add imports
 use keyboard_wrapper::SecKeyboardEvent;
 use secret_structs::integrity_lattice as int_lat;
 use secret_structs::ternary_lattice as sec_lat;
-//use secret_structs::secret::secret::SecretBlockSafe;
-//use secret_structs::secret::secret::{StaticDynamicAll,DynamicSecretLabel, DynamicIntegrityLabel};
 
 type PendingApprovalNavigations = HashMap<PipelineId, (LoadData, HistoryEntryReplacement)>;
 
@@ -4059,6 +4058,7 @@ where
     }
 
     //Chris: (TODO) verify signature
+    //Carapace: Change function signature to take a secret value
     fn handle_key_msg(&mut self, event: SecKeyboardEvent<sec_lat::Label_A, int_lat::Label_All>) {
         // Send to the focused browsing contexts' current pipeline.  If it
         // doesn't exist, fall back to sending to the compositor.
@@ -4410,6 +4410,7 @@ where
                 for event in cmd {
                     let event = match event {
                         WebDriverInputEvent::Keyboard(event) => {
+                            //Carapace: Generate a dummy event in place of a KeyboardEvent, since WebDriver isn't important for our purpose.
                             // Chris: Ignore this for now, WebDriver isn't important for our purpose
                             // Generate a dummy event instead
                             // CompositorEvent::KeyboardEvent(event)
@@ -4440,9 +4441,9 @@ where
                     None => return warn!("Pipeline {} KeyboardAction after closure.", pipeline_id),
                 };
                 // Chris: ignoring -- see last case for rationale
+                //Carapace: Generate a dummy event in place of a CompositorEvent, since WebDriver isn't important for our purpose.
                 let control_msg = ConstellationControlMsg::SendEvent(
                     pipeline_id,
-                    //CompositorEvent::KeyboardEvent(event),
                     CompositorEvent::IMEDismissedEvent,
                 );
                 if let Err(e) = event_loop.send(control_msg) {

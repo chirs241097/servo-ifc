@@ -1,4 +1,6 @@
+//Carapace: Added code for servo-specific usage of secrets.
 #![feature(negative_impls)]
+
 
 use keyboard_types::KeyboardEvent;
 use secret_macros::side_effect_free_attr_full;
@@ -10,15 +12,11 @@ use secret_structs::ternary_lattice as sec_lat;
 //use serde::ser::{Serializer, SerializeStruct};
 use serde::{Deserialize /*Deserializer*/, Serialize};
 //use std::marker::PhantomData;
+use unicode_segmentation::UnicodeSegmentation;
 use keyboard_types::{Code, Key, KeyState, Location, Modifiers};
 use malloc_size_of_derive::MallocSizeOf;
 //use malloc_size_of::MallocSizeOf;
 //use malloc_size_of::MallocSizeOfOps;
-
-//#[derive(Clone, Default, Serialize, Deserialize)]
-//pub struct SecKeyboardEvent {
-//    pub ke: KeyboardEvent
-//}
 
 unsafe impl<L1, L2> InvisibleSideEffectFree for SecKeyboardEvent<L1, L2> {}
 
@@ -91,40 +89,6 @@ unsafe impl InvisibleSideEffectFree for KeyStateWrapper {}
 pub struct KeyWrapper {
     pub k: Key,
 }
-/*#[side_effect_free_attr_full]
-pub fn is_enter(k: &KeyWrapper) -> bool {
-    unsafe {k.k == Key::Enter}
-}
-
-#[side_effect_free_attr_full]
-pub fn is_space(c: &CodeWrapper) -> bool {
-    unsafe {c.c == Code::Space}
-}
-
-#[side_effect_free_attr_full]
-pub fn is_up(k: &KeyStateWrapper) -> bool {
-    unsafe {k.k == KeyState::Up}
-}
-
-#[side_effect_free_attr_full]
-pub fn is_down(k: &KeyStateWrapper) -> bool {
-    unsafe {k.k == KeyState::Down}
-}
-
-#[side_effect_free_attr_full]
-pub fn code_to_string(c: &CodeWrapper) -> String {
-    unsafe {c.c.to_string()}
-}
-
-#[side_effect_free_attr_full]
-pub fn key_state_to_string(k: &KeyStateWrapper) -> String {
-    unsafe {k.k.to_string()}
-}
-
-#[side_effect_free_attr_full]
-pub fn legacy_charcode(k: &KeyWrapper) -> u32 {
-    unsafe { k.k.legacy_charcode() }
-}*/
 
 #[side_effect_free_attr_full]
 pub fn to_string(k: &KeyWrapper) -> String {
@@ -453,27 +417,6 @@ pub struct CodeWrapper {
 
 unsafe impl InvisibleSideEffectFree for CodeWrapper {}
 
-/*#[derive(Clone, Default, InvisibleSideEffectFreeDerive, MallocSizeOf)]
-pub struct PreDOMString {
-    pub s: String,
-}
-
-impl From<PreDOMString> for String {
-    fn from(contents: PreDOMString) -> String {
-        contents.s
-    }
-}
-
-/*pub struct CellWrapper<T> {
-    pub c: std::cell::Cell<T>
-}*/
-
-impl<T: MallocSizeOf + Copy + SecretValueSafe, L1: sec_lat::Label, L2: sec_lat::Label> MallocSizeOf for CellWrapper<InfoFlowStruct<T, L1, L2, DynamicSecretLabel, DynamicIntegrityLabel>> {
-    fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
-        self.c.borrow().unwrap_unsafe_dynamic_all::<L1, L2>().size_of(ops)
-    }
-}*/
-
 #[derive(Clone, Default)]
 pub struct SecurePart<T> {
     pub type_: T,         //this
@@ -504,3 +447,94 @@ impl<T: InvisibleSideEffectFree> SecurePart<T> {
     }
 }
 unsafe impl<T: InvisibleSideEffectFree> InvisibleSideEffectFree for SecurePart<T> {}
+
+#[side_effect_free_attr_full]
+pub fn custom_rev(self_: unicode_segmentation::UWordBounds) -> std::iter::Rev<unicode_segmentation::UWordBounds> {
+    unchecked_operation(self_.rev())
+}
+
+#[side_effect_free_attr_full]
+pub fn custom_next_rev<'a>(self_: &mut std::iter::Rev<unicode_segmentation::UWordBounds<'a>>) -> Option<&'a str> {
+    unchecked_operation(self_.next())
+}
+
+#[side_effect_free_attr_full]
+pub fn custom_next_uwordbounds<'a>(self_: &mut unicode_segmentation::UWordBounds<'a>) -> Option<&'a str> {
+    unchecked_operation(self_.next())
+}
+
+#[side_effect_free_attr_full]
+pub fn custom_split_word_bounds<'a>(self_: &&'a str) -> unicode_segmentation::UWordBounds<'a> {
+    unchecked_operation(self_.split_word_bounds())
+}
+
+#[side_effect_free_attr_full]
+pub fn custom_map<B, F: FnMut(&str) -> B, F2: Fn(char) -> bool>(self_: std::str::Split<'_, F2>, f: F) -> std::iter::Map<std::str::Split<'_, F2>, F> {
+    unchecked_operation(self_.map(f))
+}
+
+#[side_effect_free_attr_full]
+pub fn custom_graphemes(self_: &str, is_extended: bool) -> unicode_segmentation::Graphemes {
+    unchecked_operation(self_.graphemes(is_extended))
+}
+
+#[side_effect_free_attr_full]
+pub fn custom_next_back<'a>(self_: &mut unicode_segmentation::Graphemes<'a>) -> Option<&'a str> {
+    unchecked_operation(self_.next_back())
+}
+
+#[side_effect_free_attr_full]
+pub fn custom_take_graphemes<'a>(self_: unicode_segmentation::Graphemes<'a>, n: usize) -> std::iter::Take<unicode_segmentation::Graphemes<'a>> {
+    unchecked_operation(self_.take(n))
+}
+
+#[side_effect_free_attr_full]
+pub fn custom_take_charindices<'a>(self_: std::str::CharIndices<'a>, n: usize) -> std::iter::Take<std::str::CharIndices<'a>> {
+    unchecked_operation(self_.take(n))
+}
+
+#[side_effect_free_attr_full]
+pub fn custom_fold<'a, F: FnMut(usize, &str) -> usize>(self_: std::iter::Take<unicode_segmentation::Graphemes<'a>>, init: usize, f: F) -> usize {
+    unchecked_operation(self_.fold(init, f))
+}
+
+//Carapace: TODO: add to allowlist
+#[side_effect_free_attr_full]
+pub fn custom_last<'a>(self_: std::iter::Take<std::str::CharIndices<'a>>) -> Option<(usize, char)> {
+    unchecked_operation(self_.last())
+}
+
+#[side_effect_free_attr_full]
+pub fn custom_contains(self_: &ModifiersWrapper, other: ModifiersWrapper) -> bool {
+    unchecked_operation(self_.m.contains(other.m))
+}
+
+#[side_effect_free_attr_full]
+pub fn custom_remove(self_: &mut ModifiersWrapper, other: ModifiersWrapper) {
+    unchecked_operation(self_.m.remove(other.m))
+}
+
+#[side_effect_free_attr_full]
+pub fn custom_clone_key_state_wrapper(self_: &KeyStateWrapper) -> KeyStateWrapper {
+    unchecked_operation(self_.clone())
+}
+
+#[side_effect_free_attr_full]
+pub fn custom_clone_key_wrapper(self_: &KeyWrapper) -> KeyWrapper {
+    unchecked_operation(self_.clone())
+}
+
+#[side_effect_free_attr_full]
+pub fn custom_clone_location_wrapper(self_: &LocationWrapper) -> LocationWrapper {
+    unchecked_operation(self_.clone())
+}
+
+#[side_effect_free_attr_full]
+pub fn custom_clone_code_wrapper(self_: &CodeWrapper) -> CodeWrapper {
+    unchecked_operation(self_.clone())
+}
+
+#[side_effect_free_attr_full]
+pub fn custom_clone_modifiers_wrapper(self_: &ModifiersWrapper) -> ModifiersWrapper {
+    unchecked_operation(self_.clone())
+}

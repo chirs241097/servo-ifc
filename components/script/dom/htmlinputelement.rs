@@ -1057,9 +1057,10 @@ impl<'dom> LayoutHTMLInputElementHelpers<'dom> for LayoutDom<'dom, HTMLInputElem
                 let ret : String =
                 info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, dynamic_sec_label, dynamic_int_label, {
                     let text = unwrap_secret_ref(&sectext);
-                    if unchecked_operation(!text.is_empty()) {
+                    if !std::string::String::is_empty(DOMString::to_string_ref(&text)) {
+                        let cs = core::primitive::str::chars(DOMString::to_str_ref(&text));
                         unchecked_operation(
-                        text.chars()
+                        cs
                             .map(|_| PASSWORD_REPLACEMENT_CHAR)
                             .collect::<String>()
                         )
@@ -1080,7 +1081,7 @@ impl<'dom> LayoutHTMLInputElementHelpers<'dom> for LayoutDom<'dom, HTMLInputElem
                 let ret : String =
                 info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, dynamic_sec_label, dynamic_int_label, {
                     let text = DOMString::to_owned(unwrap_secret(sectext));
-                    if unchecked_operation(!text.is_empty()) {
+                    if !std::string::String::is_empty(&text) {
                         text
                     } else {
                         placeholder
@@ -1114,11 +1115,11 @@ impl<'dom> LayoutHTMLInputElementHelpers<'dom> for LayoutDom<'dom, HTMLInputElem
                 //let char_end = char_start + text[sel].chars().count();
                 let char_start = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, text.get_dynamic_secret_label_clone(), text.get_dynamic_integrity_label_clone(), {
                     let s = DOMString::to_str_ref(unwrap_secret_ref(&text));
-                    unchecked_operation(s[..sel.start].chars().count())
+                    std::str::Chars::count(core::primitive::str::chars(&s[..sel.start]))
                 });
                 let char_end = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, text.get_dynamic_secret_label_clone(), text.get_dynamic_integrity_label_clone(), {
                     let s = DOMString::to_str_ref(unwrap_secret_ref(&text));
-                    unchecked_operation(char_start + s[sel].chars().count())
+                    char_start + std::str::Chars::count(core::primitive::str::chars(&s[sel]))
                 });
 
                 let bytes_per_char = PASSWORD_REPLACEMENT_CHAR.len_utf8();
@@ -2085,7 +2086,8 @@ impl HTMLInputElement {
         if !p.sanitization_flag {
             return value;
         }
-        let mut ret = std::clone::Clone::clone(&value);
+        let mut ret = DOMString::from_string(std::string::String::clone(DOMString::to_string_ref(&value)));
+        //let mut ret = std::clone::Clone::clone(&value);
         match p.input_type {
             InputType::Text | InputType::Search | InputType::Tel | InputType::Password => {
                 DOMString::strip_newlines(&mut ret);
@@ -2143,7 +2145,7 @@ impl HTMLInputElement {
             // https://html.spec.whatwg.org/multipage/#range-state-(type=range):value-sanitization-algorithm
             InputType::Range => {
                 if ! unsafe { ret.is_valid_floating_point_number_string() } {
-                    ret = DOMString::from_string(f64::to_string(&p.default_range_value));
+                    ret = DOMString::from_string(core::primitive::f64::to_string(&p.default_range_value));
                 }
                 match unsafe { ret.parse::<f64>() } {
                     Ok(fval) => {
@@ -2188,7 +2190,7 @@ impl HTMLInputElement {
                             },
                             None => ()
                         }
-                        ret = DOMString::from_string(f64::to_string(&fval));
+                        ret = DOMString::from_string(core::primitive::f64::to_string(&fval));
                     },
                     _ => ()
                 };

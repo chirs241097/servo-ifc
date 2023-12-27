@@ -21,13 +21,12 @@ use servo_url::ServoUrl;
 use std::fmt::{Debug, Error, Formatter};
 use webrender_api::units::{DeviceIntPoint, DeviceIntRect, DeviceIntSize};
 
+pub use webxr_api::MainThreadWaker as EventLoopWaker;
+
+//Carapace: Add imports
 use keyboard_wrapper::SecKeyboardEvent;
 use secret_structs::integrity_lattice as int_lat;
 use secret_structs::ternary_lattice as sec_lat;
-//use secret_structs::secret::secret::SecretBlockSafe;
-//use secret_structs::secret::secret::{StaticDynamicAll,DynamicSecretLabel, DynamicIntegrityLabel};
-
-pub use webxr_api::MainThreadWaker as EventLoopWaker;
 
 /// A cursor for the window. This is different from a CSS cursor (see
 /// `CursorKind`) in that it has no `Auto` value.
@@ -173,6 +172,7 @@ pub enum EmbedderMsg {
     /// Wether or not to unload a document
     AllowUnload(IpcSender<bool>),
     /// Sends an unconsumed key event back to the embedder.
+    //Carapace: Change Keyboard to hold a secret value.
     Keyboard(SecKeyboardEvent<sec_lat::Label_A, int_lat::Label_All>),
     /// Gets system clipboard contents
     GetClipboardContents(IpcSender<String>),
