@@ -2198,7 +2198,7 @@ impl HTMLInputElement {
                     DOMString::strip_newlines(&mut ret);
                     DOMString::strip_leading_and_trailing_ascii_whitespace(&mut ret);
                 } else {
-                    let sanitized = unsafe { str_join(
+                    let sanitized = unchecked_operation(str_join(
                         split_commas(ret.to_str_ref()).map(|token| {
                             let mut token = DOMString::from_string(token.to_string());
                             token.strip_newlines();
@@ -2206,7 +2206,7 @@ impl HTMLInputElement {
                             token
                         }),
                         ",",
-                    )};
+                    ));
                     DOMString::clear(&mut ret);
                     DOMString::push_str(&mut ret, std::string::String::as_str(&sanitized));
                 }

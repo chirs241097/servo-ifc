@@ -394,7 +394,7 @@ impl DOMString {
     #[side_effect_free_attr_full(method)]
     pub fn parse_date_string(&self) -> Result<(i32, u32, u32), ()> {
         // Step 1, 2, 3
-        let (year_int, month_int, day_int) = unsafe { parse_date_component(&self.s)? };
+        let (year_int, month_int, day_int) = unchecked_operation(parse_date_component(&self.s)?);
 
         // Step 4
         match str::Split::nth(&mut core::primitive::str::split(&self.s, '-'), 3) {
@@ -408,7 +408,7 @@ impl DOMString {
     #[side_effect_free_attr_full(method)]
     pub fn parse_time_string(&self) -> Result<(u32, u32, f64), ()> {
         // Step 1, 2, 3
-        let (hour_int, minute_int, second_float) = unsafe { parse_time_component(&self.s)? };
+        let (hour_int, minute_int, second_float) = unchecked_operation(parse_time_component(&self.s)?);
 
         // Step 4
         match str::Split::nth(&mut core::primitive::str::split(&self.s, ':'), 3) {
@@ -433,7 +433,7 @@ impl DOMString {
     #[side_effect_free_attr_full(method)]
     pub fn parse_month_string(&self) -> Result<(i32, u32), ()> {
         // Step 1, 2, 3
-        let (year_int, month_int) = unsafe { parse_month_component(&self.s)? };
+        let (year_int, month_int) = unchecked_operation(parse_month_component(&self.s)?);
 
         // Step 4
         match str::Split::nth(&mut core::primitive::str::split(&self.s, '-'), 2) {
@@ -501,7 +501,7 @@ impl DOMString {
     /// https://html.spec.whatwg.org/multipage/#valid-floating-point-number
     #[side_effect_free_attr_full(method)]
     pub fn is_valid_floating_point_number_string(&self) -> bool {
-        unsafe{ DOMString::is_valid_floating_point_number_string_internals(&self) }
+        unchecked_operation(DOMString::is_valid_floating_point_number_string_internals(&self))
     }
 
     fn is_valid_floating_point_number_string_internals(&self) -> bool {
@@ -552,23 +552,23 @@ impl DOMString {
         let ((year, month, day), (hour, minute, second)) =
             DOMString::parse_local_date_and_time_string(&self)?;
         if second == 0.0 {
-            self.s = unsafe{ format!(
+            self.s = unchecked_operation(format!(
                 "{:04}-{:02}-{:02}T{:02}:{:02}",
                 year, month, day, hour, minute
-            )};
+            ));
         } else if second < 10.0 {
             // we need exactly one leading zero on the seconds,
             // whatever their total string length might be
-            self.s = unsafe{ format!(
+            self.s = unchecked_operation(format!(
                 "{:04}-{:02}-{:02}T{:02}:{:02}:0{}",
                 year, month, day, hour, minute, second
-            )};
+            ));
         } else {
             // we need no leading zeroes on the seconds
-            self.s = unsafe{ format!(
+            self.s = unchecked_operation(format!(
                 "{:04}-{:02}-{:02}T{:02}:{:02}:{}",
                 year, month, day, hour, minute, second
-            )};
+            ));
         }
         std::result::Result::Ok(())
     }
@@ -587,11 +587,11 @@ impl DOMString {
 
         // Step 3
         let date = std::option::Option::ok_or(str::Split::next(&mut iterator),())?;
-        let date_tuple = unsafe{ parse_date_component(date)? };
+        let date_tuple = unchecked_operation(parse_date_component(date)?);
 
         // Step 5
         let time = std::option::Option::ok_or(str::Split::next(&mut iterator),())?;
-        let time_tuple = unsafe{ parse_time_component(time)? };
+        let time_tuple = unchecked_operation(parse_time_component(time)?);
 
         // Step 6
         match str::Split::next(&mut iterator) {
@@ -871,7 +871,7 @@ fn max_day_in_month(year_num: i32, month_num: u32) -> Result<u32, ()> {
 /// https://html.spec.whatwg.org/multipage/#week-number-of-the-last-day
 #[side_effect_free_attr_full]
 fn max_week_in_year(year: i32) -> u32 {
-    match unsafe{ Utc.ymd(year as i32, 1, 1).weekday() } {
+    match unchecked_operation(Utc.ymd(year as i32, 1, 1).weekday()) {
         Weekday::Thu => 53,
         Weekday::Wed if is_leap_year(year) => 53,
         _ => 52,
