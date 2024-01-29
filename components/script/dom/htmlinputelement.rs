@@ -2113,7 +2113,7 @@ impl HTMLInputElement {
             },
             InputType::Color => {
                 if DOMString::is_valid_simple_color_string(&ret) {
-                    str::make_ascii_lowercase(&mut ret);
+                    core::primitive::str::make_ascii_lowercase(&mut ret);
                 } else {
                     ret = DOMString::from_str("#000000");
                 }
@@ -2145,7 +2145,7 @@ impl HTMLInputElement {
                 if ! DOMString::is_valid_floating_point_number_string(&ret) {
                     ret = DOMString::from_string(core::primitive::f64::to_string(&p.default_range_value));
                 }
-                match str::parse::<f64>(&ret) {
+                match core::primitive::str::parse::<f64>(&ret) {
                     Ok(fval) => {
                         let mut fval = fval;
                         // comparing max first, because if they contradict
@@ -2166,7 +2166,7 @@ impl HTMLInputElement {
                             Some(allowed_value_step) => {
                                 let step_base = p.step_base;
                                 let steps_from_base = (fval - step_base) / allowed_value_step;
-                                if f64::fract(steps_from_base) != 0.0 {
+                                if core::primitive::f64::fract(steps_from_base) != 0.0 {
                                     // not an integer number of steps, there's a mismatch
                                     // round the number of steps...
                                     let int_steps = round_halves_positive(steps_from_base);
@@ -3062,10 +3062,10 @@ fn round_halves_positive(n: f64) -> f64 {
     // WHATWG specs about input steps say to round to the nearest step,
     // rounding halves always to positive infinity.
     // This differs from Rust's .round() in the case of -X.5.
-    if f64::fract(n) == -0.5 {
-        f64::ceil(n)
+    if core::primitive::f64::fract(n) == -0.5 {
+        core::primitive::f64::ceil(n)
     } else {
-        f64::round(n)
+        core::primitive::f64::round(n)
     }
 }
 

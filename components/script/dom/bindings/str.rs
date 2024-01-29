@@ -316,15 +316,15 @@ impl DOMString {
             return;
         }
 
-        let trailing_whitespace_len = str::len(
-            str::trim_end_matches(&self.s, |ref c| char::is_ascii_whitespace(c))
+        let trailing_whitespace_len = core::primitive::str::len(
+            core::primitive::str::trim_end_matches(&self.s, |ref c| core::primitive::char::is_ascii_whitespace(c))
         );
         std::string::String::truncate(&mut self.s, trailing_whitespace_len);
         if std::string::String::is_empty(&self.s) {
             return;
         }
 
-        let first_non_whitespace = std::option::Option::unwrap(str::find(&self.s, |ref c| !char::is_ascii_whitespace(c)));
+        let first_non_whitespace = std::option::Option::unwrap(core::primitive::str::find(&self.s, |ref c| !core::primitive::char::is_ascii_whitespace(c)));
         let _ = std::string::String::replace_range(&mut self.s, 0..first_non_whitespace, "");
     }
 
@@ -332,7 +332,7 @@ impl DOMString {
     /// <https://html.spec.whatwg.org/multipage/#valid-time-string>.
     #[side_effect_free_attr_full(method)]
     pub fn is_valid_time_string(&self) -> bool {
-        let state = std::str::Chars::fold(str::chars(&self.s), TimeParserState::HourHigh, |state, c| {
+        let state = std::str::Chars::fold(core::primitive::str::chars(&self.s), TimeParserState::HourHigh, |state, c| {
             match state {
                 // Step 1 "HH"
                 TimeParserState::HourHigh => match c {
@@ -340,28 +340,28 @@ impl DOMString {
                     '2' => TimeParserState::HourLow03,
                     _ => TimeParserState::Error,
                 },
-                TimeParserState::HourLow09 => next_time_parser_state(char::is_digit(c, 10), TimeParserState::MinuteColon),
-                TimeParserState::HourLow03 => next_time_parser_state(char::is_digit(c, 4), TimeParserState::MinuteColon),
+                TimeParserState::HourLow09 => next_time_parser_state(core::primitive::char::is_digit(c, 10), TimeParserState::MinuteColon),
+                TimeParserState::HourLow03 => next_time_parser_state(core::primitive::char::is_digit(c, 4), TimeParserState::MinuteColon),
 
                 // Step 2 ":"
                 TimeParserState::MinuteColon => next_time_parser_state(c == ':', TimeParserState::MinuteHigh),
 
                 // Step 3 "mm"
-                TimeParserState::MinuteHigh => next_time_parser_state(char::is_digit(c, 6), TimeParserState::MinuteLow),
-                TimeParserState::MinuteLow => next_time_parser_state(char::is_digit(c, 10), TimeParserState::SecondColon),
+                TimeParserState::MinuteHigh => next_time_parser_state(core::primitive::char::is_digit(c, 6), TimeParserState::MinuteLow),
+                TimeParserState::MinuteLow => next_time_parser_state(core::primitive::char::is_digit(c, 10), TimeParserState::SecondColon),
 
                 // Step 4.1 ":"
                 TimeParserState::SecondColon => next_time_parser_state(c == ':', TimeParserState::SecondHigh),
                 // Step 4.2 "ss"
-                TimeParserState::SecondHigh => next_time_parser_state(char::is_digit(c, 6), TimeParserState::SecondLow),
-                TimeParserState::SecondLow => next_time_parser_state(char::is_digit(c, 10), TimeParserState::MilliStop),
+                TimeParserState::SecondHigh => next_time_parser_state(core::primitive::char::is_digit(c, 6), TimeParserState::SecondLow),
+                TimeParserState::SecondLow => next_time_parser_state(core::primitive::char::is_digit(c, 10), TimeParserState::MilliStop),
 
                 // Step 4.3.1 "."
                 TimeParserState::MilliStop => next_time_parser_state(c == '.', TimeParserState::MilliHigh),
                 // Step 4.3.2 "SSS"
-                TimeParserState::MilliHigh => next_time_parser_state(char::is_digit(c, 10), TimeParserState::MilliMiddle),
-                TimeParserState::MilliMiddle => next_time_parser_state(char::is_digit(c, 10), TimeParserState::MilliLow),
-                TimeParserState::MilliLow => next_time_parser_state(char::is_digit(c, 10), TimeParserState::Done),
+                TimeParserState::MilliHigh => next_time_parser_state(core::primitive::char::is_digit(c, 10), TimeParserState::MilliMiddle),
+                TimeParserState::MilliMiddle => next_time_parser_state(core::primitive::char::is_digit(c, 10), TimeParserState::MilliLow),
+                TimeParserState::MilliLow => next_time_parser_state(core::primitive::char::is_digit(c, 10), TimeParserState::Done),
 
                 _ => TimeParserState::Error,
             }
@@ -397,7 +397,7 @@ impl DOMString {
         let (year_int, month_int, day_int) = unsafe { parse_date_component(&self.s)? };
 
         // Step 4
-        match str::Split::nth(&mut str::split(&self.s, '-'), 3) {
+        match str::Split::nth(&mut core::primitive::str::split(&self.s, '-'), 3) {
             Some(_) => std::result::Result::Err(()),
             // Step 5, 6
             _ => std::result::Result::Ok((year_int, month_int, day_int))
@@ -411,7 +411,7 @@ impl DOMString {
         let (hour_int, minute_int, second_float) = unsafe { parse_time_component(&self.s)? };
 
         // Step 4
-        match str::Split::nth(&mut str::split(&self.s, ':'), 3) {
+        match str::Split::nth(&mut core::primitive::str::split(&self.s, ':'), 3) {
             Some(_) => std::result::Result::Err(()),
             // Step 5, 6
             _ => std::result::Result::Ok((hour_int, minute_int, second_float))
@@ -436,7 +436,7 @@ impl DOMString {
         let (year_int, month_int) = unsafe { parse_month_component(&self.s)? };
 
         // Step 4
-        match str::Split::nth(&mut str::split(&self.s, '-'), 2) {
+        match str::Split::nth(&mut core::primitive::str::split(&self.s, '-'), 2) {
             Some(_) => return std::result::Result::Err(()),
             // Step 5
             _ => std::result::Result::Ok((year_int, month_int))
@@ -458,26 +458,26 @@ impl DOMString {
     #[side_effect_free_attr_full(method)]
     pub fn parse_week_string(&self) -> Result<(i32, u32), ()> {
         // Step 1, 2, 3
-        let mut iterator = str::split(&self.s, '-');
+        let mut iterator = core::primitive::str::split(&self.s, '-');
         let year = std::option::Option::ok_or(str::Split::next(&mut iterator), ())?;
 
         // Step 4
-        let year_int = std::result::Result::map_err(str::parse::<i32>(&year), |_|())?;
-        if str::len(&year) < 4 || year_int == 0 {
+        let year_int = std::result::Result::map_err(core::primitive::str::parse::<i32>(&year), |_|())?;
+        if core::primitive::str::len(&year) < 4 || year_int == 0 {
             return std::result::Result::Err(());
         }
 
         // Step 5, 6
         let week = std::option::Option::ok_or(str::Split::next(&mut iterator), ())?;
-        let (week_first, week_last) = str::split_at(&week, 1);
+        let (week_first, week_last) = core::primitive::str::split_at(&week, 1);
         //if *week_first != "W"  {
         if secret_structs::secret::SafePartialEq::safe_ne(week_first, "W") {
             return std::result::Result::Err(());
         }
 
         // Step 7
-        let week_int = std::result::Result::map_err(str::parse::<u32>(&week_last), |_|())?;
-        if str::len(&week_last) != 2 {
+        let week_int = std::result::Result::map_err(core::primitive::str::parse::<u32>(&week_last), |_|())?;
+        if core::primitive::str::len(&week_last) != 2 {
             return std::result::Result::Err(());
         }
 
@@ -520,15 +520,15 @@ impl DOMString {
         // compiler already matches them in any cases where
         // that actually matters. They are not
         // related to f64::round(), which is for rounding to integers.
-        match str::parse::<f64>(str::trim(&self.s)) {
+        match core::primitive::str::parse::<f64>(core::primitive::str::trim(&self.s)) {
             Ok(val)
                 if !(
                     // A valid number is the same as what rust considers to be valid,
                     // except for +1., NaN, and Infinity.
-                    f64::is_infinite(val) ||
-                        f64::is_nan(val) ||
-                        str::ends_with(&self.s, ".") ||
-                        str::starts_with(&self.s, "+")
+                    core::primitive::f64::is_infinite(val) ||
+                        core::primitive::f64::is_nan(val) ||
+                        core::primitive::str::ends_with(&self.s, ".") ||
+                        core::primitive::str::starts_with(&self.s, "+")
                 ) =>
             {
                 std::result::Result::Ok(val)
@@ -579,10 +579,10 @@ impl DOMString {
         &self,
     ) -> Result<((i32, u32, u32), (u32, u32, f64)), ()> {
         // Step 1, 2, 4
-        let mut iterator = if str::contains(&self.s, 'T') {
-            str::split(&self.s, 'T')
+        let mut iterator = if core::primitive::str::contains(&self.s, 'T') {
+            core::primitive::str::split(&self.s, 'T')
         } else {
-            str::split(&self.s, ' ')
+            core::primitive::str::split(&self.s, ' ')
         };
 
         // Step 3
@@ -617,12 +617,12 @@ impl DOMString {
     /// https://html.spec.whatwg.org/multipage/#valid-simple-colour
     #[side_effect_free_attr_full(method)]
     pub fn is_valid_simple_color_string(&self) -> bool {
-        let mut chars = str::chars(&self.s);
-        if str::len(&self.s) == 7 && match std::str::Chars::next(&mut chars) {
+        let mut chars = core::primitive::str::chars(&self.s);
+        if core::primitive::str::len(&self.s) == 7 && match std::str::Chars::next(&mut chars) {
             Some('#') => true,
             _ => false
         } {
-            std::str::Chars::all(&mut chars, |c| char::is_digit(c, 16))
+            std::str::Chars::all(&mut chars, |c| core::primitive::char::is_digit(c, 16))
         } else {
             false
         }

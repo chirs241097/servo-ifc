@@ -5666,6 +5666,7 @@ name = "secret_structs"
 version = "0.1.0"
 dependencies = [
  "glam",
+ "libc",
  "secret_macros",
  "serde",
  "unicode-segmentation",
