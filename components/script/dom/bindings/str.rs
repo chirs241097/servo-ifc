@@ -208,6 +208,34 @@ pub struct DOMString{s: String, p: PhantomData<*const ()>}
 //Carapace: Impl InvisibleSideEffectFree for DOMString so it can be used in IFC blocks.
 unsafe impl InvisibleSideEffectFree for DOMString{}
 
+enum TimeParserState {
+    HourHigh,
+    HourLow09,
+    HourLow03,
+    MinuteColon,
+    MinuteHigh,
+    MinuteLow,
+    SecondColon,
+    SecondHigh,
+    SecondLow,
+    MilliStop,
+    MilliHigh,
+    MilliMiddle,
+    MilliLow,
+    Done,
+    Error,
+}
+unsafe impl InvisibleSideEffectFree for TimeParserState{}
+
+#[side_effect_free_attr_full]
+fn next_time_parser_state(valid: bool, next: TimeParserState) -> TimeParserState {
+    if valid {
+        next
+    } else {
+        TimeParserState::Error
+    }
+}
+
 impl DOMString {
     //Carapace: Add functions to replace Deref Coerction
     #[side_effect_free_attr_full(method)]
@@ -282,95 +310,71 @@ impl DOMString {
 
     /// Removes leading and trailing ASCII whitespaces according to
     /// <https://infra.spec.whatwg.org/#strip-leading-and-trailing-ascii-whitespace>.
+    #[side_effect_free_attr_full(method)]
     pub fn strip_leading_and_trailing_ascii_whitespace(&mut self) {
-        if self.s.len() == 0 {
+        if std::string::String::len(&self.s) == 0 {
             return;
         }
 
-        let trailing_whitespace_len = self
-            .s
-            .trim_end_matches(|ref c| char::is_ascii_whitespace(c))
-            .len();
-        self.s.truncate(trailing_whitespace_len);
-        if self.s.is_empty() {
+        let trailing_whitespace_len = str::len(
+            str::trim_end_matches(&self.s, |ref c| char::is_ascii_whitespace(c))
+        );
+        std::string::String::truncate(&mut self.s, trailing_whitespace_len);
+        if std::string::String::is_empty(&self.s) {
             return;
         }
 
-        let first_non_whitespace = self.s.find(|ref c| !char::is_ascii_whitespace(c)).unwrap();
-        let _ = self.s.replace_range(0..first_non_whitespace, "");
+        let first_non_whitespace = std::option::Option::unwrap(str::find(&self.s, |ref c| !char::is_ascii_whitespace(c)));
+        let _ = std::string::String::replace_range(&mut self.s, 0..first_non_whitespace, "");
     }
 
     /// Validates this `DOMString` is a time string according to
     /// <https://html.spec.whatwg.org/multipage/#valid-time-string>.
+    #[side_effect_free_attr_full(method)]
     pub fn is_valid_time_string(&self) -> bool {
-        enum State {
-            HourHigh,
-            HourLow09,
-            HourLow03,
-            MinuteColon,
-            MinuteHigh,
-            MinuteLow,
-            SecondColon,
-            SecondHigh,
-            SecondLow,
-            MilliStop,
-            MilliHigh,
-            MilliMiddle,
-            MilliLow,
-            Done,
-            Error,
-        }
-        let next_state = |valid: bool, next: State| -> State {
-            if valid {
-                next
-            } else {
-                State::Error
-            }
-        };
-
-        let state = self.chars().fold(State::HourHigh, |state, c| {
+        let state = std::str::Chars::fold(str::chars(&self.s), TimeParserState::HourHigh, |state, c| {
             match state {
                 // Step 1 "HH"
-                State::HourHigh => match c {
-                    '0' | '1' => State::HourLow09,
-                    '2' => State::HourLow03,
-                    _ => State::Error,
+                TimeParserState::HourHigh => match c {
+                    '0' | '1' => TimeParserState::HourLow09,
+                    '2' => TimeParserState::HourLow03,
+                    _ => TimeParserState::Error,
                 },
-                State::HourLow09 => next_state(c.is_digit(10), State::MinuteColon),
-                State::HourLow03 => next_state(c.is_digit(4), State::MinuteColon),
+                TimeParserState::HourLow09 => next_time_parser_state(char::is_digit(c, 10), TimeParserState::MinuteColon),
+                TimeParserState::HourLow03 => next_time_parser_state(char::is_digit(c, 4), TimeParserState::MinuteColon),
 
                 // Step 2 ":"
-                State::MinuteColon => next_state(c == ':', State::MinuteHigh),
+                TimeParserState::MinuteColon => next_time_parser_state(c == ':', TimeParserState::MinuteHigh),
 
                 // Step 3 "mm"
-                State::MinuteHigh => next_state(c.is_digit(6), State::MinuteLow),
-                State::MinuteLow => next_state(c.is_digit(10), State::SecondColon),
+                TimeParserState::MinuteHigh => next_time_parser_state(char::is_digit(c, 6), TimeParserState::MinuteLow),
+                TimeParserState::MinuteLow => next_time_parser_state(char::is_digit(c, 10), TimeParserState::SecondColon),
 
                 // Step 4.1 ":"
-                State::SecondColon => next_state(c == ':', State::SecondHigh),
+                TimeParserState::SecondColon => next_time_parser_state(c == ':', TimeParserState::SecondHigh),
                 // Step 4.2 "ss"
-                State::SecondHigh => next_state(c.is_digit(6), State::SecondLow),
-                State::SecondLow => next_state(c.is_digit(10), State::MilliStop),
+                TimeParserState::SecondHigh => next_time_parser_state(char::is_digit(c, 6), TimeParserState::SecondLow),
+                TimeParserState::SecondLow => next_time_parser_state(char::is_digit(c, 10), TimeParserState::MilliStop),
 
                 // Step 4.3.1 "."
-                State::MilliStop => next_state(c == '.', State::MilliHigh),
+                TimeParserState::MilliStop => next_time_parser_state(c == '.', TimeParserState::MilliHigh),
                 // Step 4.3.2 "SSS"
-                State::MilliHigh => next_state(c.is_digit(10), State::MilliMiddle),
-                State::MilliMiddle => next_state(c.is_digit(10), State::MilliLow),
-                State::MilliLow => next_state(c.is_digit(10), State::Done),
+                TimeParserState::MilliHigh => next_time_parser_state(char::is_digit(c, 10), TimeParserState::MilliMiddle),
+                TimeParserState::MilliMiddle => next_time_parser_state(char::is_digit(c, 10), TimeParserState::MilliLow),
+                TimeParserState::MilliLow => next_time_parser_state(char::is_digit(c, 10), TimeParserState::Done),
 
-                _ => State::Error,
+                _ => TimeParserState::Error,
             }
         });
 
         match state {
-            State::Done |
+            TimeParserState::Done |
             // Step 4 (optional)
-            State::SecondColon |
+            TimeParserState::SecondColon |
             // Step 4.3 (optional)
-            State::MilliStop |
+            TimeParserState::MilliStop |
             // Step 4.3.2 (only 1 digit required)
-            State::MilliMiddle | State::MilliLow => true,
+            TimeParserState::MilliMiddle | TimeParserState::MilliLow => true,
             _ => false
         }
     }
@@ -378,92 +382,103 @@ impl DOMString {
     /// A valid date string should be "YYYY-MM-DD"
     /// YYYY must be four or more digits, MM and DD both must be two digits
     /// https://html.spec.whatwg.org/multipage/#valid-date-string
+    #[side_effect_free_attr_full(method)]
     pub fn is_valid_date_string(&self) -> bool {
-        self.parse_date_string().is_ok()
+        match DOMString::parse_date_string(self) {
+            Ok(_) => true,
+            Err(_) => false
+        }
     }
 
     /// https://html.spec.whatwg.org/multipage/#parse-a-date-string
+    #[side_effect_free_attr_full(method)]
     pub fn parse_date_string(&self) -> Result<(i32, u32, u32), ()> {
-        let value = &self.s;
         // Step 1, 2, 3
-        let (year_int, month_int, day_int) = parse_date_component(value)?;
+        let (year_int, month_int, day_int) = unsafe { parse_date_component(&self.s)? };
 
         // Step 4
-        if value.split('-').nth(3).is_some() {
-            return Err(());
+        match str::Split::nth(&mut str::split(&self.s, '-'), 3) {
+            Some(_) => std::result::Result::Err(()),
+            // Step 5, 6
+            _ => std::result::Result::Ok((year_int, month_int, day_int))
         }
-
-        // Step 5, 6
-        Ok((year_int, month_int, day_int))
     }
 
     /// https://html.spec.whatwg.org/multipage/#parse-a-time-string
+    #[side_effect_free_attr_full(method)]
     pub fn parse_time_string(&self) -> Result<(u32, u32, f64), ()> {
-        let value = &self.s;
         // Step 1, 2, 3
-        let (hour_int, minute_int, second_float) = parse_time_component(value)?;
+        let (hour_int, minute_int, second_float) = unsafe { parse_time_component(&self.s)? };
 
         // Step 4
-        if value.split(':').nth(3).is_some() {
-            return Err(());
+        match str::Split::nth(&mut str::split(&self.s, ':'), 3) {
+            Some(_) => std::result::Result::Err(()),
+            // Step 5, 6
+            _ => std::result::Result::Ok((hour_int, minute_int, second_float))
         }
-
-        // Step 5, 6
-        Ok((hour_int, minute_int, second_float))
     }
 
     /// A valid month string should be "YYYY-MM"
     /// YYYY must be four or more digits, MM both must be two digits
     /// https://html.spec.whatwg.org/multipage/#valid-month-string
+    #[side_effect_free_attr_full(method)]
     pub fn is_valid_month_string(&self) -> bool {
-        self.parse_month_string().is_ok()
+        match DOMString::parse_month_string(&self) {
+            Ok(_) => true,
+            Err(_) => false
+        }
     }
 
     /// https://html.spec.whatwg.org/multipage/#parse-a-month-string
+    #[side_effect_free_attr_full(method)]
     pub fn parse_month_string(&self) -> Result<(i32, u32), ()> {
-        let value = &self;
         // Step 1, 2, 3
-        let (year_int, month_int) = parse_month_component(value)?;
+        let (year_int, month_int) = unsafe { parse_month_component(&self.s)? };
 
         // Step 4
-        if value.split("-").nth(2).is_some() {
-            return Err(());
+        match str::Split::nth(&mut str::split(&self.s, '-'), 2) {
+            Some(_) => return std::result::Result::Err(()),
+            // Step 5
+            _ => std::result::Result::Ok((year_int, month_int))
         }
-        // Step 5
-        Ok((year_int, month_int))
     }
 
     /// A valid week string should be like {YYYY}-W{WW}, such as "2017-W52"
     /// YYYY must be four or more digits, WW both must be two digits
     /// https://html.spec.whatwg.org/multipage/#valid-week-string
+    #[side_effect_free_attr_full(method)]
     pub fn is_valid_week_string(&self) -> bool {
-        self.parse_week_string().is_ok()
+        match DOMString::parse_week_string(&self) {
+            Ok(_) => true,
+            Err(_) => false
+        }
     }
 
     /// https://html.spec.whatwg.org/multipage/#parse-a-week-string
+    #[side_effect_free_attr_full(method)]
     pub fn parse_week_string(&self) -> Result<(i32, u32), ()> {
-        let value = &self.s;
         // Step 1, 2, 3
-        let mut iterator = value.split('-');
-        let year = iterator.next().ok_or(())?;
+        let mut iterator = str::split(&self.s, '-');
+        let year = std::option::Option::ok_or(str::Split::next(&mut iterator), ())?;
 
         // Step 4
-        let year_int = year.parse::<i32>().map_err(|_| ())?;
-        if year.len() < 4 || year_int == 0 {
-            return Err(());
+        let year_int = std::result::Result::map_err(str::parse::<i32>(&year), |_|())?;
+        if str::len(&year) < 4 || year_int == 0 {
+            return std::result::Result::Err(());
         }
 
         // Step 5, 6
-        let week = iterator.next().ok_or(())?;
-        let (week_first, week_last) = week.split_at(1);
-        if week_first != "W" {
-            return Err(());
+        let week = std::option::Option::ok_or(str::Split::next(&mut iterator), ())?;
+        let (week_first, week_last) = str::split_at(&week, 1);
+        //if *week_first != "W"  {
+        if secret_structs::secret::SafePartialEq::safe_ne(week_first, "W") {
+            return std::result::Result::Err(());
         }
 
         // Step 7
-        let week_int = week_last.parse::<u32>().map_err(|_| ())?;
-        if week_last.len() != 2 {
-            return Err(());
+        let week_int = std::result::Result::map_err(str::parse::<u32>(&week_last), |_|())?;
+        if str::len(&week_last) != 2 {
+            return std::result::Result::Err(());
         }
 
         // Step 8
@@ -471,20 +486,25 @@ impl DOMString {
 
         // Step 9
         if week_int < 1 || week_int > max_week {
-            return Err(());
+            return std::result::Result::Err(());
         }
 
         // Step 10
-        if iterator.next().is_some() {
-            return Err(());
+        match str::Split::next(&mut iterator) {
+            Some(_) => std::result::Result::Err(()),
+            None =>
+                // Step 11
+                std::result::Result::Ok((year_int, week_int))
         }
-
-        // Step 11
-        Ok((year_int, week_int))
     }
 
     /// https://html.spec.whatwg.org/multipage/#valid-floating-point-number
+    #[side_effect_free_attr_full(method)]
     pub fn is_valid_floating_point_number_string(&self) -> bool {
+        unsafe{ DOMString::is_valid_floating_point_number_string_internals(&self) }
+    }
+
+    fn is_valid_floating_point_number_string_internals(&self) -> bool {
         lazy_static! {
             static ref RE: Regex =
                 Regex::new(r"^-?(?:\d+\.\d+|\d+|\.\d+)(?:(e|E)(\+|\-)?\d+)?$").unwrap();
@@ -493,27 +513,27 @@ impl DOMString {
     }
 
     /// https://html.spec.whatwg.org/multipage/#rules-for-parsing-floating-point-number-values
+    #[side_effect_free_attr_full(method)]
     pub fn parse_floating_point_number(&self) -> Result<f64, ()> {
         // Steps 15-16 are telling us things about IEEE rounding modes
         // for floating-point significands; this code assumes the Rust
         // compiler already matches them in any cases where
         // that actually matters. They are not
         // related to f64::round(), which is for rounding to integers.
-        let input = &self.s;
-        match input.trim().parse::<f64>() {
+        match str::parse::<f64>(str::trim(&self.s)) {
             Ok(val)
                 if !(
                     // A valid number is the same as what rust considers to be valid,
                     // except for +1., NaN, and Infinity.
-                    val.is_infinite() ||
-                        val.is_nan() ||
-                        input.ends_with(".") ||
-                        input.starts_with("+")
+                    f64::is_infinite(val) ||
+                        f64::is_nan(val) ||
+                        str::ends_with(&self.s, ".") ||
+                        str::starts_with(&self.s, "+")
                 ) =>
             {
-                Ok(val)
+                std::result::Result::Ok(val)
             },
-            _ => Err(()),
+            _ => std::result::Result::Err(()),
         }
     }
 
@@ -527,58 +547,59 @@ impl DOMString {
     /// A valid normalized local date and time string should be "{date}T{time}"
     /// where date and time are both valid, and the time string must be as short as possible
     /// https://html.spec.whatwg.org/multipage/#valid-normalised-local-date-and-time-string
+    #[side_effect_free_attr_full(method)]
     pub fn convert_valid_normalized_local_date_and_time_string(&mut self) -> Result<(), ()> {
         let ((year, month, day), (hour, minute, second)) =
-            self.parse_local_date_and_time_string()?;
+            DOMString::parse_local_date_and_time_string(&self)?;
         if second == 0.0 {
-            self.s = format!(
+            self.s = unsafe{ format!(
                 "{:04}-{:02}-{:02}T{:02}:{:02}",
                 year, month, day, hour, minute
-            );
+            )};
         } else if second < 10.0 {
             // we need exactly one leading zero on the seconds,
             // whatever their total string length might be
-            self.s = format!(
+            self.s = unsafe{ format!(
                 "{:04}-{:02}-{:02}T{:02}:{:02}:0{}",
                 year, month, day, hour, minute, second
-            );
+            )};
         } else {
             // we need no leading zeroes on the seconds
-            self.s = format!(
+            self.s = unsafe{ format!(
                 "{:04}-{:02}-{:02}T{:02}:{:02}:{}",
                 year, month, day, hour, minute, second
-            );
+            )};
         }
-        Ok(())
+        std::result::Result::Ok(())
     }
 
     /// https://html.spec.whatwg.org/multipage/#parse-a-local-date-and-time-string
+    #[side_effect_free_attr_full(method)]
     pub fn parse_local_date_and_time_string(
         &self,
     ) -> Result<((i32, u32, u32), (u32, u32, f64)), ()> {
-        let value = &self;
         // Step 1, 2, 4
-        let mut iterator = if value.contains('T') {
-            value.split('T')
+        let mut iterator = if str::contains(&self.s, 'T') {
+            str::split(&self.s, 'T')
         } else {
-            value.split(' ')
+            str::split(&self.s, ' ')
         };
 
         // Step 3
-        let date = iterator.next().ok_or(())?;
-        let date_tuple = parse_date_component(date)?;
+        let date = std::option::Option::ok_or(str::Split::next(&mut iterator),())?;
+        let date_tuple = unsafe{ parse_date_component(date)? };
 
         // Step 5
-        let time = iterator.next().ok_or(())?;
-        let time_tuple = parse_time_component(time)?;
+        let time = std::option::Option::ok_or(str::Split::next(&mut iterator),())?;
+        let time_tuple = unsafe{ parse_time_component(time)? };
 
         // Step 6
-        if iterator.next().is_some() {
-            return Err(());
+        match str::Split::next(&mut iterator) {
+            Some(_) => std::result::Result::Err(()),
+            None =>
+                // Step 7, 8, 9
+                std::result::Result::Ok((date_tuple, time_tuple))
         }
-
-        // Step 7, 8, 9
-        Ok((date_tuple, time_tuple))
     }
 
     /// https://html.spec.whatwg.org/multipage/#valid-e-mail-address
@@ -594,10 +615,14 @@ impl DOMString {
     }
 
     /// https://html.spec.whatwg.org/multipage/#valid-simple-colour
+    #[side_effect_free_attr_full(method)]
     pub fn is_valid_simple_color_string(&self) -> bool {
-        let mut chars = self.s.chars();
-        if self.s.len() == 7 && chars.next() == Some('#') {
-            chars.all(|c| c.is_digit(16))
+        let mut chars = str::chars(&self.s);
+        if str::len(&self.s) == 7 && match std::str::Chars::next(&mut chars) {
+            Some('#') => true,
+            _ => false
+        } {
+            std::str::Chars::all(&mut chars, |c| char::is_digit(c, 16))
         } else {
             false
         }
@@ -827,24 +852,26 @@ fn parse_time_component(value: &str) -> Result<(u32, u32, f64), ()> {
     Ok((hour_int, minute_int, second_float))
 }
 
+#[side_effect_free_attr_full]
 fn max_day_in_month(year_num: i32, month_num: u32) -> Result<u32, ()> {
     match month_num {
-        1 | 3 | 5 | 7 | 8 | 10 | 12 => Ok(31),
-        4 | 6 | 9 | 11 => Ok(30),
+        1 | 3 | 5 | 7 | 8 | 10 | 12 => std::result::Result::Ok(31),
+        4 | 6 | 9 | 11 => std::result::Result::Ok(30),
         2 => {
             if is_leap_year(year_num) {
-                Ok(29)
+                std::result::Result::Ok(29)
             } else {
-                Ok(28)
+                std::result::Result::Ok(28)
             }
         },
-        _ => Err(()),
+        _ => std::result::Result::Err(()),
     }
 }
 
 /// https://html.spec.whatwg.org/multipage/#week-number-of-the-last-day
+#[side_effect_free_attr_full]
 fn max_week_in_year(year: i32) -> u32 {
-    match Utc.ymd(year as i32, 1, 1).weekday() {
+    match unsafe{ Utc.ymd(year as i32, 1, 1).weekday() } {
         Weekday::Thu => 53,
         Weekday::Wed if is_leap_year(year) => 53,
         _ => 52,
@@ -852,6 +879,7 @@ fn max_week_in_year(year: i32) -> u32 {
 }
 
 #[inline]
+#[side_effect_free_attr_full]
 fn is_leap_year(year: i32) -> bool {
     year % 400 == 0 || (year % 4 == 0 && year % 100 != 0)
 }

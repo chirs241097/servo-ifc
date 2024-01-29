@@ -2094,45 +2094,43 @@ impl HTMLInputElement {
             },
             InputType::Url => {
                 DOMString::strip_newlines(&mut ret);
-                unsafe { ret.strip_leading_and_trailing_ascii_whitespace()}
+                DOMString::strip_leading_and_trailing_ascii_whitespace(&mut ret)
             },
             InputType::Date => {
-                if ! unsafe { ret.is_valid_date_string() } {
+                if ! DOMString::is_valid_date_string(&ret) {
                     DOMString::clear(&mut ret);
                 }
             },
             InputType::Month => {
-                if ! unsafe { ret.is_valid_month_string() } {
+                if ! DOMString::is_valid_month_string(&ret) {
                     DOMString::clear(&mut ret);
                 }
             },
             InputType::Week => {
-                if ! unsafe { ret.is_valid_week_string() } {
+                if ! DOMString::is_valid_week_string(&ret) {
                     DOMString::clear(&mut ret);
                 }
             },
             InputType::Color => {
-                if unsafe { ret.is_valid_simple_color_string() } {
-                    unsafe { ret.make_ascii_lowercase(); }
+                if DOMString::is_valid_simple_color_string(&ret) {
+                    str::make_ascii_lowercase(&mut ret);
                 } else {
                     ret = DOMString::from_str("#000000");
                 }
             },
             InputType::Time => {
-                if ! unsafe { ret.is_valid_time_string() } {
+                if ! DOMString::is_valid_time_string(&ret) {
                     DOMString::clear(&mut ret);
                 }
             },
             InputType::DatetimeLocal => {
-                if unsafe { ret
-                    .convert_valid_normalized_local_date_and_time_string()
-                    .is_err() }
+                if std::result::Result::is_err(&DOMString::convert_valid_normalized_local_date_and_time_string(&mut ret))
                 {
                     DOMString::clear(&mut ret);
                 }
             },
             InputType::Number => {
-                if ! unsafe { ret.is_valid_floating_point_number_string() } {
+                if ! DOMString::is_valid_floating_point_number_string(&ret) {
                     DOMString::clear(&mut ret);
                 }
                 // Spec says that user agent "may" round the value
@@ -2144,10 +2142,10 @@ impl HTMLInputElement {
             },
             // https://html.spec.whatwg.org/multipage/#range-state-(type=range):value-sanitization-algorithm
             InputType::Range => {
-                if ! unsafe { ret.is_valid_floating_point_number_string() } {
+                if ! DOMString::is_valid_floating_point_number_string(&ret) {
                     ret = DOMString::from_string(core::primitive::f64::to_string(&p.default_range_value));
                 }
-                match unsafe { ret.parse::<f64>() } {
+                match str::parse::<f64>(&ret) {
                     Ok(fval) => {
                         let mut fval = fval;
                         // comparing max first, because if they contradict
@@ -2168,10 +2166,10 @@ impl HTMLInputElement {
                             Some(allowed_value_step) => {
                                 let step_base = p.step_base;
                                 let steps_from_base = (fval - step_base) / allowed_value_step;
-                                if unsafe { steps_from_base.fract() } != 0.0 {
+                                if f64::fract(steps_from_base) != 0.0 {
                                     // not an integer number of steps, there's a mismatch
                                     // round the number of steps...
-                                    let int_steps = unsafe { round_halves_positive(steps_from_base) };
+                                    let int_steps = round_halves_positive(steps_from_base);
                                     // and snap the value to that rounded value...
                                     fval = int_steps * allowed_value_step + step_base;
 
@@ -2198,7 +2196,7 @@ impl HTMLInputElement {
             InputType::Email => {
                 if !p.multi {
                     DOMString::strip_newlines(&mut ret);
-                    unsafe { ret.strip_leading_and_trailing_ascii_whitespace(); }
+                    DOMString::strip_leading_and_trailing_ascii_whitespace(&mut ret);
                 } else {
                     let sanitized = unsafe { str_join(
                         split_commas(ret.to_str_ref()).map(|token| {
@@ -3059,14 +3057,15 @@ fn filter_from_accept(s: &DOMString) -> Vec<FilterPattern> {
     filter
 }
 
+#[side_effect_free_attr_full]
 fn round_halves_positive(n: f64) -> f64 {
     // WHATWG specs about input steps say to round to the nearest step,
     // rounding halves always to positive infinity.
     // This differs from Rust's .round() in the case of -X.5.
-    if n.fract() == -0.5 {
-        n.ceil()
+    if f64::fract(n) == -0.5 {
+        f64::ceil(n)
     } else {
-        n.round()
+        f64::round(n)
     }
 }
 
