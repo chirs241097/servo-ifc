@@ -394,7 +394,7 @@ impl DOMString {
     #[side_effect_free_attr_full(method)]
     pub fn parse_date_string(&self) -> Result<(i32, u32, u32), ()> {
         // Step 1, 2, 3
-        let (year_int, month_int, day_int) = unchecked_operation(parse_date_component(&self.s)?);
+        let (year_int, month_int, day_int) = parse_date_component(&self.s)?;
 
         // Step 4
         match str::Split::nth(&mut core::primitive::str::split(&self.s, '-'), 3) {
@@ -408,7 +408,7 @@ impl DOMString {
     #[side_effect_free_attr_full(method)]
     pub fn parse_time_string(&self) -> Result<(u32, u32, f64), ()> {
         // Step 1, 2, 3
-        let (hour_int, minute_int, second_float) = unchecked_operation(parse_time_component(&self.s)?);
+        let (hour_int, minute_int, second_float) = parse_time_component(&self.s)?;
 
         // Step 4
         match str::Split::nth(&mut core::primitive::str::split(&self.s, ':'), 3) {
@@ -433,7 +433,7 @@ impl DOMString {
     #[side_effect_free_attr_full(method)]
     pub fn parse_month_string(&self) -> Result<(i32, u32), ()> {
         // Step 1, 2, 3
-        let (year_int, month_int) = unchecked_operation(parse_month_component(&self.s)?);
+        let (year_int, month_int) = parse_month_component(&self.s)?;
 
         // Step 4
         match str::Split::nth(&mut core::primitive::str::split(&self.s, '-'), 2) {
@@ -587,11 +587,11 @@ impl DOMString {
 
         // Step 3
         let date = std::option::Option::ok_or(str::Split::next(&mut iterator),())?;
-        let date_tuple = unchecked_operation(parse_date_component(date)?);
+        let date_tuple = parse_date_component(date)?;
 
         // Step 5
         let time = std::option::Option::ok_or(str::Split::next(&mut iterator),())?;
-        let time_tuple = unchecked_operation(parse_time_component(time)?);
+        let time_tuple = parse_time_component(time)?;
 
         // Step 6
         match str::Split::next(&mut iterator) {
@@ -756,100 +756,103 @@ impl Extend<char> for DOMString {
 }
 
 /// https://html.spec.whatwg.org/multipage/#parse-a-month-component
+#[side_effect_free_attr_full]
 fn parse_month_component(value: &str) -> Result<(i32, u32), ()> {
     // Step 3
-    let mut iterator = value.split('-');
-    let year = iterator.next().ok_or(())?;
-    let month = iterator.next().ok_or(())?;
+    let mut iterator = core::primitive::str::split(&value, '-');
+    let year = std::option::Option::ok_or(str::Split::next(&mut iterator), ())?;
+    let month = std::option::Option::ok_or(str::Split::next(&mut iterator), ())?;
 
     // Step 1, 2
-    let year_int = year.parse::<i32>().map_err(|_| ())?;
-    if year.len() < 4 || year_int == 0 {
-        return Err(());
+    let year_int = std::result::Result::map_err(core::primitive::str::parse::<i32>(&year), |_| ())?;
+    if core::primitive::str::len(&year) < 4 || year_int == 0 {
+        return std::result::Result::Err(());
     }
 
     // Step 4, 5
-    let month_int = month.parse::<u32>().map_err(|_| ())?;
-    if month.len() != 2 || month_int > 12 || month_int < 1 {
-        return Err(());
+    let month_int = std::result::Result::map_err(core::primitive::str::parse::<u32>(&month), |_| ())?;
+    if core::primitive::str::len(&month) != 2 || month_int > 12 || month_int < 1 {
+        return std::result::Result::Err(());
     }
 
     // Step 6
-    Ok((year_int, month_int))
+    std::result::Result::Ok((year_int, month_int))
 }
 
 /// https://html.spec.whatwg.org/multipage/#parse-a-date-component
+#[side_effect_free_attr_full]
 fn parse_date_component(value: &str) -> Result<(i32, u32, u32), ()> {
     // Step 1
     let (year_int, month_int) = parse_month_component(value)?;
 
     // Step 3, 4
-    let day = value.split('-').nth(2).ok_or(())?;
-    let day_int = day.parse::<u32>().map_err(|_| ())?;
-    if day.len() != 2 {
-        return Err(());
+    let day = std::option::Option::ok_or(str::Split::nth(&mut core::primitive::str::split(&value, '-'), 2), ())?;
+    let day_int = std::result::Result::map_err(core::primitive::str::parse::<u32>(&day), |_| ())?;
+    if core::primitive::str::len(&day) != 2 {
+        return std::result::Result::Err(());
     }
 
     // Step 2, 5
     let max_day = max_day_in_month(year_int, month_int)?;
     if day_int == 0 || day_int > max_day {
-        return Err(());
+        return std::result::Result::Err(());
     }
 
     // Step 6
-    Ok((year_int, month_int, day_int))
+    std::result::Result::Ok((year_int, month_int, day_int))
 }
 
 /// https://html.spec.whatwg.org/multipage/#parse-a-time-component
+#[side_effect_free_attr_full]
 fn parse_time_component(value: &str) -> Result<(u32, u32, f64), ()> {
     // Step 1
-    let mut iterator = value.split(':');
-    let hour = iterator.next().ok_or(())?;
-    if hour.len() != 2 {
-        return Err(());
+    let mut iterator = core::primitive::str::split(&value, ':');
+    let hour = std::option::Option::ok_or(str::Split::next(&mut iterator), ())?;
+    if core::primitive::str::len(&hour) != 2 {
+        return std::result::Result::Err(());
     }
-    let hour_int = hour.parse::<u32>().map_err(|_| ())?;
+    let hour_int = std::result::Result::map_err(core::primitive::str::parse::<u32>(&hour), |_| ())?;
 
     // Step 2
     if hour_int > 23 {
-        return Err(());
+        return std::result::Result::Err(());
     }
 
     // Step 3, 4
-    let minute = iterator.next().ok_or(())?;
-    if minute.len() != 2 {
-        return Err(());
+    let minute = std::option::Option::ok_or(str::Split::next(&mut iterator), ())?;
+    if core::primitive::str::len(&minute) != 2 {
+        return std::result::Result::Err(());
     }
-    let minute_int = minute.parse::<u32>().map_err(|_| ())?;
+    let minute_int = std::result::Result::map_err(core::primitive::str::parse::<u32>(&minute), |_| ())?;
 
     // Step 5
     if minute_int > 59 {
-        return Err(());
+        return std::result::Result::Err(());
     }
 
     // Step 6, 7
-    let second_float = match iterator.next() {
+    let second_float = match str::Split::next(&mut iterator) {
         Some(second) => {
-            let mut second_iterator = second.split('.');
-            if second_iterator.next().ok_or(())?.len() != 2 {
-                return Err(());
+            let mut second_iterator = core::primitive::str::split(&second, '.');
+            if core::primitive::str::len(std::option::Option::ok_or(str::Split::next(&mut second_iterator), ())?) != 2 {
+                return std::result::Result::Err(());
             }
-            match second_iterator.next() {
+            match str::Split::next(&mut second_iterator) {
                 Some(second_last) => {
-                    if second_last.len() > 3 {
-                        return Err(());
+                    if core::primitive::str::len(&second_last) > 3 {
+                        return std::result::Result::Err(());
                     }
                 },
                 None => {},
             }
 
-            second.parse::<f64>().map_err(|_| ())?
+            std::result::Result::map_err(core::primitive::str::parse::<f64>(&second), |_| ())?
         },
         None => 0.0,
     };
 
     // Step 8
-    Ok((hour_int, minute_int, second_float))
+    std::result::Result::Ok((hour_int, minute_int, second_float))
 }
 
 #[side_effect_free_attr_full]
