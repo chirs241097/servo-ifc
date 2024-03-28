@@ -708,7 +708,7 @@ pub struct ScriptThread {
     inherited_secure_context: Option<bool>,
 
     // Mapping from domain names to secrecy tags
-    domain_label_map: DomRefCell<HashMap<String, DynamicSecretComponent>>,
+    domain_label_map: DomRefCell<HashMap<String, DynamicTag<Sec>>>,
 }
 
 struct BHMExitSignal {
@@ -916,7 +916,7 @@ impl ScriptThread {
         })
     }
 
-    pub fn get_secrecy_tag_for_domain_impl(&self, d: DOMString) -> DynamicSecretComponent {
+    pub fn get_secrecy_tag_for_domain_impl(&self, d: DOMString) -> DynamicTag<Sec> {
         let ds = String::from(d);
         if let Some(tag) = self.domain_label_map.borrow().get(&ds) {
             return tag.clone();
@@ -926,7 +926,7 @@ impl ScriptThread {
         new_tag
     }
 
-    pub fn get_secrecy_tag_for_domain(d: DOMString) -> Option<DynamicSecretComponent> {
+    pub fn get_secrecy_tag_for_domain(d: DOMString) -> Option<DynamicTag<Sec>> {
         SCRIPT_THREAD_ROOT.with(|root| {
             if let Some(script_thread) = root.get() {
                 let script_thread = unsafe { &*script_thread };
@@ -3623,42 +3623,42 @@ impl ScriptThread {
                         he.get_domain()
                     } else { DOMString::from("") }
                 } else { DOMString::from("") };
-                let dynamic_sec_label = new_dynamic_secret_label(vec![self.get_secrecy_tag_for_domain_impl(focused_element_domain)]);
-                let dynamic_sec_label_old = new_dynamic_secret_label(vec![]);
-                let dynamic_int_label = new_dynamic_integrity_label(vec![]);
+                let dynamic_sec_label = DynamicLabel::<Sec>::new_size_one(self.get_secrecy_tag_for_domain_impl(focused_element_domain));
+                let dynamic_sec_label_old = DynamicLabel::<Sec>::new_default();
+                let dynamic_int_label = DynamicLabel::<Int>::new_default();
                 let state = info_flow_block_dynamic_all_partial_declassify_dynamic_all!(
-                    sec_lat::Label_A, int_lat::Label_All, dynamic_sec_label_old.clone(), dynamic_int_label.clone(),
-                    sec_lat::Label_Empty, int_lat::Label_All, dynamic_sec_label.clone(), dynamic_int_label.clone(), {
+                    sec_lat::Label_A, int_lat::Label_All, &dynamic_sec_label_old, &dynamic_int_label,
+                    sec_lat::Label_Empty, int_lat::Label_All, &dynamic_sec_label, &dynamic_int_label, {
                         wrap_secret(custom_clone_key_state_wrapper(unwrap_secret_ref(&key_event.state)))
                 });
                 let key = info_flow_block_dynamic_all_partial_declassify_dynamic_all!(
-                    sec_lat::Label_A, int_lat::Label_All, dynamic_sec_label_old.clone(), dynamic_int_label.clone(),
-                    sec_lat::Label_Empty, int_lat::Label_All, dynamic_sec_label.clone(), dynamic_int_label.clone(), {
+                    sec_lat::Label_A, int_lat::Label_All, &dynamic_sec_label_old, &dynamic_int_label,
+                    sec_lat::Label_Empty, int_lat::Label_All, &dynamic_sec_label, &dynamic_int_label, {
                         wrap_secret(custom_clone_key_wrapper(unwrap_secret_ref(&key_event.key)))
                 });
                 let code = info_flow_block_dynamic_all_partial_declassify_dynamic_all!(
-                    sec_lat::Label_A, int_lat::Label_All, dynamic_sec_label_old.clone(), dynamic_int_label.clone(),
-                    sec_lat::Label_Empty, int_lat::Label_All, dynamic_sec_label.clone(), dynamic_int_label.clone(), {
+                    sec_lat::Label_A, int_lat::Label_All, &dynamic_sec_label_old, &dynamic_int_label,
+                    sec_lat::Label_Empty, int_lat::Label_All, &dynamic_sec_label, &dynamic_int_label, {
                         wrap_secret(custom_clone_code_wrapper(unwrap_secret_ref(&key_event.code)))
                 });
                 let location = info_flow_block_dynamic_all_partial_declassify_dynamic_all!(
-                    sec_lat::Label_A, int_lat::Label_All, dynamic_sec_label_old.clone(), dynamic_int_label.clone(),
-                    sec_lat::Label_Empty, int_lat::Label_All, dynamic_sec_label.clone(), dynamic_int_label.clone(), {
+                    sec_lat::Label_A, int_lat::Label_All, &dynamic_sec_label_old, &dynamic_int_label,
+                    sec_lat::Label_Empty, int_lat::Label_All, &dynamic_sec_label, &dynamic_int_label, {
                         wrap_secret(custom_clone_location_wrapper(unwrap_secret_ref(&key_event.location)))
                 });
                 let modifiers = info_flow_block_dynamic_all_partial_declassify_dynamic_all!(
-                    sec_lat::Label_A, int_lat::Label_All, dynamic_sec_label_old.clone(), dynamic_int_label.clone(),
-                    sec_lat::Label_Empty, int_lat::Label_All, dynamic_sec_label.clone(), dynamic_int_label.clone(), {
+                    sec_lat::Label_A, int_lat::Label_All, &dynamic_sec_label_old, &dynamic_int_label,
+                    sec_lat::Label_Empty, int_lat::Label_All, &dynamic_sec_label, &dynamic_int_label, {
                         wrap_secret(custom_clone_modifiers_wrapper(unwrap_secret_ref(&key_event.modifiers)))
                 });
                 let repeat = info_flow_block_dynamic_all_partial_declassify_dynamic_all!(
-                    sec_lat::Label_A, int_lat::Label_All, dynamic_sec_label_old.clone(), dynamic_int_label.clone(),
-                    sec_lat::Label_Empty, int_lat::Label_All, dynamic_sec_label.clone(), dynamic_int_label.clone(), {
+                    sec_lat::Label_A, int_lat::Label_All, &dynamic_sec_label_old, &dynamic_int_label,
+                    sec_lat::Label_Empty, int_lat::Label_All, &dynamic_sec_label, &dynamic_int_label, {
                         wrap_secret(*unwrap_secret_ref(&key_event.repeat))
                 });
                 let is_composing = info_flow_block_dynamic_all_partial_declassify_dynamic_all!(
-                    sec_lat::Label_A, int_lat::Label_All, dynamic_sec_label_old.clone(), dynamic_int_label.clone(),
-                    sec_lat::Label_Empty, int_lat::Label_All, dynamic_sec_label.clone(), dynamic_int_label.clone(), {
+                    sec_lat::Label_A, int_lat::Label_All, &dynamic_sec_label_old, &dynamic_int_label,
+                    sec_lat::Label_Empty, int_lat::Label_All, &dynamic_sec_label, &dynamic_int_label, {
                         wrap_secret(*unwrap_secret_ref(&key_event.is_composing))
                 });
                 let key_event_dl = SecKeyboardEvent::<sec_lat::Label_Empty, int_lat::Label_All>{state, key, code, location, modifiers, repeat, is_composing};

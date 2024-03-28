@@ -183,10 +183,9 @@ use secret_structs::ternary_lattice::Label;
 use secret_structs::secret::StaticDynamicAll;
 use keyboard_wrapper::KeyWrapper;
 use keyboard_wrapper::ModifiersWrapper;
-use secret_structs::secret::DynamicSecretLabel;
-use secret_structs::secret::DynamicIntegrityLabel;
+use secret_structs::secret::DynamicLabel;
 use secret_structs::secret::InfoFlowStruct;
-use secret_structs::secret::DynamicSecretComponent;
+use secret_structs::secret::*;
 
 unsafe_no_jsmanaged_fields!(Tm);
 unsafe_no_jsmanaged_fields!(JoinHandle<()>);
@@ -329,12 +328,12 @@ unsafe impl<T: JSTraceable> JSTraceable for [T] {
 }
 
 //Vincent: Added the following specific implementations
-unsafe impl<L1, L2> JSTraceable for InfoFlowStruct<DOMString, L1, L2, DynamicSecretLabel, DynamicIntegrityLabel>
+unsafe impl<L1, L2> JSTraceable for InfoFlowStruct<DOMString, L1, L2, DynamicLabel<Sec>, DynamicLabel<Int>>
     where L1: Label, L2: Label {
     unsafe fn trace(&self, trc: *mut JSTracer) { /* does nothing (same as unsafe_no_jsmanaged_fields) */ }
 }
 
-unsafe impl<L1, L2> JSTraceable for DomRefCell<StaticDynamicAll<KeyWrapper,L1,L2,DynamicSecretLabel,DynamicIntegrityLabel>> 
+unsafe impl<L1, L2> JSTraceable for DomRefCell<StaticDynamicAll<KeyWrapper,L1,L2,DynamicLabel<Sec>,DynamicLabel<Int>>> 
     where L1: Label, L2: Label {
     unsafe fn trace(&self, trc: *mut JSTracer) {
         panic!("This should never be called");
@@ -342,7 +341,7 @@ unsafe impl<L1, L2> JSTraceable for DomRefCell<StaticDynamicAll<KeyWrapper,L1,L2
     }
 }
 
-unsafe impl<L1, L2> JSTraceable for DomRefCell<StaticDynamicAll<u32,L1,L2,DynamicSecretLabel,DynamicIntegrityLabel>>
+unsafe impl<L1, L2> JSTraceable for DomRefCell<StaticDynamicAll<u32,L1,L2,DynamicLabel<Sec>,DynamicLabel<Int>>>
     where L1: Label, L2: Label {
     unsafe fn trace(&self, trc: *mut JSTracer) {
         panic!("This should never be called");
@@ -350,7 +349,7 @@ unsafe impl<L1, L2> JSTraceable for DomRefCell<StaticDynamicAll<u32,L1,L2,Dynami
     }
 }
 
-unsafe impl<L1, L2> JSTraceable for DomRefCell<StaticDynamicAll<ModifiersWrapper,L1,L2,DynamicSecretLabel,DynamicIntegrityLabel>>
+unsafe impl<L1, L2> JSTraceable for DomRefCell<StaticDynamicAll<ModifiersWrapper,L1,L2,DynamicLabel<Sec>,DynamicLabel<Int>>>
     where L1: Label, L2: Label {
     unsafe fn trace(&self, trc: *mut JSTracer) {
         panic!("This should never be called");
@@ -358,7 +357,7 @@ unsafe impl<L1, L2> JSTraceable for DomRefCell<StaticDynamicAll<ModifiersWrapper
     }
 }
 
-unsafe impl<L1, L2> JSTraceable for DomRefCell<StaticDynamicAll<bool,L1,L2,DynamicSecretLabel,DynamicIntegrityLabel>>
+unsafe impl<L1, L2> JSTraceable for DomRefCell<StaticDynamicAll<bool,L1,L2,DynamicLabel<Sec>,DynamicLabel<Int>>>
     where L1: Label, L2: Label {
     unsafe fn trace(&self, trc: *mut JSTracer) {
         panic!("This should never be called");
@@ -726,7 +725,7 @@ unsafe_no_jsmanaged_fields!(WebrenderIpcSender);
 unsafe_no_jsmanaged_fields!(StreamConsumer);
 unsafe_no_jsmanaged_fields!(DocumentAnimationSet);
 unsafe_no_jsmanaged_fields!(Stencil);
-unsafe_no_jsmanaged_fields!(DynamicSecretComponent);
+unsafe_no_jsmanaged_fields!(DynamicTag<Sec>);
 
 unsafe impl<'a> JSTraceable for &'a str {
     #[inline]

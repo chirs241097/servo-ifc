@@ -1048,14 +1048,14 @@ impl<'dom> LayoutHTMLInputElementHelpers<'dom> for LayoutDom<'dom, HTMLInputElem
             InputType::Reset => get_raw_attr_value(self, DEFAULT_RESET_VALUE),
             InputType::Password => {
                 let domain_tag = unsafe { self.upcast::<HTMLElement>().unsafe_get() }.get_domain_secrecy_tag().unwrap();
-                let dynamic_sec_label = new_dynamic_secret_label(vec![domain_tag]);
-                let dynamic_int_label = new_dynamic_integrity_label(vec![]);
+                let dynamic_sec_label = DynamicLabel::<Sec>::new_size_one(domain_tag);
+                let dynamic_int_label = DynamicLabel::<Int>::new_default();
                 let sectext = self.get_raw_textinput_value();
                 let dynamic_sec_label = sectext.get_dynamic_secret_label_clone();
                 let dynamic_int_label = sectext.get_dynamic_integrity_label_clone();
                 let placeholder = String::from(self.placeholder());
                 let ret : String =
-                info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, dynamic_sec_label, dynamic_int_label, {
+                info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, &dynamic_sec_label, &dynamic_int_label, {
                     let text = unwrap_secret_ref(&sectext);
                     if !std::string::String::is_empty(DOMString::to_string_ref(&text)) {
                         let cs = core::primitive::str::chars(DOMString::to_str_ref(&text));
@@ -1072,14 +1072,14 @@ impl<'dom> LayoutHTMLInputElementHelpers<'dom> for LayoutDom<'dom, HTMLInputElem
             },
             _ => {
                 let domain_tag = unsafe { self.upcast::<HTMLElement>().unsafe_get() }.get_domain_secrecy_tag().unwrap();
-                let dynamic_sec_label = new_dynamic_secret_label(vec![domain_tag]);
+                let dynamic_sec_label = DynamicLabel::<Sec>::new_size_one(domain_tag);
                 //let dynamic_int_label = new_dynamic_integrity_label(vec![]);
                 let sectext = self.get_raw_textinput_value();
                 let dynamic_sec_label = sectext.get_dynamic_secret_label_clone();
                 let dynamic_int_label = sectext.get_dynamic_integrity_label_clone();
                 let placeholder = String::from(self.placeholder());
                 let ret : String =
-                info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, dynamic_sec_label, dynamic_int_label, {
+                info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, &dynamic_sec_label, &dynamic_int_label, {
                     let text = DOMString::to_owned(unwrap_secret(sectext));
                     if !std::string::String::is_empty(&text) {
                         text
@@ -1113,11 +1113,11 @@ impl<'dom> LayoutHTMLInputElementHelpers<'dom> for LayoutDom<'dom, HTMLInputElem
 
                 //let char_start = text[..sel.start].chars().count();
                 //let char_end = char_start + text[sel].chars().count();
-                let char_start = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, text.get_dynamic_secret_label_clone(), text.get_dynamic_integrity_label_clone(), {
+                let char_start = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, text.get_dynamic_secret_label_reference(), text.get_dynamic_integrity_label_reference(), {
                     let s = DOMString::to_str_ref(unwrap_secret_ref(&text));
                     std::str::Chars::count(core::primitive::str::chars(&s[..sel.start]))
                 });
-                let char_end = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, text.get_dynamic_secret_label_clone(), text.get_dynamic_integrity_label_clone(), {
+                let char_end = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, text.get_dynamic_secret_label_reference(), text.get_dynamic_integrity_label_reference(), {
                     let s = DOMString::to_str_ref(unwrap_secret_ref(&text));
                     char_start + std::str::Chars::count(core::primitive::str::chars(&s[sel]))
                 });
@@ -1332,12 +1332,12 @@ impl HTMLInputElementMethods for HTMLInputElement {
                 // Step 5.
                 let content = textinput.single_line_content().clone();
                 let secnewval = ServoSecureDynamic::new_info_flow_struct(value, content.get_dynamic_secret_label_clone(), content.get_dynamic_integrity_label_clone());
-                let cond = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, content.get_dynamic_secret_label_clone(), content.get_dynamic_integrity_label_clone(), {
+                let cond = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, content.get_dynamic_secret_label_reference(), content.get_dynamic_integrity_label_reference(), {
                     let unwrapped_old = unwrap_secret_ref(&content);
                     let unwrapped_new = unwrap_secret_ref(&secnewval);
                     wrap_secret(*DOMString::to_str_ref(unwrapped_old) != *DOMString::to_str_ref(unwrapped_new))
                 });
-                if info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, cond.get_dynamic_secret_label_clone(), cond.get_dynamic_integrity_label_clone(), {
+                if info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, cond.get_dynamic_secret_label_reference(), cond.get_dynamic_integrity_label_reference(), {
                     unwrap_secret(cond)
                 }) {
                     // Steps 1-2
@@ -1946,8 +1946,8 @@ impl HTMLInputElement {
             _ => (),
         }
         let domain_tag = self.upcast::<HTMLElement>().get_domain_secrecy_tag().unwrap();
-        let dynamic_sec_label = new_dynamic_secret_label(vec![domain_tag]);
-        let dynamic_int_label = new_dynamic_integrity_label(vec![]);
+        let dynamic_sec_label = DynamicLabel::<Sec>::new_size_one(domain_tag);
+        let dynamic_int_label = DynamicLabel::<Int>::new_default();
         let secdefval = ServoSecureDynamic::new_info_flow_struct(self.DefaultValue(), dynamic_sec_label, dynamic_int_label);
         self.textinput.borrow_mut().set_content(secdefval);
         self.value_dirty.set(false);
@@ -2052,7 +2052,7 @@ impl HTMLInputElement {
             multi: self.Multiple(),
         };
         let cval = value.clone();
-        info_flow_block_no_return_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, dynamic_sec_label, dynamic_int_label, {
+        info_flow_block_no_return_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, &dynamic_sec_label, &dynamic_int_label, {
             let new_value = HTMLInputElement::sanitize_value_impl(unwrap_secret(cval), p);
             DOMString::replace_content(unwrap_secret_mut_ref(value), DOMString::to_owned(new_value));
         });
@@ -2490,7 +2490,7 @@ impl VirtualMethods for HTMLInputElement {
                             if !new_type.is_textual() {
                                 if self.value_mode() == ValueMode::Value {
                                     let content = self.textinput.borrow().get_content();
-                                    info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, content.get_dynamic_secret_label_clone(), content.get_dynamic_integrity_label_clone(), {
+                                    info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, content.get_dynamic_secret_label_reference(), content.get_dynamic_integrity_label_reference(), {
                                         unwrap_secret(content)
                                     })
                                 } else {
@@ -2589,8 +2589,8 @@ impl VirtualMethods for HTMLInputElement {
 
                 self.sanitize_value(&mut value);
                 let domain_tag = self.upcast::<HTMLElement>().get_domain_secrecy_tag().unwrap();
-                let dynamic_sec_label = new_dynamic_secret_label(vec![domain_tag]);
-                let dynamic_int_label = new_dynamic_integrity_label(vec![]);
+                let dynamic_sec_label = DynamicLabel::<Sec>::new_size_one(domain_tag);
+                let dynamic_int_label = DynamicLabel::<Int>::new_default();
                 let secnewval = ServoSecureDynamic::new_info_flow_struct(value, dynamic_sec_label, dynamic_int_label);
                 self.textinput.borrow_mut().set_content(secnewval);
                 self.update_placeholder_shown_state();

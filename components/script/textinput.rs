@@ -206,12 +206,12 @@ pub struct TextPoint {
 
 impl TextPoint {
     /// Returns a TextPoint constrained to be a valid location within lines
-    fn constrain_to(&self, lines: &[InfoFlowStruct<DOMString, sec_lat::Label_Empty, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>]) -> TextPoint {
+    fn constrain_to(&self, lines: &[InfoFlowStruct<DOMString, sec_lat::Label_Empty, int_lat::Label_All, DynamicLabel<Sec>, DynamicLabel<Int>>]) -> TextPoint {
         let line = min(self.line, lines.len() - 1);
 
         TextPoint {
             line,
-            index: min(self.index, info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, lines[line].get_dynamic_secret_label_clone(), lines[line].get_dynamic_integrity_label_clone(), {
+            index: min(self.index, info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, lines[line].get_dynamic_secret_label_reference(), lines[line].get_dynamic_integrity_label_reference(), {
                 let unwrapped = unwrap_secret_ref(&lines[line]);
                 len_utf8_str(&DOMString::to_str_ref(unwrapped))
             })/*lines[line].len_utf8()*/),
@@ -297,8 +297,8 @@ pub const CMD_OR_CONTROL: Modifiers = Modifiers::CONTROL;
 ///
 /// If the string has fewer than n characters, returns the length of the whole string.
 /// If n is 0, returns 0
-fn len_of_first_n_chars(text: &InfoFlowStruct<DOMString, sec_lat::Label_Empty, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>, n: InfoFlowStruct<usize, sec_lat::Label_Empty, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>) -> UTF8Bytes {
-    info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, text.get_dynamic_secret_label_clone(), text.get_dynamic_integrity_label_clone(), {
+fn len_of_first_n_chars(text: &InfoFlowStruct<DOMString, sec_lat::Label_Empty, int_lat::Label_All, DynamicLabel<Sec>, DynamicLabel<Int>>, n: InfoFlowStruct<usize, sec_lat::Label_Empty, int_lat::Label_All, DynamicLabel<Sec>, DynamicLabel<Int>>) -> UTF8Bytes {
+    info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, text.get_dynamic_secret_label_reference(), text.get_dynamic_integrity_label_reference(), {
         let unwrapped = core::primitive::str::char_indices(&unwrap_secret_ref(text));
         let unwrapped_n = unwrap_secret_ref(&n);
 
@@ -324,7 +324,7 @@ fn len_of_first_n_code_units(text: &ServoSecureDynamic<DOMString> /*&str*/, n: U
     let mut utf16_len = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, text.get_dynamic_secret_label_clone(), text.get_dynamic_integrity_label_clone(), {
         wrap_secret(UTF16CodeUnits::zero())
     });*/
-    let utf8_len = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, text.get_dynamic_secret_label_clone(), text.get_dynamic_integrity_label_clone(), {
+    let utf8_len = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, text.get_dynamic_secret_label_reference(), text.get_dynamic_integrity_label_reference(), {
         let unwrapped_str = unwrap_secret_ref(&text);
         //let mut unwrapped_utf16 = unwrap_secret_mut_ref(&mut utf16_len);
         //let mut unwrapped_utf8 = unwrap_secret_mut_ref(&mut utf8_len);
@@ -339,7 +339,7 @@ fn len_of_first_n_code_units(text: &ServoSecureDynamic<DOMString> /*&str*/, n: U
         }
         wrap_secret(UTF8Bytes{value: utf8_val})
     });
-    info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, text.get_dynamic_secret_label_clone(), text.get_dynamic_integrity_label_clone(), {
+    info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, text.get_dynamic_secret_label_reference(), text.get_dynamic_integrity_label_reference(), {
         unwrap_secret(utf8_len)
     })
     /*for c in text.chars() {
@@ -438,11 +438,11 @@ impl<T: ClipboardProvider> TextInput<T> {
     }
 
     //Vincent: added new function
-    pub fn insert_secret_string<S: Into<String> + SecretValueSafe + SideEffectFree>(&mut self, s: ServoSecureDynamic<S>) {
+    pub fn insert_secret_string<S: Into<String> + SecretValueSafe + VisibleSideEffectFree>(&mut self, s: ServoSecureDynamic<S>) {
         if self.selection_origin.is_none() {
             self.selection_origin = Some(self.edit_point);
         }
-        self.replace_selection(info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, s.get_dynamic_secret_label_clone(), s.get_dynamic_integrity_label_clone(), {
+        self.replace_selection(info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, s.get_dynamic_secret_label_reference(), s.get_dynamic_integrity_label_reference(), {
             let unwrapped = unwrap_secret(s);
             wrap_secret(DOMString::from_string(unchecked_operation(std::convert::Into::<String>::into(unwrapped)/*.into()*/)))
         }) /*DOMString::from(s.into())*/);
@@ -515,11 +515,11 @@ impl<T: ClipboardProvider> TextInput<T> {
         if let Some(begin) = self.selection_origin {
             debug_assert!(begin.line < self.lines.len());
             let lines_ref = &self.lines;
-            let classified_len_utf8 = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, lines_ref[begin.line].get_dynamic_secret_label_clone(), lines_ref[begin.line].get_dynamic_integrity_label_clone(), {
+            let classified_len_utf8 = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, lines_ref[begin.line].get_dynamic_secret_label_reference(), lines_ref[begin.line].get_dynamic_integrity_label_reference(), {
                 let unwrapped = unwrap_secret_ref(&lines_ref[begin.line]);
                 wrap_secret(len_utf8_str(&DOMString::to_str_ref(unwrapped)))
             });
-            debug_assert!(begin.index <= info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, classified_len_utf8.get_dynamic_secret_label_clone(), classified_len_utf8.get_dynamic_integrity_label_clone(), {
+            debug_assert!(begin.index <= info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, classified_len_utf8.get_dynamic_secret_label_reference(), classified_len_utf8.get_dynamic_integrity_label_reference(), {
                 unwrap_secret(classified_len_utf8)
             }) /*self.lines[begin.line].len_utf8()*/ );
 
@@ -535,16 +535,16 @@ impl<T: ClipboardProvider> TextInput<T> {
         debug_assert!(self.edit_point.line < self.lines.len());
         let lines_ref = &self.lines;
         let line_usize = self.edit_point.line;
-        let classified_len_utf8 = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, self.lines[self.edit_point.line].get_dynamic_secret_label_clone(), self.lines[self.edit_point.line].get_dynamic_integrity_label_clone(), {
+        let classified_len_utf8 = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, self.lines[self.edit_point.line].get_dynamic_secret_label_reference(), self.lines[self.edit_point.line].get_dynamic_integrity_label_reference(), {
             let unwrapped = unwrap_secret_ref(&lines_ref[line_usize]);
             wrap_secret(len_utf8_str(&DOMString::to_str_ref(unwrapped)))
         });
-        debug_assert!(self.edit_point.index <= info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, classified_len_utf8.get_dynamic_secret_label_clone(), classified_len_utf8.get_dynamic_integrity_label_clone(), {
+        debug_assert!(self.edit_point.index <= info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, classified_len_utf8.get_dynamic_secret_label_reference(), classified_len_utf8.get_dynamic_integrity_label_reference(), {
             unwrap_secret(classified_len_utf8)
         }) /*self.lines[self.edit_point.line].len_utf8()*/ );
     }
 
-    pub fn get_selection_text(&self) -> Option<InfoFlowStruct<String, sec_lat::Label_Empty, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>> {
+    pub fn get_selection_text(&self) -> Option<InfoFlowStruct<String, sec_lat::Label_Empty, int_lat::Label_All, DynamicLabel<Sec>, DynamicLabel<Int>>> {
         let new = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {
             wrap_secret(std::string::String::new())
         });
@@ -556,7 +556,7 @@ impl<T: ClipboardProvider> TextInput<T> {
                 std::string::String::push_str(unwrapped_mut, unwrapped);
             });
         }/*s.push_str(slice)*/);
-        let bool_check = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, text.get_dynamic_secret_label_clone(), text.get_dynamic_integrity_label_clone(), {
+        let bool_check = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, text.get_dynamic_secret_label_reference(), text.get_dynamic_integrity_label_reference(), {
             let unwrapped = unwrap_secret_ref(&text);
             std::string::String::is_empty(unwrapped)
         });
@@ -585,7 +585,7 @@ impl<T: ClipboardProvider> TextInput<T> {
             });
             /* *len += UTF16CodeUnits(slice.chars().map(char::len_utf16).sum::<usize>())*/
         });
-        info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dynamic_secret_label_clone(), result.get_dynamic_integrity_label_clone(), {
+        info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dynamic_secret_label_reference(), result.get_dynamic_integrity_label_reference(), {
             unwrap_secret(result)
         })
     }
@@ -593,7 +593,7 @@ impl<T: ClipboardProvider> TextInput<T> {
     /// Run the callback on a series of slices that, concatenated, make up the selected text.
     ///
     /// The accumulator `acc` can be mutated by the callback, and will be returned at the end.
-    fn fold_selection_slices<B: SecretValueSafe, F: FnMut(&mut InfoFlowStruct<B, sec_lat::Label_Empty, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>, InfoFlowStruct<&str, sec_lat::Label_Empty, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>)>(&self, mut acc: InfoFlowStruct<B, sec_lat::Label_Empty, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>, mut f: F) -> InfoFlowStruct<B, sec_lat::Label_Empty, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel> {
+    fn fold_selection_slices<B: SecretValueSafe, F: FnMut(&mut InfoFlowStruct<B, sec_lat::Label_Empty, int_lat::Label_All, DynamicLabel<Sec>, DynamicLabel<Int>>, InfoFlowStruct<&str, sec_lat::Label_Empty, int_lat::Label_All, DynamicLabel<Sec>, DynamicLabel<Int>>)>(&self, mut acc: InfoFlowStruct<B, sec_lat::Label_Empty, int_lat::Label_All, DynamicLabel<Sec>, DynamicLabel<Sec>>, mut f: F) -> InfoFlowStruct<B, sec_lat::Label_Empty, int_lat::Label_All, DynamicLabel<Sec>, DynamicLabel<Int>> {
         if self.has_selection() {
             let (start, end) = self.sorted_selection_bounds();
             let start_offset = start.index.value;
@@ -603,7 +603,7 @@ impl<T: ClipboardProvider> TextInput<T> {
 
             if start.line == end.line {
                 let lines_ref = &self.lines;
-                let a: InfoFlowStruct<&str, sec_lat::Label_Empty, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel> = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, self.lines[start.line].get_dynamic_secret_label_clone(), self.lines[start.line].get_dynamic_integrity_label_clone(), {
+                let a: InfoFlowStruct<&str, sec_lat::Label_Empty, int_lat::Label_All, DynamicLabel<Sec>, DynamicLabel<Int>> = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, self.lines[start.line].get_dynamic_secret_label_reference(), self.lines[start.line].get_dynamic_integrity_label_reference(), {
                     let a: &DOMString = unwrap_secret_ref(&lines_ref[start.line]);
                     let b: &str = DOMString::to_str_ref(a);
                     wrap_secret(&b[start_offset..end_offset])
@@ -611,7 +611,7 @@ impl<T: ClipboardProvider> TextInput<T> {
                 f(&mut acc, a/*&self.lines[start.line][start_offset..end_offset]*/)
             } else {
                 let lines_ref = &self.lines;
-                let a = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, self.lines[start.line].get_dynamic_secret_label_clone(), self.lines[start.line].get_dynamic_integrity_label_clone(), {
+                let a = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, self.lines[start.line].get_dynamic_secret_label_reference(), self.lines[start.line].get_dynamic_integrity_label_reference(), {
                     let a = unwrap_secret_ref(&lines_ref[start.line]);
                     let b = &DOMString::to_str_ref(a)[start_offset..];
                     wrap_secret(b)
@@ -621,7 +621,7 @@ impl<T: ClipboardProvider> TextInput<T> {
                     let a = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {
                         wrap_secret("\n")
                     });
-                    let b = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, self.lines[start.line].get_dynamic_secret_label_clone(), self.lines[start.line].get_dynamic_integrity_label_clone(), {
+                    let b = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, self.lines[start.line].get_dynamic_secret_label_reference(), self.lines[start.line].get_dynamic_integrity_label_reference(), {
                         let a = unwrap_secret_ref(&line);
                         wrap_secret(DOMString::to_str_ref(&a))
                     }); //Vincent: EXPERIMENTAL RETURN REFERENCE TO SECRET
@@ -633,7 +633,7 @@ impl<T: ClipboardProvider> TextInput<T> {
                 });
                 f(&mut acc, a/*"\n"*/);
                 let lines_ref = &self.lines;
-                let a = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, self.lines[end.line].get_dynamic_secret_label_clone(), self.lines[end.line].get_dynamic_integrity_label_clone(), {
+                let a = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, self.lines[end.line].get_dynamic_secret_label_reference(), self.lines[end.line].get_dynamic_integrity_label_reference(), {
                     let a = unwrap_secret_ref(&lines_ref[end.line]);
                     let b = &DOMString::to_str_ref(a)[..end_offset];
                     wrap_secret(b)
@@ -662,7 +662,7 @@ impl<T: ClipboardProvider> TextInput<T> {
             len_of_first_n_code_units(&/***/insert, allowed_to_insert_count).value;
             //usize 
         //let to_insert = &insert[..last_char_index];
-        let to_insert = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, insert.get_dynamic_secret_label_clone(), insert.get_dynamic_integrity_label_clone(), {
+        let to_insert = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, insert.get_dynamic_secret_label_reference(), insert.get_dynamic_integrity_label_reference(), {
             let unwrapped = unwrap_secret_ref(&insert);
             wrap_secret(&((DOMString::to_str_ref(&unwrapped))[..last_char_index]))
         });
@@ -680,7 +680,7 @@ impl<T: ClipboardProvider> TextInput<T> {
             let lines_suffix = &self.lines[end.line + 1..];
 
             let mut initial_insert_lines = if self.multiline {
-                info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, to_insert.get_dynamic_secret_label_clone(), to_insert.get_dynamic_integrity_label_clone(), {
+                info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, to_insert.get_dynamic_secret_label_reference(), to_insert.get_dynamic_integrity_label_reference(), {
                     let unwrapped = unwrap_secret_ref(&to_insert);
                     let splits = core::primitive::str::split(unwrapped, |c| c == '\n');
                     let mapped = custom_map(splits, |s| DOMString::from_string(std::string::String::from(s)));
@@ -689,7 +689,7 @@ impl<T: ClipboardProvider> TextInput<T> {
                 })
                 //to_insert.split('\n').map(|s| DOMString::from(s)).collect()
             } else {
-                info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, to_insert.get_dynamic_secret_label_clone(), to_insert.get_dynamic_integrity_label_clone(), {
+                info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, to_insert.get_dynamic_secret_label_reference(), to_insert.get_dynamic_integrity_label_reference(), {
                     let unwrapped = unwrap_secret_ref(&to_insert);
                     let mut v = std::vec::Vec::new();
                     std::vec::Vec::push(&mut v, DOMString::from_string(std::string::String::from(*unwrapped)));
@@ -700,12 +700,12 @@ impl<T: ClipboardProvider> TextInput<T> {
 
             let mut insert_lines = {
                 let mut returned = vec![];
-                let length = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, initial_insert_lines.get_dynamic_secret_label_clone(), initial_insert_lines.get_dynamic_integrity_label_clone(), {
+                let length = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, initial_insert_lines.get_dynamic_secret_label_reference(), initial_insert_lines.get_dynamic_integrity_label_reference(), {
                     let unwrapped = unwrap_secret_ref(&initial_insert_lines);
                     std::vec::Vec::len(unwrapped)
                 });
                 for i in 0..length {
-                    returned.insert(0, info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, initial_insert_lines.get_dynamic_secret_label_clone(), initial_insert_lines.get_dynamic_integrity_label_clone(), {
+                    returned.insert(0, info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, initial_insert_lines.get_dynamic_secret_label_reference(), initial_insert_lines.get_dynamic_integrity_label_reference(), {
                             let mut vec = unwrap_secret_mut_ref(&mut initial_insert_lines);
                             let popped = std::vec::Vec::pop(vec);
                             wrap_secret(std::option::Option::unwrap(popped))
@@ -744,7 +744,7 @@ impl<T: ClipboardProvider> TextInput<T> {
 
             let last_insert_lines_index = insert_lines.len() - 1;
             let last_insert_lines_ref = &insert_lines[insert_lines.len() - 1];
-            self.edit_point.index = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, insert_lines[last_insert_lines_index].get_dynamic_secret_label_clone(), insert_lines[last_insert_lines_index].get_dynamic_integrity_label_clone(), {
+            self.edit_point.index = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, insert_lines[last_insert_lines_index].get_dynamic_secret_label_reference(), insert_lines[last_insert_lines_index].get_dynamic_integrity_label_reference(), {
                 let unwrapped = unwrap_secret_ref(last_insert_lines_ref);
                 len_utf8_str(&DOMString::to_str_ref(unwrapped))
             });
@@ -780,7 +780,7 @@ impl<T: ClipboardProvider> TextInput<T> {
     pub fn current_line_length(&self) -> UTF8Bytes {
         let lines_ref = &self.lines;
         let edit_point_line = self.edit_point.line;
-        info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, self.lines[self.edit_point.line].get_dynamic_secret_label_clone(), self.lines[self.edit_point.line].get_dynamic_integrity_label_clone(), {
+        info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, self.lines[self.edit_point.line].get_dynamic_secret_label_reference(), self.lines[self.edit_point.line].get_dynamic_integrity_label_reference(), {
             let unwrapped = unwrap_secret_ref(&lines_ref[edit_point_line]);
             len_utf8_str(&DOMString::to_str_ref(unwrapped))
         })
@@ -833,7 +833,7 @@ impl<T: ClipboardProvider> TextInput<T> {
         //let UTF8Bytes(edit_index) = self.edit_point.index;
         let lines_ref = &self.lines;
         let edit_line = self.edit_point.line;
-        let col = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, self.lines[self.edit_point.line].get_dynamic_secret_label_clone(), self.lines[self.edit_point.line].get_dynamic_integrity_label_clone(), {
+        let col = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, self.lines[self.edit_point.line].get_dynamic_secret_label_reference(), self.lines[self.edit_point.line].get_dynamic_integrity_label_reference(), {
             let unwrapped_u = unwrap_secret_ref(&lines_ref[edit_line]);
             let chs = core::primitive::str::chars(&DOMString::to_str_ref(unwrapped_u)[..edit_index]);
             wrap_secret(std::str::Chars::count(chs))
@@ -885,7 +885,7 @@ impl<T: ClipboardProvider> TextInput<T> {
             //let UTF8Bytes(current_offset) = self.edit_point.index;
             let next_ch = match direction {
                 Direction::Forward => {
-                    info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, current_line.get_dynamic_secret_label_clone(), current_line.get_dynamic_integrity_label_clone(),{
+                    info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, current_line.get_dynamic_secret_label_reference(), current_line.get_dynamic_integrity_label_reference(),{
                         let unwrapped = unwrap_secret_ref(&current_line);
                         let mut gs = custom_graphemes(&DOMString::to_str_ref(unwrapped)[current_offset..], true);
                         wrap_secret(custom_next_back(&mut gs))
@@ -893,7 +893,7 @@ impl<T: ClipboardProvider> TextInput<T> {
                 },
                 //Direction::Forward => current_line[current_offset..].graphemes(true).next(),
                 Direction::Backward => {
-                    info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, current_line.get_dynamic_secret_label_clone(), current_line.get_dynamic_integrity_label_clone(),{
+                    info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, current_line.get_dynamic_secret_label_reference(), current_line.get_dynamic_integrity_label_reference(),{
                         let unwrapped = unwrap_secret_ref(&current_line);
                         let mut gs = custom_graphemes(&DOMString::to_str_ref(unwrapped)[..current_offset], true);
                         wrap_secret(custom_next_back(&mut gs))
@@ -901,14 +901,14 @@ impl<T: ClipboardProvider> TextInput<T> {
                 },
                 //Direction::Backward => current_line[..current_offset].graphemes(true).next_back(),
             };
-            let result = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, next_ch.get_dynamic_secret_label_clone(), next_ch.get_dynamic_integrity_label_clone(), {
+            let result = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, next_ch.get_dynamic_secret_label_reference(), next_ch.get_dynamic_integrity_label_reference(), {
                 let unwrapped = unwrap_secret_ref(&next_ch);
                 match *unwrapped {
                     None => wrap_secret(UTF8Bytes::one()),
                     Some(c) => wrap_secret(UTF8Bytes{value: core::primitive::str::len(c) as usize})
                 }
             });
-            info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dynamic_secret_label_clone(), result.get_dynamic_integrity_label_clone(), {
+            info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dynamic_secret_label_reference(), result.get_dynamic_integrity_label_reference(), {
                 unwrap_secret(result)
             })
             /*
@@ -1023,7 +1023,7 @@ impl<T: ClipboardProvider> TextInput<T> {
         let last_line = self.lines.len() - 1;
         self.edit_point.line = last_line;
         let lines_ref = &self.lines;
-        self.edit_point.index = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, self.lines[last_line].get_dynamic_secret_label_clone(), self.lines[last_line].get_dynamic_integrity_label_clone(), {
+        self.edit_point.index = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, self.lines[last_line].get_dynamic_secret_label_reference(), self.lines[last_line].get_dynamic_integrity_label_reference(), {
             let unwrapped = unwrap_secret_ref(&lines_ref[last_line]);
             len_utf8_str(&DOMString::to_str_ref(unwrapped))
         })/*self.lines[last_line].len_utf8()*/;
@@ -1054,10 +1054,10 @@ impl<T: ClipboardProvider> TextInput<T> {
             let mut shift_temp = UTF8Bytes::zero();
             match direction {
                 Direction::Backward => {
-                    let input: InfoFlowStruct<&str, sec_lat::Label_Empty, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>;
+                    let input: InfoFlowStruct<&str, sec_lat::Label_Empty, int_lat::Label_All, DynamicLabel<Sec>, DynamicLabel<Int>>;
                     if current_index == UTF8Bytes::zero() && current_line > 0 {
                         let lines_ref = &self.lines;
-                        input = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, self.lines[current_line - 1].get_dynamic_secret_label_clone(), self.lines[current_line - 1].get_dynamic_integrity_label_clone(), {
+                        input = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, self.lines[current_line - 1].get_dynamic_secret_label_reference(), self.lines[current_line - 1].get_dynamic_integrity_label_reference(), {
                             let u = &**unwrap_secret_ref(&lines_ref[current_line - 1]);
                             wrap_secret(u)
                         })/*&self.lines[current_line - 1]*/;
@@ -1066,13 +1066,13 @@ impl<T: ClipboardProvider> TextInput<T> {
                         let remaining = current_index.value;
                         //let UTF8Bytes(remaining) = current_index;
                         let lines_ref = &self.lines;
-                        input = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, self.lines[current_line].get_dynamic_secret_label_clone(), self.lines[current_line - 1].get_dynamic_integrity_label_clone(), {
+                        input = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, self.lines[current_line].get_dynamic_secret_label_reference(), self.lines[current_line - 1].get_dynamic_integrity_label_reference(), {
                             let u = DOMString::to_str_ref(unwrap_secret_ref(&lines_ref[current_line]));
                             wrap_secret(&u[..remaining])
                         })/*&self.lines[current_line][..remaining]*/;
                     }
 
-                    let new_utf8 = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, input.get_dynamic_secret_label_clone(), input.get_dynamic_integrity_label_clone(), {
+                    let new_utf8 = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, input.get_dynamic_secret_label_reference(), input.get_dynamic_integrity_label_reference(), {
                         let unwrapped = unwrap_secret_ref(&input);
                         let mut iter = custom_split_word_bounds(unwrapped);
                         let mut iter2 = custom_rev(iter);
@@ -1091,7 +1091,7 @@ impl<T: ClipboardProvider> TextInput<T> {
                         }
                         wrap_secret(result)
                     });
-                    shift_temp = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_utf8.get_dynamic_secret_label_clone(), new_utf8.get_dynamic_integrity_label_clone(), {
+                    shift_temp = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_utf8.get_dynamic_secret_label_reference(), new_utf8.get_dynamic_integrity_label_reference(), {
                         unwrap_secret(new_utf8)
                     });
                     /*let mut iter = input.split_word_bounds().rev();
@@ -1108,12 +1108,12 @@ impl<T: ClipboardProvider> TextInput<T> {
                     }*/
                 },
                 Direction::Forward => {
-                    let input: InfoFlowStruct<&str, sec_lat::Label_Empty, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>;
+                    let input: InfoFlowStruct<&str, sec_lat::Label_Empty, int_lat::Label_All, DynamicLabel<Sec>, DynamicLabel<Int>>;
                     let remaining = self.current_line_length().saturating_sub(current_index);
                     if remaining == UTF8Bytes::zero() && self.lines.len() > self.edit_point.line + 1
                     {
                         let lines_ref = &self.lines;
-                        input = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, self.lines[current_line + 1].get_dynamic_secret_label_clone(), self.lines[current_line + 1].get_dynamic_integrity_label_clone(), {
+                        input = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, self.lines[current_line + 1].get_dynamic_secret_label_reference(), self.lines[current_line + 1].get_dynamic_integrity_label_reference(), {
                             let u = &**unwrap_secret_ref(&lines_ref[current_line + 1]);
                             wrap_secret(u)
                         })/*&self.lines[current_line + 1]*/;
@@ -1123,13 +1123,13 @@ impl<T: ClipboardProvider> TextInput<T> {
                         let current_offset = current_index.value;
                         //let UTF8Bytes(current_offset) = current_index;
                         let lines_ref = &self.lines;
-                        input = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, self.lines[current_line].get_dynamic_secret_label_clone(), self.lines[current_line - 1].get_dynamic_integrity_label_clone(), {
+                        input = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, self.lines[current_line].get_dynamic_secret_label_reference(), self.lines[current_line - 1].get_dynamic_integrity_label_reference(), {
                             let u = DOMString::to_str_ref(unwrap_secret_ref(&lines_ref[current_line]));
                             wrap_secret(&u[current_offset..])
                         })/*&self.lines[current_line][current_offset..]*/;
                     }
 
-                    let new_utf8 = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, input.get_dynamic_secret_label_clone(), input.get_dynamic_integrity_label_clone(), {
+                    let new_utf8 = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, input.get_dynamic_secret_label_reference(), input.get_dynamic_integrity_label_reference(), {
                         let unwrapped = unwrap_secret_ref(&input);
                         let mut iter = custom_split_word_bounds(unwrapped);
                         let mut result = UTF8Bytes::zero();
@@ -1147,7 +1147,7 @@ impl<T: ClipboardProvider> TextInput<T> {
                         }
                         wrap_secret(result)
                     });
-                    shift_temp = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_utf8.get_dynamic_secret_label_clone(), new_utf8.get_dynamic_integrity_label_clone(), {
+                    shift_temp = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_utf8.get_dynamic_secret_label_reference(), new_utf8.get_dynamic_integrity_label_reference(), {
                         unwrap_secret(new_utf8)
                     });
                     /*let mut iter = input.split_word_bounds();
@@ -1181,13 +1181,13 @@ impl<T: ClipboardProvider> TextInput<T> {
             //let UTF8Bytes(current_offset) = self.edit_point.index;
             match direction {
                 Direction::Backward => {
-                    info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, current_line.get_dynamic_secret_label_clone(), current_line.get_dynamic_integrity_label_clone(), {
+                    info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, current_line.get_dynamic_secret_label_reference(), current_line.get_dynamic_integrity_label_reference(), {
                         let unwrapped = unwrap_secret_ref(&current_line);
                         core::primitive::str::len(&DOMString::to_str_ref(unwrapped)[..current_offset])
                     })
                 } /*current_line[..current_offset].len()*/,
                 Direction::Forward =>  {
-                    info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, current_line.get_dynamic_secret_label_clone(), current_line.get_dynamic_integrity_label_clone(), {
+                    info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, current_line.get_dynamic_secret_label_reference(), current_line.get_dynamic_integrity_label_reference(), {
                         let unwrapped = unwrap_secret_ref(&current_line);
                         core::primitive::str::len(&DOMString::to_str_ref(unwrapped)[current_offset..])
                     })
@@ -1210,7 +1210,7 @@ impl<T: ClipboardProvider> TextInput<T> {
                 self.edit_point.line = &self.lines.len() - 1;
                 let lines_ref = &self.lines;
                 let lines_ref_index = &self.lines.len() - 1;
-                self.edit_point.index = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, self.lines[&self.lines.len() - 1].get_dynamic_secret_label_clone(), self.lines[&self.lines.len() - 1].get_dynamic_integrity_label_clone(), {
+                self.edit_point.index = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, self.lines[&self.lines.len() - 1].get_dynamic_secret_label_reference(), self.lines[&self.lines.len() - 1].get_dynamic_integrity_label_reference(), {
                     let unwrapped = unwrap_secret_ref(&lines_ref[lines_ref_index]);
                     len_utf8_str(&DOMString::to_str_ref(unwrapped))
                 }); /*(&self.lines[&self.lines.len() - 1]).len_utf8();*/
@@ -1249,11 +1249,11 @@ impl<T: ClipboardProvider> TextInput<T> {
     ) -> KeyReaction {
         let shift_wrapper = ModifiersWrapper{m: Modifiers::SHIFT};
         let shift_wrapper2 = ModifiersWrapper{m: Modifiers::SHIFT};
-        let mods_cond_classified = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, mods.get_dynamic_secret_label_clone(), mods.get_dynamic_integrity_label_clone(), {
+        let mods_cond_classified = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, mods.get_dynamic_secret_label_reference(), mods.get_dynamic_integrity_label_reference(), {
             let m = unwrap_secret_ref(&mods);
             wrap_secret(custom_contains(m, shift_wrapper))
         });
-        let mods_cond_declassified = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, mods_cond_classified.get_dynamic_secret_label_clone(), mods_cond_classified.get_dynamic_integrity_label_clone(), {
+        let mods_cond_declassified = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, mods_cond_classified.get_dynamic_secret_label_reference(), mods_cond_classified.get_dynamic_integrity_label_reference(), {
             unwrap_secret(mods_cond_classified)
         });
         let maybe_select = if mods_cond_declassified /*mods.contains(Modifiers::SHIFT)*/ {
@@ -1261,18 +1261,18 @@ impl<T: ClipboardProvider> TextInput<T> {
         } else {
             Selection::NotSelected
         };
-        info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, mods.get_dynamic_secret_label_clone(), mods.get_dynamic_integrity_label_clone(), {
+        info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, mods.get_dynamic_secret_label_reference(), mods.get_dynamic_integrity_label_reference(), {
             let mut m = unwrap_secret_mut_ref(&mut mods);
             custom_remove(&mut m, shift_wrapper2)
         });
         //mods.remove(Modifiers::SHIFT);
         
         //Vincent: DECLASSIFY 
-        let k = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, key.get_dynamic_secret_label_clone(), key.get_dynamic_integrity_label_clone(), {
+        let k = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, key.get_dynamic_secret_label_reference(), key.get_dynamic_integrity_label_reference(), {
             custom_clone_key_wrapper(unwrap_secret_ref(&key))
         }).k;
         //Vincent: DECLASSIFY
-        let m: Modifiers = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, mods.get_dynamic_secret_label_clone(), mods.get_dynamic_integrity_label_clone(), {
+        let m: Modifiers = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, mods.get_dynamic_secret_label_reference(), mods.get_dynamic_integrity_label_reference(), {
             custom_clone_modifiers_wrapper(unwrap_secret_ref(&mods))
         }).m;
         ShortcutMatcher::new(KeyState::Down, /*key.clone()*/ k, /*mods*/ m)
@@ -1306,7 +1306,7 @@ impl<T: ClipboardProvider> TextInput<T> {
             })
             .shortcut(CMD_OR_CONTROL, 'X', || {
                 if let Some(text) = self.get_selection_text() {
-                    self.clipboard_provider.set_clipboard_contents(info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, text.get_dynamic_secret_label_clone(), text.get_dynamic_integrity_label_clone(), {
+                    self.clipboard_provider.set_clipboard_contents(info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, text.get_dynamic_secret_label_reference(), text.get_dynamic_integrity_label_reference(), {
                         unwrap_secret(text)
                     })/*text*/);
                     self.delete_char(Direction::Backward);
@@ -1315,7 +1315,7 @@ impl<T: ClipboardProvider> TextInput<T> {
             })
             .shortcut(CMD_OR_CONTROL, 'C', || {
                 if let Some(text) = self.get_selection_text() {
-                    self.clipboard_provider.set_clipboard_contents(info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, text.get_dynamic_secret_label_clone(), text.get_dynamic_integrity_label_clone(), {
+                    self.clipboard_provider.set_clipboard_contents(info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, text.get_dynamic_secret_label_reference(), text.get_dynamic_integrity_label_reference(), {
                         unwrap_secret(text)
                     })/*text*/);
                 }
@@ -1394,7 +1394,7 @@ impl<T: ClipboardProvider> TextInput<T> {
             })
             .otherwise(|| {
                 //Vincent: TODO UNDO
-                let cond_wrapped = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, key.get_dynamic_secret_label_clone(), key.get_dynamic_integrity_label_clone(), {
+                let cond_wrapped = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, key.get_dynamic_secret_label_reference(), key.get_dynamic_integrity_label_reference(), {
                     let unwrapped = unwrap_secret_ref(&key);
                     let mut val = false;
                     unchecked_operation(if let Key::Character(ref c) = unwrapped.k {
@@ -1402,10 +1402,10 @@ impl<T: ClipboardProvider> TextInput<T> {
                     });
                     wrap_secret(val)
                 });
-                let cond_unwrapped = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, key.get_dynamic_secret_label_clone(), key.get_dynamic_integrity_label_clone(), {
+                let cond_unwrapped = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, key.get_dynamic_secret_label_reference(), key.get_dynamic_integrity_label_reference(), {
                     unwrap_secret(cond_wrapped)
                 });
-                let string_wrapped = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, key.get_dynamic_secret_label_clone(), key.get_dynamic_integrity_label_clone(), {
+                let string_wrapped = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, key.get_dynamic_secret_label_reference(), key.get_dynamic_integrity_label_reference(), {
                     let unwrapped = unwrap_secret_ref(&key);
                     let mut s = std::string::String::from("");
                     unchecked_operation(if let Key::Character(ref c) = unwrapped.k {
@@ -1430,7 +1430,7 @@ impl<T: ClipboardProvider> TextInput<T> {
     /// Whether the content is empty.
     pub fn is_empty(&self) -> bool {
         self.lines.len() <= 1 && self.lines.get(0).map_or(true, |line| {
-            info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, line.get_dynamic_secret_label_clone(), line.get_dynamic_integrity_label_clone(), {
+            info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, line.get_dynamic_secret_label_reference(), line.get_dynamic_integrity_label_reference(), {
                 let unwrapped = unwrap_secret_ref(&line);
                 std::string::String::is_empty(DOMString::to_string_ref(&unwrapped))
             })
@@ -1442,7 +1442,7 @@ impl<T: ClipboardProvider> TextInput<T> {
         self.lines
             .iter()
             .fold(UTF8Bytes::zero(), |m, l| {
-                let l_len_utf8 = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, l.get_dynamic_secret_label_clone(), l.get_dynamic_integrity_label_clone(), {
+                let l_len_utf8 = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, l.get_dynamic_secret_label_reference(), l.get_dynamic_integrity_label_reference(), {
                     let unwrapped = unwrap_secret_ref(&l);
                     len_utf8_str(&DOMString::to_str_ref(unwrapped))
                 });
@@ -1456,7 +1456,7 @@ impl<T: ClipboardProvider> TextInput<T> {
         self.lines
             .iter()
             .fold(UTF16CodeUnits::zero(), |m, l| {
-                let len_chars_map = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, l.get_dynamic_secret_label_clone(), l.get_dynamic_integrity_label_clone(), {
+                let len_chars_map = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, l.get_dynamic_secret_label_reference(), l.get_dynamic_integrity_label_reference(), {
                     let unwrapped_chars = core::primitive::str::chars(std::string::String::as_str(DOMString::to_string_ref(unwrap_secret_ref(l))));
                     let mapped = std::str::Chars::map(unwrapped_chars, core::primitive::char::len_utf16);
                     unchecked_operation(mapped.sum::<usize>() + 1)
@@ -1470,7 +1470,7 @@ impl<T: ClipboardProvider> TextInput<T> {
     /// The length of the content in Unicode code points.
     pub fn char_count(&self) -> usize {
         self.lines.iter().fold(0, |m, l| {
-            let l_chars_count = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, l.get_dynamic_secret_label_clone(), l.get_dynamic_integrity_label_clone(), {
+            let l_chars_count = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, l.get_dynamic_secret_label_reference(), l.get_dynamic_integrity_label_reference(), {
                 let unwrapped_chars = core::primitive::str::chars(std::string::String::as_str(DOMString::to_string_ref(unwrap_secret_ref(l))));
                 std::str::Chars::count(unwrapped_chars)
             });
@@ -1491,7 +1491,7 @@ impl<T: ClipboardProvider> TextInput<T> {
             let sec_label = self.lines[0].get_dynamic_secret_label_clone();
             let int_label = self.lines[0].get_dynamic_integrity_label_clone();
             let lines_ref = &self.lines;
-            info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, sec_label, int_label, {
+            info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, &sec_label, &int_label, {
                 let mut content = std::string::String::from("");
                 for (i, line) in unchecked_operation(std::iter::Iterator::enumerate(lines_ref.iter())) {
                     std::string::String::push_str(&mut content, DOMString::to_str_ref(unwrap_secret_ref(line)));
@@ -1507,20 +1507,20 @@ impl<T: ClipboardProvider> TextInput<T> {
     }
 
     /// Get a reference to the contents of a single-line text input. Panics if self is a multiline input.
-    pub fn single_line_content(&self) -> &InfoFlowStruct<DOMString, sec_lat::Label_Empty, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel> {
+    pub fn single_line_content(&self) -> &InfoFlowStruct<DOMString, sec_lat::Label_Empty, int_lat::Label_All, DynamicLabel<Sec>, DynamicLabel<Int>> {
         assert!(!self.multiline);
         &self.lines[0]
     }
 
     /// Set the current contents of the text input. If this is control supports multiple lines,
     /// any \n encountered will be stripped and force a new logical line.
-    pub fn set_content(&mut self, content: InfoFlowStruct<DOMString, sec_lat::Label_Empty, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>) {
+    pub fn set_content(&mut self, content: InfoFlowStruct<DOMString, sec_lat::Label_Empty, int_lat::Label_All, DynamicLabel<Sec>, DynamicLabel<Int>>) {
         self.lines = if self.multiline {
-            let result = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, content.get_dynamic_secret_label_clone(), content.get_dynamic_integrity_label_clone(), {
+            let result = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, content.get_dynamic_secret_label_reference(), content.get_dynamic_integrity_label_reference(), {
                 let unwrapped = unwrap_secret_ref(&content);
                 let replaced: String = core::primitive::str::replace(DOMString::to_str_ref(unwrapped), "\r\n", "\n");
                 let split = core::primitive::str::split(&replaced, |c| c == '\n' || c == '\r');
-                let mapped = custom_map(split, |s| secret_structs::info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, secret_structs::secret::InfoFlowStruct::get_dynamic_secret_label_clone(&content), secret_structs::secret::InfoFlowStruct::get_dynamic_integrity_label_clone(&content), { wrap_secret(DOMString::from_string(core::primitive::str::to_string(s))) }));
+                let mapped = custom_map(split, |s| secret_structs::info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, content.get_dynamic_secret_label_reference(), content.get_dynamic_integrity_label_reference(), { wrap_secret(DOMString::from_string(core::primitive::str::to_string(s))) }));
                 let collected = custom_collect_wrapped(mapped);
                 wrap_secret(collected)
             });

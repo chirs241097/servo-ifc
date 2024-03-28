@@ -101,11 +101,11 @@ impl<'dom> LayoutDom<'dom, HTMLTextAreaElement> {
 impl LayoutHTMLTextAreaElementHelpers for LayoutDom<'_, HTMLTextAreaElement> {
     fn value_for_layout(self) -> String {
         let text = self.textinput_content();
-        let boolean_test = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, text.get_dynamic_secret_label_clone(), text.get_dynamic_integrity_label_clone(), {
+        let boolean_test = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, text.get_dynamic_secret_label_reference(), text.get_dynamic_integrity_label_reference(), {
             let unwrapped = unwrap_secret_ref(&text);
             wrap_secret(std::string::String::is_empty(DOMString::to_string_ref(unwrapped)))
         });
-        if info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, boolean_test.get_dynamic_secret_label_clone(), boolean_test.get_dynamic_integrity_label_clone(), {
+        if info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, boolean_test.get_dynamic_secret_label_reference(), boolean_test.get_dynamic_integrity_label_reference(), {
             unwrap_secret(boolean_test)
         }) {
             // FIXME(nox): Would be cool to not allocate a new string if the
@@ -115,7 +115,7 @@ impl LayoutHTMLTextAreaElementHelpers for LayoutDom<'_, HTMLTextAreaElement> {
                 .replace("\r", "\n")
                 .into()
         } else {
-            info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, text.get_dynamic_secret_label_clone(), text.get_dynamic_integrity_label_clone(), {
+            info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, text.get_dynamic_secret_label_reference(), text.get_dynamic_integrity_label_reference(), {
                 unwrap_secret(text)
             }).into()
         }
@@ -348,7 +348,7 @@ impl HTMLTextAreaElementMethods for HTMLTextAreaElement {
         let old_value = textinput.get_content();
 
         // Step 2
-        let secnewval = ServoSecureDynamic::new_info_flow_struct(value, old_value.get_dynamic_secret_label_clone(), old_value.get_dynamic_integrity_label_clone());
+        let secnewval = ServoSecureDynamic::new_info_flow_struct(value, old_value.get_dynamic_secret_label_reference(), old_value.get_dynamic_integrity_label_reference());
         textinput.set_content(secnewval);
 
         // Step 3
@@ -356,12 +356,12 @@ impl HTMLTextAreaElementMethods for HTMLTextAreaElement {
 
         let new_value = textinput.get_content();
 
-        let boolean_test = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, old_value.get_dynamic_secret_label_clone(), old_value.get_dynamic_integrity_label_clone(), {
+        let boolean_test = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, old_value.get_dynamic_secret_label_reference(), old_value.get_dynamic_integrity_label_reference(), {
             let unwrapped_old = unwrap_secret_ref(&old_value);
             let unwrapped_new = unwrap_secret_ref(&new_value);
             wrap_secret(*DOMString::to_str_ref(unwrapped_old) != *DOMString::to_str_ref(unwrapped_new))
         });
-        if info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, boolean_test.get_dynamic_secret_label_clone(), boolean_test.get_dynamic_integrity_label_clone(), {
+        if info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, boolean_test.get_dynamic_secret_label_reference(), boolean_test.get_dynamic_integrity_label_reference(), {
             unwrap_secret(boolean_test)
         }) {
             // Step 4
@@ -474,8 +474,8 @@ impl HTMLTextAreaElement {
     pub fn reset(&self) {
         // https://html.spec.whatwg.org/multipage/#the-textarea-element:concept-form-reset-control
         let domain_tag = self.upcast::<HTMLElement>().get_domain_secrecy_tag().unwrap();
-        let dynamic_sec_label = new_dynamic_secret_label(vec![domain_tag]);
-        let dynamic_int_label = new_dynamic_integrity_label(vec![]);
+        let dynamic_sec_label = DynamicLabel::<Sec>::new_size_one(domain_tag);
+        let dynamic_int_label = DynamicLabel::<Int>::new_default();
         let secdefval = ServoSecureDynamic::new_info_flow_struct(self.DefaultValue(), dynamic_sec_label, dynamic_int_label);
 
         let mut textinput = self.textinput.borrow_mut();

@@ -32,7 +32,7 @@ pub fn custom_collect_unwrapped<F1: Fn(char) -> bool, F2: FnMut(&str) -> DOMStri
 }
 
 #[side_effect_free_attr_full]
-pub fn custom_collect_wrapped<F1: Fn(char) -> bool, F2: FnMut(&str) -> InfoFlowStruct<DOMString, sec_lat::Label_Empty, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>>(self_: std::iter::Map<std::str::Split<'_, F1>, F2>) -> Vec<InfoFlowStruct<DOMString, sec_lat::Label_Empty, int_lat::Label_All, DynamicSecretLabel, DynamicIntegrityLabel>> {
+pub fn custom_collect_wrapped<F1: Fn(char) -> bool, F2: FnMut(&str) -> InfoFlowStruct<DOMString, sec_lat::Label_Empty, int_lat::Label_All, DynamicLabel<Sec>, DynamicLabel<Int>>>(self_: std::iter::Map<std::str::Split<'_, F1>, F2>) -> Vec<InfoFlowStruct<DOMString, sec_lat::Label_Empty, int_lat::Label_All, DynamicLabel<Sec>, DynamicLabel<Int>>> {
     unchecked_operation(self_.collect())
 }
 

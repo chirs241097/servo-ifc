@@ -44,7 +44,7 @@ use std::rc::Rc;
 use style::attr::AttrValue;
 use style::element_state::*;
 
-use secret_structs::secret::DynamicSecretComponent;
+use secret_structs::secret::*;
 
 #[dom_struct]
 pub struct HTMLElement {
@@ -99,7 +99,7 @@ impl HTMLElement {
         doc.Domain()
     }
 
-    pub fn get_domain_secrecy_tag(&self) -> Option<DynamicSecretComponent> {
+    pub fn get_domain_secrecy_tag(&self) -> Option<DynamicTag<Sec>> {
         self.element.get_domain_secrecy_tag()
     }
 

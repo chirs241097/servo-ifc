@@ -140,7 +140,7 @@ use xml5ever::serialize::TraversalScope as XmlTraversalScope;
 use xml5ever::serialize::TraversalScope::ChildrenOnly as XmlChildrenOnly;
 use xml5ever::serialize::TraversalScope::IncludeNode as XmlIncludeNode;
 
-use secret_structs::secret::DynamicSecretComponent;
+use secret_structs::secret::*;
 
 // TODO: Update focus state when the top-level browsing context gains or loses system focus,
 // and when the element enters or leaves a browsing context container.
@@ -168,7 +168,7 @@ pub struct Element {
     #[ignore_malloc_size_of = "bitflags defined in rust-selectors"]
     selector_flags: Cell<ElementSelectorFlags>,
     rare_data: DomRefCell<Option<Box<ElementRareData>>>,
-    domain_tag: Option<DynamicSecretComponent>,
+    domain_tag: Option<DynamicTag<Sec>>,
 }
 
 impl fmt::Debug for Element {
@@ -571,7 +571,7 @@ impl Element {
             })
     }
 
-    pub fn get_domain_secrecy_tag(&self) -> Option<DynamicSecretComponent> {
+    pub fn get_domain_secrecy_tag(&self) -> Option<DynamicTag<Sec>> {
         self.domain_tag.clone()
     }
 }

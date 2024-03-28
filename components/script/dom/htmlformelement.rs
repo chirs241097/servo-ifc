@@ -670,20 +670,20 @@ impl HTMLFormElement {
     fn encode_plaintext(&self, form_data: &mut Vec<FormDatum>) -> ServoSecureDynamic<String> {
         // Step 1
         let mut result = ServoSecureDynamic::<String>::new_info_flow_struct(std::string::String::new(),
-            new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]));
+            DynamicLabel::<Sec>::new_default(), DynamicLabel::<Int>::new_default());
 
         // Step 2
         for entry in form_data.iter() {
             let value = match &entry.value {
                 FormDatumValue::File(f) => ServoSecureDynamic::<DOMString>::new_info_flow_struct(f.name().clone(),
-            new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![])),
+                DynamicLabel::<Sec>::new_default(), DynamicLabel::<Int>::new_default()),
                 FormDatumValue::String(s) => ServoSecureDynamic::<DOMString>::new_info_flow_struct(s.clone(),
-            new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![])),
+                DynamicLabel::<Sec>::new_default(), DynamicLabel::<Int>::new_default()),
                 FormDatumValue::SecretString(ss) => ss.clone(),
             };
             let entname = entry.name.to_string();
             info_flow_block_no_return_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All,
-            value.get_dynamic_secret_label_clone(), value.get_dynamic_integrity_label_clone(), {
+            value.get_dynamic_secret_label_reference(), value.get_dynamic_integrity_label_reference(), {
                 let r = unwrap_secret_mut_ref(&mut result);
                 let v = unwrap_secret_ref(&value);
                 //Chris: the original probably won't work, replaced with something much uglier
@@ -942,7 +942,7 @@ impl HTMLFormElement {
                     .headers
                     .typed_insert(ContentType::from(mime::TEXT_PLAIN));
                 let encsec = self.encode_plaintext(form_data);
-                MaybeSecret::Secret(info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, encsec.get_dynamic_secret_label_clone(), encsec.get_dynamic_integrity_label_clone(), { wrap_secret(std::string::String::into_bytes(unwrap_secret(encsec))) }))
+                MaybeSecret::Secret(info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, encsec.get_dynamic_secret_label_reference(), encsec.get_dynamic_integrity_label_reference(), { wrap_secret(std::string::String::into_bytes(unwrap_secret(encsec))) }))
             },
         };
 
@@ -952,12 +952,12 @@ impl HTMLFormElement {
             Ok(u) => DOMString::from_string(u.host_str().unwrap_or_default().to_owned()),
             Err(_) => DOMString::from_string(String::from(""))
         };
-        let dec_sec_label = new_dynamic_secret_label(vec![ScriptThread::get_secrecy_tag_for_domain(host).unwrap()]);
-        let dec_int_label = new_dynamic_integrity_label(vec![]);
+        let dec_sec_label = DynamicLabel::<Sec>::new_size_one(ScriptThread::get_secrecy_tag_for_domain(host).unwrap());
+        let dec_int_label = DynamicLabel::<Int>::new_default();
 
         let unwrapped_bytes = match bytes {
             MaybeSecret::NonSecret(b) => b,
-            MaybeSecret::Secret(sb) => info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, dec_sec_label, dec_int_label, { unwrap_secret(sb) })
+            MaybeSecret::Secret(sb) => info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, &dec_sec_label, &dec_int_label, { unwrap_secret(sb) })
         };
 
         let request_body = unwrapped_bytes
@@ -980,13 +980,13 @@ impl HTMLFormElement {
             Ok(u) => DOMString::from_string(u.host_str().unwrap_or_default().to_owned()),
             Err(_) => DOMString::from_string(String::from(""))
         };
-        let dec_sec_label = new_dynamic_secret_label(vec![ScriptThread::get_secrecy_tag_for_domain(host).unwrap()]);
-        let dec_int_label = new_dynamic_integrity_label(vec![]);
+        let dec_sec_label = DynamicLabel::<Sec>::new_size_one(ScriptThread::get_secrecy_tag_for_domain(host).unwrap());
+        let dec_int_label = DynamicLabel::<Int>::new_default();
         let encoding = self.pick_encoding();
         let declassified_pairs = pairs.map(|(k, v)| {
             match v {
                 MaybeSecret::NonSecret(vs) => (k, vs),
-                MaybeSecret::Secret(svs) => (k, info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, dec_sec_label.clone(), dec_int_label.clone(), { unwrap_secret(svs) }))
+                MaybeSecret::Secret(svs) => (k, info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, &dec_sec_label, &dec_int_label, { unwrap_secret(svs) }))
             }
         });
         url.as_mut_url()
@@ -1241,7 +1241,7 @@ impl HTMLFormElement {
             buf
         }
         fn clean_crlf_sec(s: &ServoSecureDynamic<DOMString>) -> ServoSecureDynamic<DOMString> {
-            info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, s.get_dynamic_secret_label_clone(), s.get_dynamic_integrity_label_clone(), {
+            info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, s.get_dynamic_secret_label_reference(), s.get_dynamic_integrity_label_reference(), {
                 let ss : &str = DOMString::to_str_ref(unwrap_secret_ref(s));
                 wrap_secret(DOMString::from_string(clean_crlf(ss)))
             })
@@ -1397,7 +1397,7 @@ impl FormDatum {
             FormDatumValue::String(ref s) => MaybeSecret::NonSecret(String::from(s.clone())),
             FormDatumValue::SecretString(ref ss) => MaybeSecret::Secret(
                 info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All,
-                ss.get_dynamic_secret_label_clone(), ss.get_dynamic_integrity_label_clone(), {
+                ss.get_dynamic_secret_label_reference(), ss.get_dynamic_integrity_label_reference(), {
                     let s = unwrap_secret_ref(ss);
                     let sc = DOMString::from_string(std::string::String::clone(DOMString::to_string_ref(&s)));
                     //let sc = std::clone::Clone::clone(s);
@@ -1841,7 +1841,7 @@ pub fn encode_multipart_form_data(
             {
                 let content_disposition = format!("form-data; name=\"{}\"", entry.name);
                 let bytes =
-                info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, ss.get_dynamic_secret_label_clone(), ss.get_dynamic_integrity_label_clone(), {
+                info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, ss.get_dynamic_secret_label_reference(), ss.get_dynamic_integrity_label_reference(), {
                     let mut r = std::string::String::from("Content-Dispopsition: ");
                     std::string::String::push_str(&mut r, &content_disposition);
                     std::string::String::push_str(&mut r, "\r\n\r\n");
