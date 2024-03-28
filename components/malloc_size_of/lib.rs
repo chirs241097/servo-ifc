@@ -258,8 +258,8 @@ where
     T: SecretValueSafe + MallocSizeOf,
     L1: Label + MallocSizeOf,
     L2: Label + MallocSizeOf,
-    D1: DynSecretField + MallocSizeOf,
-    D2: DynIntegrityField + MallocSizeOf,
+    D1: DynField<Sec> + MallocSizeOf,
+    D2: DynField<Int> + MallocSizeOf,
 {
     #[inline]
     #[allow(unused_variables, unused_mut, unreachable_code)]
@@ -270,35 +270,35 @@ where
     }
 }
 
-impl MallocSizeOf for DynamicSecretLabel {
+impl MallocSizeOf for DynamicLabel<Sec> {
     #[inline]
     #[allow(unused_variables, unused_mut, unreachable_code)]
     fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
-        MallocSizeOf::size_of(unsafe { self.policies_reference() }, ops)
+        MallocSizeOf::size_of(unsafe { self.value_reference() }, ops)
     }
 }
 
-impl MallocSizeOf for DynamicIntegrityLabel {
+impl MallocSizeOf for DynamicLabel<Int> {
     #[inline]
     #[allow(unused_variables, unused_mut, unreachable_code)]
     fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
-        MallocSizeOf::size_of(unsafe { self.policies_reference() }, ops)
+        MallocSizeOf::size_of(unsafe { self.value_reference() }, ops)
     }
 }
 
-impl MallocSizeOf for DynamicSecretComponent {
+impl MallocSizeOf for DynamicTag<Sec> {
     #[inline]
     #[allow(unused_variables, unused_mut, unreachable_code)]
     fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
-        MallocSizeOf::size_of(unsafe { self.policy_reference() }, ops)
+        MallocSizeOf::size_of(unsafe { self.value_reference() }, ops)
     }
 }
 
-impl MallocSizeOf for DynamicIntegrityComponent {
+impl MallocSizeOf for DynamicTag<Int> {
     #[inline]
     #[allow(unused_variables, unused_mut, unreachable_code)]
     fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
-        MallocSizeOf::size_of(unsafe { self.policy_reference() }, ops)
+        MallocSizeOf::size_of(unsafe { self.value_reference() }, ops)
     }
 }
 

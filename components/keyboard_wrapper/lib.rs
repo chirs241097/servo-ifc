@@ -3,8 +3,7 @@
 
 
 use keyboard_types::KeyboardEvent;
-use secret_macros::side_effect_free_attr_full;
-use secret_macros::InvisibleSideEffectFreeDerive;
+use secret_macros::*;
 use secret_structs::integrity_lattice as int_lat;
 use secret_structs::secret::InvisibleSideEffectFree;
 use secret_structs::secret::*;
@@ -23,41 +22,41 @@ unsafe impl<L1, L2> InvisibleSideEffectFree for SecKeyboardEvent<L1, L2> {}
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct SecKeyboardEvent<L1, L2> {
     /// Whether the key is pressed or released.
-    pub state: StaticDynamicAll<KeyStateWrapper, L1, L2, DynamicSecretLabel, DynamicIntegrityLabel>,
+    pub state: StaticDynamicAll<KeyStateWrapper, L1, L2, DynamicLabel<Sec>, DynamicLabel<Int>>,
     /// Logical key value.
-    pub key: StaticDynamicAll<KeyWrapper, L1, L2, DynamicSecretLabel, DynamicIntegrityLabel>,
+    pub key: StaticDynamicAll<KeyWrapper, L1, L2, DynamicLabel<Sec>, DynamicLabel<Int>>,
     /// Physical key position.
-    pub code: StaticDynamicAll<CodeWrapper, L1, L2, DynamicSecretLabel, DynamicIntegrityLabel>,
+    pub code: StaticDynamicAll<CodeWrapper, L1, L2, DynamicLabel<Sec>, DynamicLabel<Int>>,
     /// Location for keys with multiple instances on common keyboards.
     pub location:
-        StaticDynamicAll<LocationWrapper, L1, L2, DynamicSecretLabel, DynamicIntegrityLabel>,
+        StaticDynamicAll<LocationWrapper, L1, L2, DynamicLabel<Sec>, DynamicLabel<Int>>,
     /// Flags for pressed modifier keys.
     pub modifiers:
-        StaticDynamicAll<ModifiersWrapper, L1, L2, DynamicSecretLabel, DynamicIntegrityLabel>,
+        StaticDynamicAll<ModifiersWrapper, L1, L2, DynamicLabel<Sec>, DynamicLabel<Int>>,
     /// True if the key is currently auto-repeated.
-    pub repeat: StaticDynamicAll<bool, L1, L2, DynamicSecretLabel, DynamicIntegrityLabel>,
+    pub repeat: StaticDynamicAll<bool, L1, L2, DynamicLabel<Sec>, DynamicLabel<Int>>,
     /// Events with this flag should be ignored in a text editor
     /// and instead composition events should be used.
-    pub is_composing: StaticDynamicAll<bool, L1, L2, DynamicSecretLabel, DynamicIntegrityLabel>,
+    pub is_composing: StaticDynamicAll<bool, L1, L2, DynamicLabel<Sec>, DynamicLabel<Int>>,
 }
 
-impl<L1, L2> SecKeyboardEvent<L1, L2> {
-    pub fn wrap(ke: KeyboardEvent, sl: DynamicSecretLabel, il: DynamicIntegrityLabel) -> Self {
+impl<L1, L2> SecKeyboardEvent<L1, L2> where L1: secret_structs::ternary_lattice::Label, L2: secret_structs::ternary_lattice::Label {
+    pub fn wrap(ke: KeyboardEvent, sl: DynamicLabel<Sec>, il: DynamicLabel<Int>) -> Self {
+        let kstw = KeyStateWrapper{k: ke.state};
+        let kw = KeyWrapper{k: ke.key};
+        let cw = CodeWrapper{c: ke.code};
+        let lw = LocationWrapper{l: ke.location};
+        let mw = ModifiersWrapper{m: ke.modifiers};
+        let repeat = ke.repeat;
+        let is_composing = ke.is_composing;
         SecKeyboardEvent {
-            state: StaticDynamicAll::<KeyStateWrapper,L1,L2,DynamicSecretLabel,DynamicIntegrityLabel>
-            ::new_info_flow_struct(KeyStateWrapper{k: ke.state}, sl.clone(), il.clone()),
-            key: StaticDynamicAll::<KeyWrapper,L1,L2,DynamicSecretLabel,DynamicIntegrityLabel>
-            ::new_info_flow_struct(KeyWrapper{k: ke.key}, sl.clone(), il.clone()),
-            code: StaticDynamicAll::<CodeWrapper,L1,L2,DynamicSecretLabel,DynamicIntegrityLabel>
-            ::new_info_flow_struct(CodeWrapper{c: ke.code}, sl.clone(), il.clone()),
-            location: StaticDynamicAll::<LocationWrapper,L1,L2,DynamicSecretLabel,DynamicIntegrityLabel>
-            ::new_info_flow_struct(LocationWrapper{l: ke.location}, sl.clone(), il.clone()),
-            modifiers: StaticDynamicAll::<ModifiersWrapper,L1,L2,DynamicSecretLabel,DynamicIntegrityLabel>
-            ::new_info_flow_struct(ModifiersWrapper{m: ke.modifiers}, sl.clone(), il.clone()),
-            repeat: StaticDynamicAll::<bool,L1,L2,DynamicSecretLabel,DynamicIntegrityLabel>
-            ::new_info_flow_struct(ke.repeat, sl.clone(), il.clone()),
-            is_composing: StaticDynamicAll::<bool,L1,L2,DynamicSecretLabel,DynamicIntegrityLabel>
-            ::new_info_flow_struct(ke.is_composing, sl.clone(), il.clone())
+            state: info_flow_block_dynamic_all!(L1, L2, &sl, &il, { wrap_secret(kstw) }),
+            key: info_flow_block_dynamic_all!(L1, L2, &sl, &il, { wrap_secret(kw) }),
+            code: info_flow_block_dynamic_all!(L1, L2, &sl, &il, { wrap_secret(cw) }),
+            location: info_flow_block_dynamic_all!(L1, L2, &sl, &il, { wrap_secret(lw) }),
+            modifiers: info_flow_block_dynamic_all!(L1, L2, &sl, &il, { wrap_secret(mw) }),
+            repeat: info_flow_block_dynamic_all!(L1, L2, &sl, &il, { wrap_secret(repeat) }),
+            is_composing: info_flow_block_dynamic_all!(L1, L2, &sl, &il, { wrap_secret(is_composing) })
         }
     }
 }
@@ -71,16 +70,16 @@ pub type ServoSecureStatic<T> = StaticDynamicAll<
     T,
     sec_lat::Label_A,
     int_lat::Label_All,
-    DynamicSecretLabel,
-    DynamicIntegrityLabel,
+    DynamicLabel<Sec>,
+    DynamicLabel<Int>,
 >;
 
 pub type ServoSecureDynamic<T> = StaticDynamicAll<
     T,
     sec_lat::Label_Empty,
     int_lat::Label_All,
-    DynamicSecretLabel,
-    DynamicIntegrityLabel,
+    DynamicLabel<Sec>,
+    DynamicLabel<Int>,
 >;
 
 unsafe impl InvisibleSideEffectFree for KeyStateWrapper {}
