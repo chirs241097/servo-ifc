@@ -74,12 +74,12 @@ impl MaybeSecret<Vec<u8>> {
                     MaybeSecret::Secret(secother) => {
                         let sla = secself.get_dynamic_secret_label_clone();
                         let slb = secother.get_dynamic_secret_label_clone();
-                        let sl = sla.dynamic_union(&slb);
+                        let sl = sla.union(&slb);
                         let ila = secself.get_dynamic_integrity_label_clone();
                         let ilb = secother.get_dynamic_integrity_label_clone();
-                        let il = ila.dynamic_intersection(&ilb);
+                        let il = ila.union(&ilb);
                         MaybeSecret::Secret(
-                        info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, sl, il, {
+                        info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, &sl, &il, {
                             let mut uself = unwrap_secret(secself);
                             let mut uother = unwrap_secret(secother);
                             std::vec::Vec::append(&mut uself, &mut uother);

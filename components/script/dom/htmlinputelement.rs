@@ -1331,7 +1331,9 @@ impl HTMLInputElementMethods for HTMLInputElement {
 
                 // Step 5.
                 let content = textinput.single_line_content().clone();
-                let secnewval = ServoSecureDynamic::new_info_flow_struct(value, content.get_dynamic_secret_label_clone(), content.get_dynamic_integrity_label_clone());
+                let secnewval = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, content.get_dynamic_secret_label_reference(), content.get_dynamic_integrity_label_reference(), {
+                    wrap_secret(value)
+                });
                 let cond = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, content.get_dynamic_secret_label_reference(), content.get_dynamic_integrity_label_reference(), {
                     let unwrapped_old = unwrap_secret_ref(&content);
                     let unwrapped_new = unwrap_secret_ref(&secnewval);
@@ -1948,7 +1950,10 @@ impl HTMLInputElement {
         let domain_tag = self.upcast::<HTMLElement>().get_domain_secrecy_tag().unwrap();
         let dynamic_sec_label = DynamicLabel::<Sec>::new_size_one(domain_tag);
         let dynamic_int_label = DynamicLabel::<Int>::new_default();
-        let secdefval = ServoSecureDynamic::new_info_flow_struct(self.DefaultValue(), dynamic_sec_label, dynamic_int_label);
+        let val = self.DefaultValue();
+        let secdefval = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, &dynamic_sec_label, &dynamic_int_label, {
+            wrap_secret(val)
+        });
         self.textinput.borrow_mut().set_content(secdefval);
         self.value_dirty.set(false);
         self.upcast::<Node>().dirty(NodeDamage::OtherNodeDamage);
@@ -2591,7 +2596,9 @@ impl VirtualMethods for HTMLInputElement {
                 let domain_tag = self.upcast::<HTMLElement>().get_domain_secrecy_tag().unwrap();
                 let dynamic_sec_label = DynamicLabel::<Sec>::new_size_one(domain_tag);
                 let dynamic_int_label = DynamicLabel::<Int>::new_default();
-                let secnewval = ServoSecureDynamic::new_info_flow_struct(value, dynamic_sec_label, dynamic_int_label);
+                let secnewval = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, &dynamic_sec_label, &dynamic_int_label, {
+                    wrap_secret(value)
+                });
                 self.textinput.borrow_mut().set_content(secnewval);
                 self.update_placeholder_shown_state();
             },

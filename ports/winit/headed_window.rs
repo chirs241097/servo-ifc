@@ -206,8 +206,8 @@ impl Window {
         for xr_window_pose in &*xr_poses {
             xr_window_pose.handle_xr_translation(&event);
         }
-        let sl = new_dynamic_secret_label(vec![]);
-        let il = new_dynamic_integrity_label(vec![]);
+        let sl = DynamicLabel::<Sec>::new_default();
+        let il = DynamicLabel::<Int>::new_default();
         self.event_queue
             .borrow_mut()
             .push(WindowEvent::Keyboard(SecKeyboardEvent::<sec_lat::Label_A,int_lat::Label_All>::wrap(event, sl, il)));
@@ -236,8 +236,8 @@ impl Window {
             for xr_window_pose in &*xr_poses {
                 xr_window_pose.handle_xr_rotation(&input, self.modifiers_state.get());
             }
-            let sl = new_dynamic_secret_label(vec![]);
-            let il = new_dynamic_integrity_label(vec![]);
+            let sl = DynamicLabel::<Sec>::new_default();
+            let il = DynamicLabel::<Int>::new_default();
             self.event_queue
                 .borrow_mut()
                 .push(WindowEvent::Keyboard(SecKeyboardEvent::<sec_lat::Label_A,int_lat::Label_All>::wrap(event, sl, il)));

@@ -348,7 +348,9 @@ impl HTMLTextAreaElementMethods for HTMLTextAreaElement {
         let old_value = textinput.get_content();
 
         // Step 2
-        let secnewval = ServoSecureDynamic::new_info_flow_struct(value, old_value.get_dynamic_secret_label_reference(), old_value.get_dynamic_integrity_label_reference());
+        let secnewval = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, old_value.get_dynamic_secret_label_reference(), old_value.get_dynamic_integrity_label_reference(), {
+            wrap_secret(value)
+        });
         textinput.set_content(secnewval);
 
         // Step 3
@@ -476,7 +478,10 @@ impl HTMLTextAreaElement {
         let domain_tag = self.upcast::<HTMLElement>().get_domain_secrecy_tag().unwrap();
         let dynamic_sec_label = DynamicLabel::<Sec>::new_size_one(domain_tag);
         let dynamic_int_label = DynamicLabel::<Int>::new_default();
-        let secdefval = ServoSecureDynamic::new_info_flow_struct(self.DefaultValue(), dynamic_sec_label, dynamic_int_label);
+        let val = self.DefaultValue();
+        let secdefval = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, &dynamic_sec_label, &dynamic_int_label, {
+            wrap_secret(val)
+        });
 
         let mut textinput = self.textinput.borrow_mut();
         textinput.set_content(secdefval);

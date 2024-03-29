@@ -669,16 +669,25 @@ impl HTMLFormElement {
     // https://html.spec.whatwg.org/multipage/#text/plain-encoding-algorithm
     fn encode_plaintext(&self, form_data: &mut Vec<FormDatum>) -> ServoSecureDynamic<String> {
         // Step 1
-        let mut result = ServoSecureDynamic::<String>::new_info_flow_struct(std::string::String::new(),
-            DynamicLabel::<Sec>::new_default(), DynamicLabel::<Int>::new_default());
+        let mut result = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynamicLabel::<Sec>::default_ref(), DynamicLabel::<Int>::default_ref(), {
+            wrap_secret(std::string::String::new())
+        });
 
         // Step 2
         for entry in form_data.iter() {
             let value = match &entry.value {
-                FormDatumValue::File(f) => ServoSecureDynamic::<DOMString>::new_info_flow_struct(f.name().clone(),
-                DynamicLabel::<Sec>::new_default(), DynamicLabel::<Int>::new_default()),
-                FormDatumValue::String(s) => ServoSecureDynamic::<DOMString>::new_info_flow_struct(s.clone(),
-                DynamicLabel::<Sec>::new_default(), DynamicLabel::<Int>::new_default()),
+                FormDatumValue::File(f) => {
+                    let s = f.name().clone();
+                    info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynamicLabel::<Sec>::default_ref(), DynamicLabel::<Int>::default_ref(), {
+                        wrap_secret(s)
+                    })
+                },
+                FormDatumValue::String(s) => {
+                    let s2 = s.clone();
+                    info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynamicLabel::<Sec>::default_ref(), DynamicLabel::<Int>::default_ref(), {
+                        wrap_secret(s2)
+                    })
+                },
                 FormDatumValue::SecretString(ss) => ss.clone(),
             };
             let entname = entry.name.to_string();

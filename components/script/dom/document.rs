@@ -1743,8 +1743,8 @@ impl Document {
         };
 
 
-        let label_s = keyboard_event.key.get_dynamic_secret_label_clone().dynamic_union(keyboard_event.state.get_dynamic_secret_label_reference()).dynamic_union(keyboard_event.key.get_dynamic_secret_label_reference()).dynamic_union(keyboard_event.code.get_dynamic_secret_label_reference()).dynamic_union(keyboard_event.location.get_dynamic_secret_label_reference()).dynamic_union(keyboard_event.repeat.get_dynamic_secret_label_reference()).dynamic_union(keyboard_event.is_composing.get_dynamic_secret_label_reference()).dynamic_union(keyboard_event.modifiers.get_dynamic_secret_label_reference());
-        let label_i = keyboard_event.key.get_dynamic_integrity_label_clone().dynamic_intersection(keyboard_event.state.get_dynamic_integrity_label_reference()).dynamic_intersection(keyboard_event.key.get_dynamic_integrity_label_reference()).dynamic_intersection(keyboard_event.code.get_dynamic_integrity_label_reference()).dynamic_intersection(keyboard_event.location.get_dynamic_integrity_label_reference()).dynamic_intersection(keyboard_event.repeat.get_dynamic_integrity_label_reference()).dynamic_intersection(keyboard_event.is_composing.get_dynamic_integrity_label_reference()).dynamic_intersection(keyboard_event.modifiers.get_dynamic_integrity_label_reference());
+        let label_s = keyboard_event.key.get_dynamic_secret_label_reference().union(keyboard_event.state.get_dynamic_secret_label_reference()).union(keyboard_event.key.get_dynamic_secret_label_reference()).union(keyboard_event.code.get_dynamic_secret_label_reference()).union(keyboard_event.location.get_dynamic_secret_label_reference()).union(keyboard_event.repeat.get_dynamic_secret_label_reference()).union(keyboard_event.is_composing.get_dynamic_secret_label_reference()).union(keyboard_event.modifiers.get_dynamic_secret_label_reference());
+        let label_i = keyboard_event.key.get_dynamic_integrity_label_reference().union(keyboard_event.state.get_dynamic_integrity_label_reference()).union(keyboard_event.key.get_dynamic_integrity_label_reference()).union(keyboard_event.code.get_dynamic_integrity_label_reference()).union(keyboard_event.location.get_dynamic_integrity_label_reference()).union(keyboard_event.repeat.get_dynamic_integrity_label_reference()).union(keyboard_event.is_composing.get_dynamic_integrity_label_reference()).union(keyboard_event.modifiers.get_dynamic_integrity_label_reference());
 
         let s = &(keyboard_event.state);
         let k = &(keyboard_event.key);
@@ -1753,7 +1753,7 @@ impl Document {
         let r = &(keyboard_event.repeat);
         let i_c = &(keyboard_event.is_composing);
         let m = &(keyboard_event.modifiers);
-        let secure_1 = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, label_s.clone(), label_i.clone(), {
+        let secure_1 = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, &label_s, &label_i, {
             let unwrapped_state = unwrap_secret_ref(s);
             let unwrapped_key = unwrap_secret_ref(k);
             let unwrapped_code = unwrap_secret_ref(c);
@@ -1783,7 +1783,7 @@ impl Document {
         let i_c = &(keyboard_event.is_composing);
         let m = &(keyboard_event.modifiers);
         let cancelable_type = DOMString::from_string(String::from("keypress"));
-        let secure_2 = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, label_s.clone(), label_i.clone(), {
+        let secure_2 = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, &label_s, &label_i, {
             let unwrapped_state = unwrap_secret_ref(s);
             let unwrapped_key = unwrap_secret_ref(k);
             let unwrapped_code = unwrap_secret_ref(c);
@@ -1827,12 +1827,12 @@ impl Document {
         event.fire(target);
         let mut cancel_state = event.get_cancel_state();
         let is_not_prevented = cancel_state != EventDefault::Prevented;
-        let label_s = keyboard_event.state.get_dynamic_secret_label_clone().dynamic_union(keyboard_event.key.get_dynamic_secret_label_reference()).dynamic_union(keyboard_event.is_composing.get_dynamic_secret_label_reference());
-        let label_i = keyboard_event.state.get_dynamic_integrity_label_clone().dynamic_intersection(keyboard_event.key.get_dynamic_integrity_label_reference()).dynamic_intersection(keyboard_event.is_composing.get_dynamic_integrity_label_reference());
+        let label_s = keyboard_event.state.get_dynamic_secret_label_reference().union(keyboard_event.key.get_dynamic_secret_label_reference()).union(keyboard_event.is_composing.get_dynamic_secret_label_reference());
+        let label_i = keyboard_event.state.get_dynamic_integrity_label_reference().union(keyboard_event.key.get_dynamic_integrity_label_reference()).union(keyboard_event.is_composing.get_dynamic_integrity_label_reference());
         let s = &keyboard_event.state;
         let k = &keyboard_event.key;
         let i_s = &keyboard_event.is_composing;
-        let cond = info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, label_s.clone(), label_i.clone(), {
+        let cond = info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, &label_s, &label_i, {
             let unwrapped_state = unwrap_secret_ref(s);
             let unwrapped_key = unwrap_secret_ref(k);
             let unwrapped_is_composing = unwrap_secret_ref(i_s);
@@ -1842,7 +1842,7 @@ impl Document {
             is_not_prevented)
         });
 
-        let conditional = info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, label_s.clone(), label_i.clone(), {
+        let conditional = info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, &label_s, &label_i, {
             unwrap_secret(cond)
         });
         // https://w3c.github.io/uievents/#keys-cancelable-keys
@@ -1876,8 +1876,8 @@ impl Document {
             //Chris: commented out because this may need another rewrapping (back to static secrecy label)
             //let msg = EmbedderMsg::Keyboard(keyboard_event.clone());
             //self.send_to_embedder(msg);
-            let label_s = keyboard_event.key.get_dynamic_secret_label_clone().dynamic_union(keyboard_event.code.get_dynamic_secret_label_reference()).dynamic_union(keyboard_event.state.get_dynamic_secret_label_reference());
-            let label_i = keyboard_event.key.get_dynamic_integrity_label_clone().dynamic_intersection(keyboard_event.code.get_dynamic_integrity_label_reference()).dynamic_intersection(keyboard_event.state.get_dynamic_integrity_label_reference());
+            let label_s = keyboard_event.key.get_dynamic_secret_label_reference().union(keyboard_event.code.get_dynamic_secret_label_reference()).union(keyboard_event.state.get_dynamic_secret_label_reference());
+            let label_i = keyboard_event.key.get_dynamic_integrity_label_reference().union(keyboard_event.code.get_dynamic_integrity_label_reference()).union(keyboard_event.state.get_dynamic_integrity_label_reference());
 
             // This behavior is unspecced
             // We are supposed to dispatch synthetic click activation for Space and/or Return,
@@ -1888,13 +1888,13 @@ impl Document {
             let k = &keyboard_event.key;
             let c = &keyboard_event.code;
             let s = &keyboard_event.state;
-            let cond = info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, label_s.clone(), label_i.clone(), {
+            let cond = info_flow_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, &label_s, &label_i, {
                 let unwrapped_key = unwrap_secret_ref(k);
                 let unwrapped_code = unwrap_secret_ref(c);
                 let unwrapped_state = unwrap_secret_ref(s);
                 wrap_secret((unchecked_operation(unwrapped_key.k == Key::Enter) /*(is_enter(unwrapped_key)*/ || unchecked_operation(unwrapped_code.c == Code::Space) /*is_space(unwrapped_code)*/) && unchecked_operation(unwrapped_state.k == KeyState::Up) /*is_up(unwrapped_state)*/)
             });
-            let conditional2 = info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, label_s.clone(), label_i.clone(), {
+            let conditional2 = info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, &label_s, &label_i, {
                 unwrap_secret(cond)
             });
             if conditional2 //Vincent: Computed conditional in above block and used it here

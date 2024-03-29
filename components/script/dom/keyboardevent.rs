@@ -65,15 +65,21 @@ impl KeyboardEvent {
     fn new_inherited() -> KeyboardEvent {
         KeyboardEvent {
             uievent: UIEvent::new_inherited(),
-            key: DomRefCell::new(ServoSecureDynamic::<DOMString>::new_info_flow_struct(DOMString::new(), DynamicLabel::<Sec>::new_default(), DynamicLabel::<Int>::new_default())),
-            typed_key: DomRefCell::new(ServoSecureDynamic::<KeyWrapper>::new_info_flow_struct(KeyWrapper{k: Key::Unidentified}, DynamicLabel::<Sec>::new_default(), DynamicLabel::<Int>::new_default())),
-            code: DomRefCell::new(ServoSecureDynamic::<DOMString>::new_info_flow_struct(DOMString::new(), DynamicLabel::<Sec>::new_default(), DynamicLabel::<Int>::new_default())),
-            location: DomRefCell::new(ServoSecureDynamic::<u32>::new_info_flow_struct(0, DynamicLabel::<Sec>::new_default(), DynamicLabel::<Int>::new_default())),
-            modifiers: DomRefCell::new(ServoSecureDynamic::<ModifiersWrapper>::new_info_flow_struct(ModifiersWrapper{m: Modifiers::empty()}, DynamicLabel::<Sec>::new_default(), DynamicLabel::<Int>::new_default())),
-            repeat: DomRefCell::new(ServoSecureDynamic::<bool>::new_info_flow_struct(false, DynamicLabel::<Sec>::new_default(), DynamicLabel::<Int>::new_default())),
-            is_composing: DomRefCell::new(ServoSecureDynamic::<bool>::new_info_flow_struct(false, DynamicLabel::<Sec>::new_default(), DynamicLabel::<Int>::new_default())),
-            char_code: DomRefCell::new(ServoSecureDynamic::<u32>::new_info_flow_struct(0, DynamicLabel::<Sec>::new_default(), DynamicLabel::<Int>::new_default())),
-            key_code: DomRefCell::new(ServoSecureDynamic::<u32>::new_info_flow_struct(0, DynamicLabel::<Sec>::new_default(), DynamicLabel::<Int>::new_default())),
+            key: DomRefCell::new(info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynamicLabel::<Sec>::default_ref(), DynamicLabel::<Int>::default_ref(), { wrap_secret(DOMString::new()) })),
+            typed_key: DomRefCell::new({
+                let k2 = KeyWrapper{k: Key::Unidentified}; 
+                info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynamicLabel::<Sec>::default_ref(), DynamicLabel::<Int>::default_ref(), { wrap_secret(k2) })
+            }),
+            code: DomRefCell::new(info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynamicLabel::<Sec>::default_ref(), DynamicLabel::<Int>::default_ref(), { wrap_secret(DOMString::new()) })),
+            location: DomRefCell::new(info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynamicLabel::<Sec>::default_ref(), DynamicLabel::<Int>::default_ref(), { wrap_secret(0) })),
+            modifiers: DomRefCell::new({
+                let m2 = ModifiersWrapper{m: Modifiers::empty()}; 
+                info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynamicLabel::<Sec>::default_ref(), DynamicLabel::<Int>::default_ref(), { wrap_secret(m2) })
+            }),
+            repeat: DomRefCell::new(info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynamicLabel::<Sec>::default_ref(), DynamicLabel::<Int>::default_ref(), { wrap_secret(false) })),
+            is_composing: DomRefCell::new(info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynamicLabel::<Sec>::default_ref(), DynamicLabel::<Int>::default_ref(), { wrap_secret(false) })),
+            char_code: DomRefCell::new(info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynamicLabel::<Sec>::default_ref(), DynamicLabel::<Int>::default_ref(), { wrap_secret(0) })),
+            key_code: DomRefCell::new(info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynamicLabel::<Sec>::default_ref(), DynamicLabel::<Int>::default_ref(), { wrap_secret(0) }))
         }
     }
 
@@ -96,7 +102,7 @@ impl KeyboardEvent {
         //modifiers: Modifiers, //this
         //char_code: u32, //this
         //key_code: u32, //this
-        secure: StaticDynamicAll<SecurePart<DOMString>,sec_lat::Label_Empty,int_lat::Label_All,DynamicLabel<Sec>,DynamicLabel<Sec>>
+        secure: StaticDynamicAll<SecurePart<DOMString>,sec_lat::Label_Empty,int_lat::Label_All,DynamicLabel<Sec>,DynamicLabel<Int>>
     ) -> DomRoot<KeyboardEvent> { 
 
         let type_ = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, secure.get_dynamic_secret_label_reference(), secure.get_dynamic_integrity_label_reference(), {
@@ -222,7 +228,10 @@ impl KeyboardEvent {
             //0,
             //0,
         );
-        *event.key.borrow_mut() = ServoSecureDynamic::<DOMString>::new_info_flow_struct(DOMString::from_string(init.key.clone().to_string()), DynamicLabel::<Sec>::new_default(), DynamicLabel::<Int>::new_default());
+        let s = DOMString::from_string(init.key.clone().to_string());
+        *event.key.borrow_mut() = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynamicLabel::<Sec>::default_ref(), DynamicLabel::<Int>::default_ref(), { 
+            wrap_secret(s) 
+        });
         Ok(event)
     }
     
@@ -276,9 +285,16 @@ impl KeyboardEventMethods for KeyboardEvent {
         panic!("Vincent: Can't call method InitKeyboardEvent");
         self.upcast::<UIEvent>()
         .InitUIEvent(type_arg, can_bubble_arg, cancelable_arg, view_arg, 0);
-        *self.key.borrow_mut() = ServoSecureDynamic::<DOMString>::new_info_flow_struct(DOMString::from_string(key_arg.to_string()), DynamicLabel::<Sec>::new_default(), DynamicLabel::<Int>::new_default());
-        *self.location.borrow_mut() = ServoSecureDynamic::<u32>::new_info_flow_struct(location_arg, DynamicLabel::<Sec>::new_default(), DynamicLabel::<Int>::new_default());
-        *self.repeat.borrow_mut() = ServoSecureDynamic::<bool>::new_info_flow_struct(repeat, DynamicLabel::<Sec>::new_default(), DynamicLabel::<Int>::new_default());
+        let ka = DOMString::from_string(key_arg.to_string());
+        *self.key.borrow_mut() = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynamicLabel::<Sec>::default_ref(), DynamicLabel::<Int>::default_ref(), { 
+            wrap_secret(ka) 
+        });
+        *self.location.borrow_mut() = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynamicLabel::<Sec>::default_ref(), DynamicLabel::<Int>::default_ref(), { 
+            wrap_secret(location_arg) 
+        });
+        *self.repeat.borrow_mut() = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynamicLabel::<Sec>::default_ref(), DynamicLabel::<Int>::default_ref(), { 
+            wrap_secret(repeat) 
+        });
         //self.upcast::<UIEvent>()
         //    .InitUIEvent(type_arg, can_bubble_arg, cancelable_arg, view_arg, 0);
         //*self.key.borrow_mut() = key_arg;

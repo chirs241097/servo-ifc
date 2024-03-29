@@ -32,7 +32,7 @@ use keyboard_wrapper::*;
 use secret_structs::ternary_lattice as sec_lat;
 use secret_structs::integrity_lattice as int_lat;
 use secret_structs::secret::*;
-use secret_structs::secret::{get_new_secrecy_tag, get_new_integrity_tag, new_dynamic_secret_label, new_dynamic_integrity_label};
+use secret_structs::secret::{get_new_secrecy_tag, get_new_integrity_tag};
 
 use secret_structs::{/*info_flow_block_dynamic_all, */info_flow_block_declassify_dynamic_all};
 //use secret_structs::secret::secret::SecretBlockSafe;
@@ -104,25 +104,25 @@ where
     fn handle_key_from_window(&mut self, key_event: SecKeyboardEvent<sec_lat::Label_A, int_lat::Label_All>) {
         //Vincent: DECLASSIFY
         let k2 = KeyboardEvent {
-            state: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.state.get_dynamic_secret_label_clone(), key_event.state.get_dynamic_integrity_label_clone(), {
+            state: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.state.get_dynamic_secret_label_reference(), key_event.state.get_dynamic_integrity_label_reference(), {
                 custom_clone_key_state_wrapper(unwrap_secret_ref(&key_event.state))
             }).k,
-            key: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.key.get_dynamic_secret_label_clone(), key_event.key.get_dynamic_integrity_label_clone(), {
+            key: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.key.get_dynamic_secret_label_reference(), key_event.key.get_dynamic_integrity_label_reference(), {
                 custom_clone_key_wrapper(unwrap_secret_ref(&key_event.key))
             }).k,
-            code: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.code.get_dynamic_secret_label_clone(), key_event.code.get_dynamic_integrity_label_clone(), {
+            code: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.code.get_dynamic_secret_label_reference(), key_event.code.get_dynamic_integrity_label_reference(), {
                 custom_clone_code_wrapper(unwrap_secret_ref(&key_event.code))
             }).c,
-            location: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.location.get_dynamic_secret_label_clone(), key_event.location.get_dynamic_integrity_label_clone(), {
+            location: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.location.get_dynamic_secret_label_reference(), key_event.location.get_dynamic_integrity_label_reference(), {
                 custom_clone_location_wrapper(unwrap_secret_ref(&key_event.location))
             }).l,
-            modifiers: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.modifiers.get_dynamic_secret_label_clone(), key_event.modifiers.get_dynamic_integrity_label_clone(), {
+            modifiers: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.modifiers.get_dynamic_secret_label_reference(), key_event.modifiers.get_dynamic_integrity_label_reference(), {
                 custom_clone_modifiers_wrapper(unwrap_secret_ref(&key_event.modifiers))
             }).m,
-            repeat: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.repeat.get_dynamic_secret_label_clone(), key_event.repeat.get_dynamic_integrity_label_clone(), {
+            repeat: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.repeat.get_dynamic_secret_label_reference(), key_event.repeat.get_dynamic_integrity_label_reference(), {
                 *unwrap_secret_ref(&key_event.repeat)
             }),
-            is_composing: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.is_composing.get_dynamic_secret_label_clone(), key_event.is_composing.get_dynamic_integrity_label_clone(), {
+            is_composing: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.is_composing.get_dynamic_secret_label_reference(), key_event.is_composing.get_dynamic_integrity_label_reference(), {
                 *unwrap_secret_ref(&key_event.is_composing)
             }),
         };
@@ -214,25 +214,25 @@ where
         if let Some(id) = self.browser_id {
             //Vincent: DECLASSIFY
             let k2 = KeyboardEvent {
-                state: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.state.get_dynamic_secret_label_clone(), key_event.state.get_dynamic_integrity_label_clone(), {
+                state: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.state.get_dynamic_secret_label_reference(), key_event.state.get_dynamic_integrity_label_reference(), {
                     custom_clone_key_state_wrapper(unwrap_secret_ref(&key_event.state))
                 }).k,
-                key: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.key.get_dynamic_secret_label_clone(), key_event.key.get_dynamic_integrity_label_clone(), {
+                key: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.key.get_dynamic_secret_label_reference(), key_event.key.get_dynamic_integrity_label_reference(), {
                     custom_clone_key_wrapper(unwrap_secret_ref(&key_event.key))
                 }).k,
-                code: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.code.get_dynamic_secret_label_clone(), key_event.code.get_dynamic_integrity_label_clone(), {
+                code: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.code.get_dynamic_secret_label_reference(), key_event.code.get_dynamic_integrity_label_reference(), {
                     custom_clone_code_wrapper(unwrap_secret_ref(&key_event.code))
                 }).c,
-                location: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.location.get_dynamic_secret_label_clone(), key_event.location.get_dynamic_integrity_label_clone(), {
+                location: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.location.get_dynamic_secret_label_reference(), key_event.location.get_dynamic_integrity_label_reference(), {
                     custom_clone_location_wrapper(unwrap_secret_ref(&key_event.location))
                 }).l,
-                modifiers: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.modifiers.get_dynamic_secret_label_clone(), key_event.modifiers.get_dynamic_integrity_label_clone(), {
+                modifiers: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.modifiers.get_dynamic_secret_label_reference(), key_event.modifiers.get_dynamic_integrity_label_reference(), {
                     custom_clone_modifiers_wrapper(unwrap_secret_ref(&key_event.modifiers))
                 }).m,
-                repeat: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.repeat.get_dynamic_secret_label_clone(), key_event.repeat.get_dynamic_integrity_label_clone(), {
+                repeat: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.repeat.get_dynamic_secret_label_reference(), key_event.repeat.get_dynamic_integrity_label_reference(), {
                     *unwrap_secret_ref(&key_event.repeat)
                 }),
-                is_composing: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.is_composing.get_dynamic_secret_label_clone(), key_event.is_composing.get_dynamic_integrity_label_clone(), {
+                is_composing: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.is_composing.get_dynamic_secret_label_reference(), key_event.is_composing.get_dynamic_integrity_label_reference(), {
                     *unwrap_secret_ref(&key_event.is_composing)
                 }),
             };
@@ -257,25 +257,25 @@ where
     fn handle_key_from_servo(&mut self, _: Option<BrowserId>, event: SecKeyboardEvent<sec_lat::Label_A, int_lat::Label_All>) {
         //Vincent: DECLASSIFY
         let e2 = KeyboardEvent {
-            state: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, event.state.get_dynamic_secret_label_clone(), event.state.get_dynamic_integrity_label_clone(), {
+            state: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, event.state.get_dynamic_secret_label_reference(), event.state.get_dynamic_integrity_label_reference(), {
                 custom_clone_key_state_wrapper(unwrap_secret_ref(&event.state))
             }).k,
-            key: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, event.key.get_dynamic_secret_label_clone(), event.key.get_dynamic_integrity_label_clone(), {
+            key: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, event.key.get_dynamic_secret_label_reference(), event.key.get_dynamic_integrity_label_reference(), {
                 custom_clone_key_wrapper(unwrap_secret_ref(&event.key))
             }).k,
-            code: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, event.code.get_dynamic_secret_label_clone(), event.code.get_dynamic_integrity_label_clone(), {
+            code: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, event.code.get_dynamic_secret_label_reference(), event.code.get_dynamic_integrity_label_reference(), {
                 custom_clone_code_wrapper(unwrap_secret_ref(&event.code))
             }).c,
-            location: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, event.location.get_dynamic_secret_label_clone(), event.location.get_dynamic_integrity_label_clone(), {
+            location: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, event.location.get_dynamic_secret_label_reference(), event.location.get_dynamic_integrity_label_reference(), {
                 custom_clone_location_wrapper(unwrap_secret_ref(&event.location))
             }).l,
-            modifiers: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, event.modifiers.get_dynamic_secret_label_clone(), event.modifiers.get_dynamic_integrity_label_clone(), {
+            modifiers: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, event.modifiers.get_dynamic_secret_label_reference(), event.modifiers.get_dynamic_integrity_label_reference(), {
                 custom_clone_modifiers_wrapper(unwrap_secret_ref(&event.modifiers))
             }).m,
-            repeat: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, event.repeat.get_dynamic_secret_label_clone(), event.repeat.get_dynamic_integrity_label_clone(), {
+            repeat: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, event.repeat.get_dynamic_secret_label_reference(), event.repeat.get_dynamic_integrity_label_reference(), {
                 *unwrap_secret_ref(&event.repeat)
             }),
-            is_composing: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, event.is_composing.get_dynamic_secret_label_clone(), event.is_composing.get_dynamic_integrity_label_clone(), {
+            is_composing: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, event.is_composing.get_dynamic_secret_label_reference(), event.is_composing.get_dynamic_integrity_label_reference(), {
                 *unwrap_secret_ref(&event.is_composing)
             }),
         };

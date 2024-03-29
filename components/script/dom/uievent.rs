@@ -98,7 +98,7 @@ impl UIEvent {
             return;
         }
         //Vincent: DECLASSIFY
-        let new_type_: DOMString = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, type_.get_dynamic_secret_label_clone(), type_.get_dynamic_integrity_label_clone(), {
+        let new_type_: DOMString = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, type_.get_dynamic_secret_label_reference(), type_.get_dynamic_integrity_label_reference(), {
             unwrap_secret(type_)
         });
         event.init_event(Atom::from(new_type_), can_bubble, cancelable);
