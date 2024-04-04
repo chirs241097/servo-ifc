@@ -32,6 +32,8 @@ use std::io::Write;
 use std::panic;
 use std::process;
 use std::thread;
+use std::time::Instant;
+use std::time::Duration;
 
 pub mod platform {
     #[cfg(target_os = "macos")]
@@ -44,11 +46,34 @@ pub mod platform {
     pub fn deinit(_clean_shutdown: bool) {}
 }
 
+pub static mut TIMING: Option<Instant> = None;
+
+extern crate libc;
+pub unsafe fn print_timing() {
+    let elapsed = unsafe { TIMING.unwrap().elapsed() };
+    eprintln!("Elapsed time: {} s, {} ns", elapsed.as_secs(), elapsed.subsec_nanos());
+}
+
+pub extern "C" fn print_timing_c() {
+    unsafe {print_timing();}
+}
+
+pub fn atexit_print_timing() {
+    unsafe { libc::atexit(print_timing_c); }
+}
+
+pub fn initialize_timing() {
+    unsafe {TIMING = Some(Instant::now());}
+    atexit_print_timing();
+}
+
 pub fn main() {
     crash_handler::install();
 
     resources::init();
 
+    initialize_timing();
+    
     // Parse the command line options and store them globally
     let args: Vec<String> = env::args().collect();
     let mut opts = Options::new();
