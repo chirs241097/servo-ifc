@@ -7,8 +7,8 @@
 <link rel="help" href="https://dom.spec.whatwg.org/#dom-document" />
 </head>
 <body>
-<script src="/resources/testharness.js"></script>
-<script src="/resources/testharnessreport.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <script><![CDATA[
 test(function() {
   var doc = new Document();

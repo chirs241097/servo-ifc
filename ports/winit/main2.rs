@@ -50,6 +50,7 @@ pub fn main() {
     resources::init();
 
     // Parse the command line options and store them globally
+    secret_structs::secret::initialize_carapace();
     let args: Vec<String> = env::args().collect();
     let mut opts = Options::new();
     opts.optflag(
