@@ -1,0 +1,12 @@
+tests/wpt/webgl/tests/conformance2/glsl3/compound-assignment-type-combination.html
+tests/wpt/webgl/tests/conformance/textures/misc/texture-npot-video.html
+tests/wpt/web-platform-tests/xhr/send-timeout-events.htm
+tests/wpt/web-platform-tests/xhr/send-entity-body-document.htm
+tests/wpt/web-platform-tests/xhr/send-content-type-string.htm
+tests/wpt/web-platform-tests/workers/same-origin-check.sub.html
+tests/wpt/web-platform-tests/workers/constructors/Worker/same-origin.html
+tests/wpt/web-platform-tests/workers/Worker_cross_origin_security_err.htm
+tests/wpt/web-platform-tests/workers/Worker-terminate-forever.html
+tests/wpt/web-platform-tests/websockets/unload-a-document/003.html
+tests/wpt/web-platform-tests/webmessaging/broadcastchannel/opaque-origin.html
+tests/wpt/web-platform-tests/selection/addRange-48.html

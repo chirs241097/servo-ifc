@@ -432,6 +432,7 @@ impl<T: ClipboardProvider> TextInput<T> {
         }
         //Vincent: FIX LABEL  
         let s_new: String = s.into();
+        //Vincent: PROBLEM HERE
         self.replace_selection(info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynamicLabel::<Sec>::default_ref(), DynamicLabel::<Int>::default_ref(), {
             wrap_secret(DOMString::from_string(s_new))
         }) /*DOMString::from(s.into())*/);
@@ -758,6 +759,11 @@ impl<T: ClipboardProvider> TextInput<T> {
             // FIXME(ajeffrey): effecient append for DOMStrings
             let lines_ref = &self.lines;
             let to_unwrap = &mut insert_lines[last_insert_lines_index];
+            /*for i in 0..self.lines.len() {
+                eprintln!("textinput.rs 762: lines[{:?}]: {:?}", i, unsafe { self.lines[i].get_dynamic_secret_label_reference().to_string() });
+            }*/
+            eprintln!("textinput.rs 764: to_unwrap: {:?}", unsafe { to_unwrap.get_dynamic_secret_label_reference().to_string() });
+            eprintln!("textinput.rs 765: self.lines[end.line], end.line: {:?}, {:?}", unsafe { self.lines[end.line].get_dynamic_secret_label_reference().to_string() }, end.line);
 
             let s_label = to_unwrap.get_dynamic_secret_label_reference().union(self.lines[end.line].get_dynamic_secret_label_reference());
             let i_label = to_unwrap.get_dynamic_integrity_label_reference().union(self.lines[end.line].get_dynamic_integrity_label_reference());
@@ -1012,11 +1018,16 @@ impl<T: ClipboardProvider> TextInput<T> {
     }
 
     /// Deal with a newline input.
-    pub fn handle_return(&mut self) -> KeyReaction {
+    pub fn handle_return(&mut self, sec_label: DynamicLabel<Sec>, int_label: DynamicLabel<Int>) -> KeyReaction {
+        //CARAPACE: Change handle_return to insert a secret newline character instead of a public one.
         if !self.multiline {
             KeyReaction::TriggerDefaultAction
         } else {
-            self.insert_char('\n');
+            let string = '\n'.to_string();
+            self.insert_secret_string(info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, &sec_label, &int_label, {
+                wrap_secret(string)
+            }));
+            //self.insert_char('\n');
             KeyReaction::DispatchInput
         }
     }
@@ -1274,11 +1285,11 @@ impl<T: ClipboardProvider> TextInput<T> {
         });
         //mods.remove(Modifiers::SHIFT);
         
-        //Vincent: DECLASSIFY 
+        //Carapace: DECLASSIFY 
         let k = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, key.get_dynamic_secret_label_reference(), key.get_dynamic_integrity_label_reference(), {
             custom_clone_key_wrapper(unwrap_secret_ref(&key))
         }).k;
-        //Vincent: DECLASSIFY
+        //Carapace: DECLASSIFY
         let m: Modifiers = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, mods.get_dynamic_secret_label_reference(), mods.get_dynamic_integrity_label_reference(), {
             custom_clone_modifiers_wrapper(unwrap_secret_ref(&mods))
         }).m;
@@ -1381,7 +1392,7 @@ impl<T: ClipboardProvider> TextInput<T> {
                 self.adjust_vertical(1, maybe_select);
                 KeyReaction::RedrawSelection
             })
-            .shortcut(Modifiers::empty(), Key::Enter, || self.handle_return())
+            .shortcut(Modifiers::empty(), Key::Enter, || self.handle_return(key.get_dynamic_secret_label_reference().union(mods.get_dynamic_secret_label_reference()), key.get_dynamic_integrity_label_reference().union(mods.get_dynamic_integrity_label_reference())))
             .optional_shortcut(macos, Modifiers::empty(), Key::Home, || {
                 self.edit_point.index = UTF8Bytes::zero();
                 KeyReaction::RedrawSelection

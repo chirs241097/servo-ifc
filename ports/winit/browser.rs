@@ -102,7 +102,7 @@ where
 
     /// Handle key events before sending them to Servo.
     fn handle_key_from_window(&mut self, key_event: SecKeyboardEvent<sec_lat::Label_A, int_lat::Label_All>) {
-        //Vincent: DECLASSIFY
+        //Carapace: DECLASSIFY
         let k2 = KeyboardEvent {
             state: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.state.get_dynamic_secret_label_reference(), key_event.state.get_dynamic_integrity_label_reference(), {
                 custom_clone_key_state_wrapper(unwrap_secret_ref(&key_event.state))
@@ -212,7 +212,7 @@ where
     #[cfg(not(target_os = "win"))]
     fn platform_handle_key(&mut self, key_event: SecKeyboardEvent<sec_lat::Label_A, int_lat::Label_All> /*WindowEvent::Keyboard(key_event)*/) {
         if let Some(id) = self.browser_id {
-            //Vincent: DECLASSIFY
+            //Carapace: DECLASSIFY
             let k2 = KeyboardEvent {
                 state: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, key_event.state.get_dynamic_secret_label_reference(), key_event.state.get_dynamic_integrity_label_reference(), {
                     custom_clone_key_state_wrapper(unwrap_secret_ref(&key_event.state))
@@ -255,7 +255,7 @@ where
 
     /// Handle key events after they have been handled by Servo.
     fn handle_key_from_servo(&mut self, _: Option<BrowserId>, event: SecKeyboardEvent<sec_lat::Label_A, int_lat::Label_All>) {
-        //Vincent: DECLASSIFY
+        //Carapace: DECLASSIFY
         let e2 = KeyboardEvent {
             state: info_flow_block_declassify_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, event.state.get_dynamic_secret_label_reference(), event.state.get_dynamic_integrity_label_reference(), {
                 custom_clone_key_state_wrapper(unwrap_secret_ref(&event.state))

@@ -97,7 +97,7 @@ impl UIEvent {
         if event.dispatching() {
             return;
         }
-        //Vincent: DECLASSIFY
+        //Carapace: DECLASSIFY
         let new_type_: DOMString = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, type_.get_dynamic_secret_label_reference(), type_.get_dynamic_integrity_label_reference(), {
             unwrap_secret(type_)
         });
