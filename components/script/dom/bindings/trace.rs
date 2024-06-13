@@ -183,8 +183,8 @@ use secret_structs::ternary_lattice::Label;
 use secret_structs::secret::StaticDynamicAll;
 use keyboard_wrapper::KeyWrapper;
 use keyboard_wrapper::ModifiersWrapper;
-use secret_structs::secret::DynamicLabel;
-use secret_structs::secret::InfoFlowStruct;
+use secret_structs::secret::DynLabel;
+use secret_structs::secret::SecureValue;
 use secret_structs::secret::*;
 
 unsafe_no_jsmanaged_fields!(Tm);
@@ -328,40 +328,40 @@ unsafe impl<T: JSTraceable> JSTraceable for [T] {
 }
 
 //Vincent: Added the following specific implementations
-unsafe impl<L1, L2> JSTraceable for InfoFlowStruct<DOMString, L1, L2, DynamicLabel<Sec>, DynamicLabel<Int>>
+unsafe impl<L1, L2> JSTraceable for SecureValue<DOMString, L1, L2, DynLabel<Sec>, DynLabel<Int>>
     where L1: Label, L2: Label {
     unsafe fn trace(&self, trc: *mut JSTracer) { /* does nothing (same as unsafe_no_jsmanaged_fields) */ }
 }
 
-unsafe impl<L1, L2> JSTraceable for DomRefCell<StaticDynamicAll<KeyWrapper,L1,L2,DynamicLabel<Sec>,DynamicLabel<Int>>> 
+unsafe impl<L1, L2> JSTraceable for DomRefCell<StaticDynamicAll<KeyWrapper,L1,L2,DynLabel<Sec>,DynLabel<Int>>> 
     where L1: Label, L2: Label {
     unsafe fn trace(&self, trc: *mut JSTracer) {
         panic!("This should never be called");
-        unsafe {self.borrow().clone().unwrap_unsafe_dynamic_all::<L1, L2>()}.k.trace(trc);
+        unsafe {self.borrow().clone().unwrap_unsafe2::<L1, L2>()}.k.trace(trc);
     }
 }
 
-unsafe impl<L1, L2> JSTraceable for DomRefCell<StaticDynamicAll<u32,L1,L2,DynamicLabel<Sec>,DynamicLabel<Int>>>
+unsafe impl<L1, L2> JSTraceable for DomRefCell<StaticDynamicAll<u32,L1,L2,DynLabel<Sec>,DynLabel<Int>>>
     where L1: Label, L2: Label {
     unsafe fn trace(&self, trc: *mut JSTracer) {
         panic!("This should never be called");
-        unsafe {self.borrow().clone().unwrap_unsafe_dynamic_all::<L1, L2>()}.trace(trc);
+        unsafe {self.borrow().clone().unwrap_unsafe2::<L1, L2>()}.trace(trc);
     }
 }
 
-unsafe impl<L1, L2> JSTraceable for DomRefCell<StaticDynamicAll<ModifiersWrapper,L1,L2,DynamicLabel<Sec>,DynamicLabel<Int>>>
+unsafe impl<L1, L2> JSTraceable for DomRefCell<StaticDynamicAll<ModifiersWrapper,L1,L2,DynLabel<Sec>,DynLabel<Int>>>
     where L1: Label, L2: Label {
     unsafe fn trace(&self, trc: *mut JSTracer) {
         panic!("This should never be called");
-        unsafe {self.borrow().clone().unwrap_unsafe_dynamic_all::<L1, L2>()}.m.trace(trc);
+        unsafe {self.borrow().clone().unwrap_unsafe2::<L1, L2>()}.m.trace(trc);
     }
 }
 
-unsafe impl<L1, L2> JSTraceable for DomRefCell<StaticDynamicAll<bool,L1,L2,DynamicLabel<Sec>,DynamicLabel<Int>>>
+unsafe impl<L1, L2> JSTraceable for DomRefCell<StaticDynamicAll<bool,L1,L2,DynLabel<Sec>,DynLabel<Int>>>
     where L1: Label, L2: Label {
     unsafe fn trace(&self, trc: *mut JSTracer) {
         panic!("This should never be called");
-        unsafe {self.borrow().clone().unwrap_unsafe_dynamic_all::<L1, L2>()}.trace(trc);
+        unsafe {self.borrow().clone().unwrap_unsafe2::<L1, L2>()}.trace(trc);
     }
 }
 

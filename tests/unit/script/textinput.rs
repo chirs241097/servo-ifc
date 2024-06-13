@@ -65,10 +65,10 @@ fn test_set_content_ignores_max_length() {
     );
 
     //Carapace: Changed function call to reflect Carapace API
-    textinput.set_content(info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), { wrap_secret(DOMString::from_str("mozilla rocks"))}));
+    textinput.set_content(info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), { wrap(DOMString::from_str("mozilla rocks"))}));
     //Carapace: Changed test to reflect Carapace API
-    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dynamic_secret_label_clone(), result.get_dynamic_integrity_label_clone(), {unwrap_secret(result)})}, DOMString::from("mozilla rocks"));
-    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dynamic_secret_label_clone(), result.get_dynamic_integrity_label_clone(), {unwrap_secret(result)})}, DOMString::from("mozilla rocks"));
+    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dyn_sec_label(), result.get_dyn_int_label(), {unwrap(result)})}, DOMString::from("mozilla rocks"));
+    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dyn_sec_label(), result.get_dyn_int_label(), {unwrap(result)})}, DOMString::from("mozilla rocks"));
 }
 
 #[test]
@@ -96,7 +96,7 @@ fn test_textinput_when_inserting_multiple_lines_over_a_selection_respects_max_le
     textinput.insert_string("cruel\nterrible\nbad".to_string());
 
     //Carapace: Changed test to reflect Carapace API
-    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dynamic_secret_label_clone(), result.get_dynamic_integrity_label_clone(), {unwrap_secret(result)})}, "hcruel\nterrible\nd");
+    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dyn_sec_label(), result.get_dyn_int_label(), {unwrap(result)})}, "hcruel\nterrible\nd");
 }
 
 #[test]
@@ -115,7 +115,7 @@ fn test_textinput_when_inserting_multiple_lines_still_respects_max_length() {
     textinput.insert_string("cruel\nterrible".to_string());
 
     //Carapace: Changed test to reflect Carapace API
-    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dynamic_secret_label_clone(), result.get_dynamic_integrity_label_clone(), {unwrap_secret(result)})}, "hello\ncruel\nworld");
+    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dyn_sec_label(), result.get_dyn_int_label(), {unwrap(result)})}, "hello\ncruel\nworld");
 }
 
 #[test]
@@ -133,7 +133,7 @@ fn test_textinput_when_content_is_already_longer_than_max_length_and_theres_no_s
     textinput.insert_char('a');
 
     //Carapace: Changed test to reflect Carapace API
-    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dynamic_secret_label_clone(), result.get_dynamic_integrity_label_clone(), {unwrap_secret(result)})}, "abc");
+    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dyn_sec_label(), result.get_dyn_int_label(), {unwrap(result)})}, "abc");
 }
 
 #[test]
@@ -152,7 +152,7 @@ fn test_multi_line_textinput_with_maxlength_doesnt_allow_appending_characters_wh
     textinput.insert_char('a');
 
     //Carapace: Changed test to reflect Carapace API
-    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dynamic_secret_label_clone(), result.get_dynamic_integrity_label_clone(), {unwrap_secret(result)})}, "abc\nd");
+    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dyn_sec_label(), result.get_dyn_int_label(), {unwrap(result)})}, "abc\nd");
 }
 
 #[test]
@@ -176,10 +176,10 @@ fn test_single_line_textinput_with_max_length_doesnt_allow_appending_characters_
     //                    ---
 
     //Carapace: Changed function call to reflect Carapace API
-    textinput.replace_selection({let ds = DOMString::from_str("too long"); info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap_secret(ds)})});
+    textinput.replace_selection({let ds = DOMString::from_str("too long"); info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap(ds)})});
 
     //Carapace: Changed test to reflect Carapace API
-    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dynamic_secret_label_clone(), result.get_dynamic_integrity_label_clone(), {unwrap_secret(result)})}, "atooe");
+    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dyn_sec_label(), result.get_dyn_int_label(), {unwrap(result)})}, "atooe");
 }
 
 #[test]
@@ -202,10 +202,10 @@ fn test_single_line_textinput_with_max_length_allows_deletion_when_replacing_a_s
     //                    --
 
     //Carapace: Changed function call to reflect Carapace API
-    textinput.replace_selection({let ds = DOMString::from_str("only deletion should be applied"); info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap_secret(ds)})});
+    textinput.replace_selection({let ds = DOMString::from_str("only deletion should be applied"); info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap(ds)})});
 
     //Carapace: Changed test to reflect Carapace API
-    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dynamic_secret_label_clone(), result.get_dynamic_integrity_label_clone(), {unwrap_secret(result)})}, "ade");
+    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dyn_sec_label(), result.get_dyn_int_label(), {unwrap(result)})}, "ade");
 }
 
 #[test]
@@ -222,13 +222,13 @@ fn test_single_line_textinput_with_max_length_multibyte() {
 
     textinput.insert_char('á');
     //Carapace: Changed test to reflect Carapace API
-    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dynamic_secret_label_clone(), result.get_dynamic_integrity_label_clone(), {unwrap_secret(result)})}, "á");
+    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dyn_sec_label(), result.get_dyn_int_label(), {unwrap(result)})}, "á");
     textinput.insert_char('é');
     //Carapace: Changed test to reflect Carapace API
-    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dynamic_secret_label_clone(), result.get_dynamic_integrity_label_clone(), {unwrap_secret(result)})}, "áé");
+    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dyn_sec_label(), result.get_dyn_int_label(), {unwrap(result)})}, "áé");
     textinput.insert_char('i');
     //Carapace: Changed test to reflect Carapace API
-    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dynamic_secret_label_clone(), result.get_dynamic_integrity_label_clone(), {unwrap_secret(result)})}, "áé");
+    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dyn_sec_label(), result.get_dyn_int_label(), {unwrap(result)})}, "áé");
 }
 
 #[test]
@@ -245,16 +245,16 @@ fn test_single_line_textinput_with_max_length_multi_code_unit() {
 
     textinput.insert_char('\u{10437}');
     //Carapace: Changed test to reflect Carapace API
-    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dynamic_secret_label_clone(), result.get_dynamic_integrity_label_clone(), {unwrap_secret(result)})}, "\u{10437}");
+    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dyn_sec_label(), result.get_dyn_int_label(), {unwrap(result)})}, "\u{10437}");
     textinput.insert_char('\u{10437}');
     //Carapace: Changed test to reflect Carapace API
-    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dynamic_secret_label_clone(), result.get_dynamic_integrity_label_clone(), {unwrap_secret(result)})}, "\u{10437}");
+    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dyn_sec_label(), result.get_dyn_int_label(), {unwrap(result)})}, "\u{10437}");
     textinput.insert_char('x');
     //Carapace: Changed test to reflect Carapace API
-    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dynamic_secret_label_clone(), result.get_dynamic_integrity_label_clone(), {unwrap_secret(result)})}, "\u{10437}x");
+    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dyn_sec_label(), result.get_dyn_int_label(), {unwrap(result)})}, "\u{10437}x");
     textinput.insert_char('x');
     //Carapace: Changed test to reflect Carapace API
-    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dynamic_secret_label_clone(), result.get_dynamic_integrity_label_clone(), {unwrap_secret(result)})}, "\u{10437}x");
+    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dyn_sec_label(), result.get_dyn_int_label(), {unwrap(result)})}, "\u{10437}x");
 }
 
 #[test]
@@ -270,7 +270,7 @@ fn test_single_line_textinput_with_max_length_inside_char() {
 
     textinput.insert_char('x');
     //Carapace: Changed test to reflect Carapace API
-    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dynamic_secret_label_clone(), result.get_dynamic_integrity_label_clone(), {unwrap_secret(result)})}, "\u{10437}");
+    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dyn_sec_label(), result.get_dyn_int_label(), {unwrap(result)})}, "\u{10437}");
 }
 
 #[test]
@@ -287,7 +287,7 @@ fn test_single_line_textinput_with_max_length_doesnt_allow_appending_characters_
 
     textinput.insert_char('b');
     //Carapace: Changed test to reflect Carapace API
-    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dynamic_secret_label_clone(), result.get_dynamic_integrity_label_clone(), {unwrap_secret(result)})}, "a");
+    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dyn_sec_label(), result.get_dyn_int_label(), {unwrap(result)})}, "a");
 }
 
 #[test]
@@ -297,17 +297,17 @@ fn test_textinput_delete_char() {
     textinput.adjust_horizontal(UTF8Bytes{value: 2}, Direction::Forward, Selection::NotSelected);
     textinput.delete_char(Direction::Backward);
     //Carapace: Changed test to reflect Carapace API
-    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dynamic_secret_label_clone(), result.get_dynamic_integrity_label_clone(), {unwrap_secret(result)})}, "acdefg");
+    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dyn_sec_label(), result.get_dyn_int_label(), {unwrap(result)})}, "acdefg");
 
     textinput.delete_char(Direction::Forward);
     //Carapace: Changed test to reflect Carapace API
-    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dynamic_secret_label_clone(), result.get_dynamic_integrity_label_clone(), {unwrap_secret(result)})}, "adefg");
+    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dyn_sec_label(), result.get_dyn_int_label(), {unwrap(result)})}, "adefg");
 
     //Carapace: Change UTF8Bytes to have named fields
     textinput.adjust_horizontal(UTF8Bytes{value: 2}, Direction::Forward, Selection::Selected);
     textinput.delete_char(Direction::Forward);
     //Carapace: Changed test to reflect Carapace API
-    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dynamic_secret_label_clone(), result.get_dynamic_integrity_label_clone(), {unwrap_secret(result)})}, "afg");
+    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dyn_sec_label(), result.get_dyn_int_label(), {unwrap(result)})}, "afg");
 
     let mut textinput = text_input(Lines::Single, "a🌠b");
     // Same as "Right" key
@@ -315,13 +315,13 @@ fn test_textinput_delete_char() {
     textinput.delete_char(Direction::Forward);
     // Not splitting surrogate pairs.
     //Carapace: Changed test to reflect Carapace API
-    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dynamic_secret_label_clone(), result.get_dynamic_integrity_label_clone(), {unwrap_secret(result)})}, "ab");
+    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dyn_sec_label(), result.get_dyn_int_label(), {unwrap(result)})}, "ab");
 
     let mut textinput = text_input(Lines::Single, "abcdefg");
     textinput.set_selection_range(2, 2, SelectionDirection::None);
     textinput.delete_char(Direction::Backward);
     //Carapace: Changed test to reflect Carapace API
-    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dynamic_secret_label_clone(), result.get_dynamic_integrity_label_clone(), {unwrap_secret(result)})}, "acdefg");
+    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dyn_sec_label(), result.get_dyn_int_label(), {unwrap(result)})}, "acdefg");
 }
 
 #[test]
@@ -331,13 +331,13 @@ fn test_textinput_insert_char() {
     textinput.adjust_horizontal(UTF8Bytes{value: 2}, Direction::Forward, Selection::NotSelected);
     textinput.insert_char('a');
     //Carapace: Changed test to reflect Carapace API
-    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dynamic_secret_label_clone(), result.get_dynamic_integrity_label_clone(), {unwrap_secret(result)})}, "abacdefg");
+    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dyn_sec_label(), result.get_dyn_int_label(), {unwrap(result)})}, "abacdefg");
 
     //Carapace: Change UTF8Bytes to have named fields
     textinput.adjust_horizontal(UTF8Bytes{value: 2}, Direction::Forward, Selection::Selected);
     textinput.insert_char('b');
     //Carapace: Changed test to reflect Carapace API
-    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dynamic_secret_label_clone(), result.get_dynamic_integrity_label_clone(), {unwrap_secret(result)})}, "ababefg");
+    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dyn_sec_label(), result.get_dyn_int_label(), {unwrap(result)})}, "ababefg");
 
     let mut textinput = text_input(Lines::Single, "a🌠c");
     // Same as "Right" key
@@ -346,7 +346,7 @@ fn test_textinput_insert_char() {
     textinput.insert_char('b');
     // Not splitting surrogate pairs.
     //Carapace: Changed test to reflect Carapace API
-    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dynamic_secret_label_clone(), result.get_dynamic_integrity_label_clone(), {unwrap_secret(result)})}, "a🌠bc");
+    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dyn_sec_label(), result.get_dyn_int_label(), {unwrap(result)})}, "a🌠bc");
 }
 
 #[test]
@@ -378,9 +378,9 @@ fn test_textinput_replace_selection() {
     textinput.adjust_horizontal(UTF8Bytes{value: 2}, Direction::Forward, Selection::Selected);
 
     //Carapace: Changed function call to reflect Carapace API
-    textinput.replace_selection({let ds = DOMString::from_str("xyz"); info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap_secret(ds)})});
+    textinput.replace_selection({let ds = DOMString::from_str("xyz"); info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap(ds)})});
     //Carapace: Changed test to reflect Carapace API
-    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dynamic_secret_label_clone(), result.get_dynamic_integrity_label_clone(), {unwrap_secret(result)})}, "abxyzefg");
+    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dyn_sec_label(), result.get_dyn_int_label(), {unwrap(result)})}, "abxyzefg");
 }
 
 #[test]
@@ -389,9 +389,9 @@ fn test_textinput_replace_selection_multibyte_char() {
     textinput.adjust_horizontal_by_one(Direction::Forward, Selection::Selected);
 
     //Carapace: Changed function call to reflect Carapace API
-    textinput.replace_selection({let ds = DOMString::from_str("e"); info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap_secret(ds)})});
+    textinput.replace_selection({let ds = DOMString::from_str("e"); info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap(ds)})});
     //Carapace: Changed test to reflect Carapace API
-    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dynamic_secret_label_clone(), result.get_dynamic_integrity_label_clone(), {unwrap_secret(result)})}, "e");
+    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dyn_sec_label(), result.get_dyn_int_label(), {unwrap(result)})}, "e");
 }
 
 #[test]
@@ -572,41 +572,41 @@ fn test_navigation_keyboard_shortcuts() {
 
     // Test that CMD + Right moves to the end of the current line.
     //Carapace: Changed function call to reflect Carapace API
-    textinput.handle_keydown_aux({let k = KeyWrapper{k: Key::ArrowRight }; info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap_secret(k)})}, {let m = ModifiersWrapper{m: Modifiers::META}; info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap_secret(m)})}, true);
+    textinput.handle_keydown_aux({let k = KeyWrapper{k: Key::ArrowRight }; info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap(k)})}, {let m = ModifiersWrapper{m: Modifiers::META}; info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap(m)})}, true);
     //Carapace: Change UTF8Bytes to have named fields
     assert_eq!(textinput.edit_point().index, UTF8Bytes{value: 11});
     // Test that CMD + Right moves to the beginning of the current line.
     //Carapace: Changed function call to reflect Carapace API
-    textinput.handle_keydown_aux({let k = KeyWrapper{k: Key::ArrowLeft }; info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap_secret(k)})}, {let m = ModifiersWrapper{m: Modifiers::META}; info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap_secret(m)})}, true);
+    textinput.handle_keydown_aux({let k = KeyWrapper{k: Key::ArrowLeft }; info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap(k)})}, {let m = ModifiersWrapper{m: Modifiers::META}; info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap(m)})}, true);
     assert_eq!(textinput.edit_point().index, UTF8Bytes::zero());
     // Test that CTRL + ALT + E moves to the end of the current line also.
     //Carapace: Changed function call to reflect Carapace API
-    textinput.handle_keydown_aux({let k = KeyWrapper{k: Key::Character("e".to_owned()) }; info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap_secret(k)})}, {let m = ModifiersWrapper{m: Modifiers::CONTROL | Modifiers::ALT}; info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap_secret(m)})}, true);
+    textinput.handle_keydown_aux({let k = KeyWrapper{k: Key::Character("e".to_owned()) }; info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap(k)})}, {let m = ModifiersWrapper{m: Modifiers::CONTROL | Modifiers::ALT}; info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap(m)})}, true);
     //Carapace: Change UTF8Bytes to have named fields
     assert_eq!(textinput.edit_point().index, UTF8Bytes{value: 11});
     // Test that CTRL + ALT + A moves to the beginning of the current line also.
     //Carapace: Changed function call to reflect Carapace API
-    textinput.handle_keydown_aux({let k = KeyWrapper{k: Key::Character("a".to_owned()) }; info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap_secret(k)})}, {let m = ModifiersWrapper{m: Modifiers::CONTROL | Modifiers::ALT}; info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap_secret(m)})}, true);
+    textinput.handle_keydown_aux({let k = KeyWrapper{k: Key::Character("a".to_owned()) }; info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap(k)})}, {let m = ModifiersWrapper{m: Modifiers::CONTROL | Modifiers::ALT}; info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap(m)})}, true);
     assert_eq!(textinput.edit_point().index, UTF8Bytes::zero());
 
     // Test that ALT + Right moves to the end of the word.
     //Carapace: Changed function call to reflect Carapace API
-    textinput.handle_keydown_aux({let k = KeyWrapper{k: Key::ArrowRight }; info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap_secret(k)})}, {let m = ModifiersWrapper{m: Modifiers::ALT}; info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap_secret(m)})}, true);
+    textinput.handle_keydown_aux({let k = KeyWrapper{k: Key::ArrowRight }; info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap(k)})}, {let m = ModifiersWrapper{m: Modifiers::ALT}; info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap(m)})}, true);
     //Carapace: Change UTF8Bytes to have named fields
     assert_eq!(textinput.edit_point().index, UTF8Bytes{value: 5});
     // Test that CTRL + ALT + F moves to the end of the word also.
     //Carapace: Changed function call to reflect Carapace API
-    textinput.handle_keydown_aux({let k = KeyWrapper{k: Key::Character("f".to_owned()) }; info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap_secret(k)})}, {let m = ModifiersWrapper{m: Modifiers::CONTROL | Modifiers::ALT}; info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap_secret(m)})}, true);
+    textinput.handle_keydown_aux({let k = KeyWrapper{k: Key::Character("f".to_owned()) }; info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap(k)})}, {let m = ModifiersWrapper{m: Modifiers::CONTROL | Modifiers::ALT}; info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap(m)})}, true);
     //Carapace: Change UTF8Bytes to have named fields
     assert_eq!(textinput.edit_point().index, UTF8Bytes{value: 11});
     // Test that ALT + Left moves to the end of the word.
     //Carapace: Changed function call to reflect Carapace API
-    textinput.handle_keydown_aux({let k = KeyWrapper{k: Key::ArrowLeft }; info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap_secret(k)})}, {let m = ModifiersWrapper{m: Modifiers::ALT}; info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap_secret(m)})}, true);
+    textinput.handle_keydown_aux({let k = KeyWrapper{k: Key::ArrowLeft }; info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap(k)})}, {let m = ModifiersWrapper{m: Modifiers::ALT}; info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap(m)})}, true);
     //Carapace: Change UTF8Bytes to have named fields
     assert_eq!(textinput.edit_point().index, UTF8Bytes{value: 6});
     // Test that CTRL + ALT + B moves to the end of the word also.
     //Carapace: Changed function call to reflect Carapace API
-    textinput.handle_keydown_aux({let k = KeyWrapper{k: Key::Character("b".to_owned()) }; info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap_secret(k)})}, {let m = ModifiersWrapper{m: Modifiers::CONTROL | Modifiers::ALT}; info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap_secret(m)})}, true);
+    textinput.handle_keydown_aux({let k = KeyWrapper{k: Key::Character("b".to_owned()) }; info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap(k)})}, {let m = ModifiersWrapper{m: Modifiers::CONTROL | Modifiers::ALT}; info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap(m)})}, true);
     assert_eq!(textinput.edit_point().index, UTF8Bytes::zero());
 }
 
@@ -619,9 +619,9 @@ fn test_textinput_handle_return() {
         Direction::Forward,
         Selection::NotSelected,
     );
-    single_line_textinput.handle_return();
+    single_line_textinput.handle_return(single_line_textinput.get_content().get_dyn_sec_label(), single_line_textinput.get_content().get_dyn_int_label());
     //Carapace: Changed test to reflect Carapace API
-    assert_eq!({let result = single_line_textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dynamic_secret_label_clone(), result.get_dynamic_integrity_label_clone(), {unwrap_secret(result)})}, "abcdef");
+    assert_eq!({let result = single_line_textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dyn_sec_label(), result.get_dyn_int_label(), {unwrap(result)})}, "abcdef");
 
     let mut multi_line_textinput = text_input(Lines::Multiple, "abcdef");
     multi_line_textinput.adjust_horizontal(
@@ -630,9 +630,9 @@ fn test_textinput_handle_return() {
         Direction::Forward,
         Selection::NotSelected,
     );
-    multi_line_textinput.handle_return();
+    multi_line_textinput.handle_return(multi_line_textinput.get_content().get_dyn_sec_label(), multi_line_textinput.get_content().get_dyn_int_label());
     //Carapace: Changed test to reflect Carapace API
-    assert_eq!({let result = multi_line_textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dynamic_secret_label_clone(), result.get_dynamic_integrity_label_clone(), {unwrap_secret(result)})}, "abc\ndef");
+    assert_eq!({let result = multi_line_textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dyn_sec_label(), result.get_dyn_int_label(), {unwrap(result)})}, "abc\ndef");
 }
 
 #[test]
@@ -651,23 +651,23 @@ fn test_textinput_select_all() {
 fn test_textinput_get_content() {
     let single_line_textinput = text_input(Lines::Single, "abcdefg");
     //Carapace: Changed test to reflect Carapace API
-    assert_eq!({let result = single_line_textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dynamic_secret_label_clone(), result.get_dynamic_integrity_label_clone(), {unwrap_secret(result)})}, "abcdefg");
+    assert_eq!({let result = single_line_textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dyn_sec_label(), result.get_dyn_int_label(), {unwrap(result)})}, "abcdefg");
 
     let multi_line_textinput = text_input(Lines::Multiple, "abc\nde\nf");
     //Carapace: Changed test to reflect Carapace API
-    assert_eq!({let result = multi_line_textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dynamic_secret_label_clone(), result.get_dynamic_integrity_label_clone(), {unwrap_secret(result)})}, "abc\nde\nf");
+    assert_eq!({let result = multi_line_textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dyn_sec_label(), result.get_dyn_int_label(), {unwrap(result)})}, "abc\nde\nf");
 }
 
 #[test]
 fn test_textinput_set_content() {
     let mut textinput = text_input(Lines::Multiple, "abc\nde\nf");
     //Carapace: Changed test to reflect Carapace API
-    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dynamic_secret_label_clone(), result.get_dynamic_integrity_label_clone(), {unwrap_secret(result)})}, "abc\nde\nf");
+    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dyn_sec_label(), result.get_dyn_int_label(), {unwrap(result)})}, "abc\nde\nf");
 
     //Carapace: Changed function call to reflect Carapace API
-    textinput.set_content(info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), { wrap_secret(DOMString::from_str("abc\nf"))}));
+    textinput.set_content(info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), { wrap(DOMString::from_str("abc\nf"))}));
     //Carapace: Changed test to reflect Carapace API
-    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dynamic_secret_label_clone(), result.get_dynamic_integrity_label_clone(), {unwrap_secret(result)})}, "abc\nf");
+    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dyn_sec_label(), result.get_dyn_int_label(), {unwrap(result)})}, "abc\nf");
 
     assert_eq!(textinput.edit_point().line, 0);
     assert_eq!(textinput.edit_point().index, UTF8Bytes::zero());
@@ -678,9 +678,9 @@ fn test_textinput_set_content() {
     //Carapace: Change UTF8Bytes to have named fields
     assert_eq!(textinput.edit_point().index, UTF8Bytes{value: 3});
     //Carapace: Changed function call to reflect Carapace API
-    textinput.set_content(info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), { wrap_secret(DOMString::from_str("de"))}));
+    textinput.set_content(info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), { wrap(DOMString::from_str("de"))}));
     //Carapace: Changed test to reflect Carapace API
-    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dynamic_secret_label_clone(), result.get_dynamic_integrity_label_clone(), {unwrap_secret(result)})}, "de");
+    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dyn_sec_label(), result.get_dyn_int_label(), {unwrap(result)})}, "de");
     assert_eq!(textinput.edit_point().line, 0);
     //Carapace: Change UTF8Bytes to have named fields
     assert_eq!(textinput.edit_point().index, UTF8Bytes{value: 2});
@@ -702,12 +702,12 @@ fn test_clipboard_paste() {
         SelectionDirection::None,
     );
     //Carapace: Changed test to reflect Carapace API
-    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dynamic_secret_label_clone(), result.get_dynamic_integrity_label_clone(), {unwrap_secret(result)})}, "defg");
+    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dyn_sec_label(), result.get_dyn_int_label(), {unwrap(result)})}, "defg");
     assert_eq!(textinput.edit_point().index, UTF8Bytes::zero());
     //Carapace: Changed function call to reflect Carapace API
-    textinput.handle_keydown_aux({let k = KeyWrapper{k: Key::Character("v".to_owned()) }; info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap_secret(k)})}, {let m = ModifiersWrapper{m: MODIFIERS}; info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap_secret(m)})}, false);
+    textinput.handle_keydown_aux({let k = KeyWrapper{k: Key::Character("v".to_owned()) }; info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap(k)})}, {let m = ModifiersWrapper{m: MODIFIERS}; info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, new_dynamic_secret_label(vec![]), new_dynamic_integrity_label(vec![]), {wrap(m)})}, false);
     //Carapace: Changed test to reflect Carapace API
-    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dynamic_secret_label_clone(), result.get_dynamic_integrity_label_clone(), {unwrap_secret(result)})}, "abcdefg");
+    assert_eq!({let result = textinput.get_content(); info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dyn_sec_label(), result.get_dyn_int_label(), {unwrap(result)})}, "abcdefg");
 }
 
 #[test]

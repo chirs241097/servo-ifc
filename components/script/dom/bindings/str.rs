@@ -25,14 +25,14 @@ use secret_structs::secret::*;
 use secret_structs::ternary_lattice as sec_lat;
 use secret_structs::integrity_lattice as int_lat;
 
-#[side_effect_free_attr_full]
+#[side_effect_free_attr]
 //Map<Split<'_, Fn(char) -> bool>, FnMut(&str) -> DOMString>
-pub fn custom_collect_unwrapped<F1: Fn(char) -> bool, F2: FnMut(&str) -> DOMString>(self_: std::iter::Map<std::str::Split<'_, F1>, F2>) -> Vec<DOMString> {
+pub fn custom_collect_unwrapped<'a, F1: Fn(char) -> bool, F2: FnMut(&'a str) -> DOMString>(self_: std::iter::Map<std::str::Split<'a, F1>, F2>) -> Vec<DOMString> {
     unchecked_operation(self_.collect())
 }
 
-#[side_effect_free_attr_full]
-pub fn custom_collect_wrapped<F1: Fn(char) -> bool, F2: FnMut(&str) -> InfoFlowStruct<DOMString, sec_lat::Label_Empty, int_lat::Label_All, DynamicLabel<Sec>, DynamicLabel<Int>>>(self_: std::iter::Map<std::str::Split<'_, F1>, F2>) -> Vec<InfoFlowStruct<DOMString, sec_lat::Label_Empty, int_lat::Label_All, DynamicLabel<Sec>, DynamicLabel<Int>>> {
+#[side_effect_free_attr]
+pub fn custom_collect_wrapped<'a, F1: Fn(char) -> bool, F2: FnMut(&'a str) -> SecureValue<DOMString, sec_lat::Label_Empty, int_lat::Label_All, DynLabel<Sec>, DynLabel<Int>>>(self_: std::iter::Map<std::str::Split<'a, F1>, F2>) -> Vec<SecureValue<DOMString, sec_lat::Label_Empty, int_lat::Label_All, DynLabel<Sec>, DynLabel<Int>>> {
     unchecked_operation(self_.collect())
 }
 
@@ -227,7 +227,7 @@ enum TimeParserState {
 }
 unsafe impl InvisibleSideEffectFree for TimeParserState{}
 
-#[side_effect_free_attr_full]
+#[side_effect_free_attr]
 fn next_time_parser_state(valid: bool, next: TimeParserState) -> TimeParserState {
     if valid {
         next
@@ -238,32 +238,32 @@ fn next_time_parser_state(valid: bool, next: TimeParserState) -> TimeParserState
 
 impl DOMString {
     //Carapace: Add functions to replace Deref Coerction
-    #[side_effect_free_attr_full(method)]
+    #[side_effect_free_attr(method)]
     pub fn to_str_ref(&self) -> &str {
         &self.s
     }
-    #[side_effect_free_attr_full(method)]
+    #[side_effect_free_attr(method)]
     pub fn to_owned(self) -> String {
         self.s
     }
-    #[side_effect_free_attr_full(method)]
+    #[side_effect_free_attr(method)]
     pub fn replace_content(&mut self, s: String) {
         self.s = s;
     }
 
-    #[side_effect_free_attr_full(method)]
+    #[side_effect_free_attr(method)]
     pub fn to_string_ref(&self) -> &String {
         &self.s
     }
 
-    #[side_effect_free_attr_full(method)]
+    #[side_effect_free_attr(method)]
     pub fn to_mut_string_ref(&mut self) -> &mut String {
         &mut self.s
     }
 
     /// Creates a new `DOMString`.
     //Carapace: Tag function as side_effect_free
-    #[side_effect_free_attr_full(method)]
+    #[side_effect_free_attr(method)]
     pub fn new() -> DOMString {
         //Carapace: Use DOMString with named fields
         DOMString{s: std::string::String::new(), p: PhantomData}
@@ -271,7 +271,7 @@ impl DOMString {
 
     /// Creates a new `DOMString` from a `String`.
     //Carapace: Tag function as side_effect_free
-    #[side_effect_free_attr_full(method)]
+    #[side_effect_free_attr(method)]
     pub fn from_string(s: String) -> DOMString {
         //Carapace: Use DOMString with named fields
         DOMString{s: s, p: PhantomData}
@@ -279,20 +279,20 @@ impl DOMString {
 
     /// Creates a new `DOMString` from a `&str`.
     //Carapace: Tag function as side_effect_free
-    #[side_effect_free_attr_full(method)]
+    #[side_effect_free_attr(method)]
     pub fn from_str(contents: &str) -> DOMString {
         //Carapace: Use DOMString with named fields
         DOMString::from_string(std::string::String::from(contents))
     }
 
     /// Appends a given string slice onto the end of this String.
-    #[side_effect_free_attr_full(method)]
+    #[side_effect_free_attr(method)]
     pub fn push_str(&mut self, string: &str) {
         std::string::String::push_str(&mut self.s, string)
     }
 
     /// Clears this `DOMString`, removing all contents.
-    #[side_effect_free_attr_full(method)]
+    #[side_effect_free_attr(method)]
     pub fn clear(&mut self) {
         std::string::String::clear(&mut self.s)
     }
@@ -303,14 +303,14 @@ impl DOMString {
     }
 
     /// Removes newline characters according to <https://infra.spec.whatwg.org/#strip-newlines>.
-    #[side_effect_free_attr_full(method)]
+    #[side_effect_free_attr(method)]
     pub fn strip_newlines(&mut self) {
         std::string::String::retain(&mut self.s, |c| c != '\r' && c != '\n');
     }
 
     /// Removes leading and trailing ASCII whitespaces according to
     /// <https://infra.spec.whatwg.org/#strip-leading-and-trailing-ascii-whitespace>.
-    #[side_effect_free_attr_full(method)]
+    #[side_effect_free_attr(method)]
     pub fn strip_leading_and_trailing_ascii_whitespace(&mut self) {
         if std::string::String::len(&self.s) == 0 {
             return;
@@ -330,7 +330,7 @@ impl DOMString {
 
     /// Validates this `DOMString` is a time string according to
     /// <https://html.spec.whatwg.org/multipage/#valid-time-string>.
-    #[side_effect_free_attr_full(method)]
+    #[side_effect_free_attr(method)]
     pub fn is_valid_time_string(&self) -> bool {
         let state = std::str::Chars::fold(core::primitive::str::chars(&self.s), TimeParserState::HourHigh, |state, c| {
             match state {
@@ -382,7 +382,7 @@ impl DOMString {
     /// A valid date string should be "YYYY-MM-DD"
     /// YYYY must be four or more digits, MM and DD both must be two digits
     /// https://html.spec.whatwg.org/multipage/#valid-date-string
-    #[side_effect_free_attr_full(method)]
+    #[side_effect_free_attr(method)]
     pub fn is_valid_date_string(&self) -> bool {
         match DOMString::parse_date_string(self) {
             Ok(_) => true,
@@ -391,7 +391,7 @@ impl DOMString {
     }
 
     /// https://html.spec.whatwg.org/multipage/#parse-a-date-string
-    #[side_effect_free_attr_full(method)]
+    #[side_effect_free_attr(method)]
     pub fn parse_date_string(&self) -> Result<(i32, u32, u32), ()> {
         // Step 1, 2, 3
         let (year_int, month_int, day_int) = parse_date_component(&self.s)?;
@@ -405,7 +405,7 @@ impl DOMString {
     }
 
     /// https://html.spec.whatwg.org/multipage/#parse-a-time-string
-    #[side_effect_free_attr_full(method)]
+    #[side_effect_free_attr(method)]
     pub fn parse_time_string(&self) -> Result<(u32, u32, f64), ()> {
         // Step 1, 2, 3
         let (hour_int, minute_int, second_float) = parse_time_component(&self.s)?;
@@ -421,7 +421,7 @@ impl DOMString {
     /// A valid month string should be "YYYY-MM"
     /// YYYY must be four or more digits, MM both must be two digits
     /// https://html.spec.whatwg.org/multipage/#valid-month-string
-    #[side_effect_free_attr_full(method)]
+    #[side_effect_free_attr(method)]
     pub fn is_valid_month_string(&self) -> bool {
         match DOMString::parse_month_string(&self) {
             Ok(_) => true,
@@ -430,7 +430,7 @@ impl DOMString {
     }
 
     /// https://html.spec.whatwg.org/multipage/#parse-a-month-string
-    #[side_effect_free_attr_full(method)]
+    #[side_effect_free_attr(method)]
     pub fn parse_month_string(&self) -> Result<(i32, u32), ()> {
         // Step 1, 2, 3
         let (year_int, month_int) = parse_month_component(&self.s)?;
@@ -446,7 +446,7 @@ impl DOMString {
     /// A valid week string should be like {YYYY}-W{WW}, such as "2017-W52"
     /// YYYY must be four or more digits, WW both must be two digits
     /// https://html.spec.whatwg.org/multipage/#valid-week-string
-    #[side_effect_free_attr_full(method)]
+    #[side_effect_free_attr(method)]
     pub fn is_valid_week_string(&self) -> bool {
         match DOMString::parse_week_string(&self) {
             Ok(_) => true,
@@ -455,7 +455,7 @@ impl DOMString {
     }
 
     /// https://html.spec.whatwg.org/multipage/#parse-a-week-string
-    #[side_effect_free_attr_full(method)]
+    #[side_effect_free_attr(method)]
     pub fn parse_week_string(&self) -> Result<(i32, u32), ()> {
         // Step 1, 2, 3
         let mut iterator = core::primitive::str::split(&self.s, '-');
@@ -499,7 +499,7 @@ impl DOMString {
     }
 
     /// https://html.spec.whatwg.org/multipage/#valid-floating-point-number
-    #[side_effect_free_attr_full(method)]
+    #[side_effect_free_attr(method)]
     pub fn is_valid_floating_point_number_string(&self) -> bool {
         unchecked_operation(DOMString::is_valid_floating_point_number_string_internals(&self))
     }
@@ -513,7 +513,7 @@ impl DOMString {
     }
 
     /// https://html.spec.whatwg.org/multipage/#rules-for-parsing-floating-point-number-values
-    #[side_effect_free_attr_full(method)]
+    #[side_effect_free_attr(method)]
     pub fn parse_floating_point_number(&self) -> Result<f64, ()> {
         // Steps 15-16 are telling us things about IEEE rounding modes
         // for floating-point significands; this code assumes the Rust
@@ -547,7 +547,7 @@ impl DOMString {
     /// A valid normalized local date and time string should be "{date}T{time}"
     /// where date and time are both valid, and the time string must be as short as possible
     /// https://html.spec.whatwg.org/multipage/#valid-normalised-local-date-and-time-string
-    #[side_effect_free_attr_full(method)]
+    #[side_effect_free_attr(method)]
     pub fn convert_valid_normalized_local_date_and_time_string(&mut self) -> Result<(), ()> {
         let ((year, month, day), (hour, minute, second)) =
             DOMString::parse_local_date_and_time_string(&self)?;
@@ -574,7 +574,7 @@ impl DOMString {
     }
 
     /// https://html.spec.whatwg.org/multipage/#parse-a-local-date-and-time-string
-    #[side_effect_free_attr_full(method)]
+    #[side_effect_free_attr(method)]
     pub fn parse_local_date_and_time_string(
         &self,
     ) -> Result<((i32, u32, u32), (u32, u32, f64)), ()> {
@@ -615,7 +615,7 @@ impl DOMString {
     }
 
     /// https://html.spec.whatwg.org/multipage/#valid-simple-colour
-    #[side_effect_free_attr_full(method)]
+    #[side_effect_free_attr(method)]
     pub fn is_valid_simple_color_string(&self) -> bool {
         let mut chars = core::primitive::str::chars(&self.s);
         if core::primitive::str::len(&self.s) == 7 && match std::str::Chars::next(&mut chars) {
@@ -756,7 +756,7 @@ impl Extend<char> for DOMString {
 }
 
 /// https://html.spec.whatwg.org/multipage/#parse-a-month-component
-#[side_effect_free_attr_full]
+#[side_effect_free_attr]
 fn parse_month_component(value: &str) -> Result<(i32, u32), ()> {
     // Step 3
     let mut iterator = core::primitive::str::split(&value, '-');
@@ -780,7 +780,7 @@ fn parse_month_component(value: &str) -> Result<(i32, u32), ()> {
 }
 
 /// https://html.spec.whatwg.org/multipage/#parse-a-date-component
-#[side_effect_free_attr_full]
+#[side_effect_free_attr]
 fn parse_date_component(value: &str) -> Result<(i32, u32, u32), ()> {
     // Step 1
     let (year_int, month_int) = parse_month_component(value)?;
@@ -803,7 +803,7 @@ fn parse_date_component(value: &str) -> Result<(i32, u32, u32), ()> {
 }
 
 /// https://html.spec.whatwg.org/multipage/#parse-a-time-component
-#[side_effect_free_attr_full]
+#[side_effect_free_attr]
 fn parse_time_component(value: &str) -> Result<(u32, u32, f64), ()> {
     // Step 1
     let mut iterator = core::primitive::str::split(&value, ':');
@@ -855,7 +855,7 @@ fn parse_time_component(value: &str) -> Result<(u32, u32, f64), ()> {
     std::result::Result::Ok((hour_int, minute_int, second_float))
 }
 
-#[side_effect_free_attr_full]
+#[side_effect_free_attr]
 fn max_day_in_month(year_num: i32, month_num: u32) -> Result<u32, ()> {
     match month_num {
         1 | 3 | 5 | 7 | 8 | 10 | 12 => std::result::Result::Ok(31),
@@ -872,7 +872,7 @@ fn max_day_in_month(year_num: i32, month_num: u32) -> Result<u32, ()> {
 }
 
 /// https://html.spec.whatwg.org/multipage/#week-number-of-the-last-day
-#[side_effect_free_attr_full]
+#[side_effect_free_attr]
 fn max_week_in_year(year: i32) -> u32 {
     match unchecked_operation(Utc.ymd(year as i32, 1, 1).weekday()) {
         Weekday::Thu => 53,
@@ -882,7 +882,7 @@ fn max_week_in_year(year: i32) -> u32 {
 }
 
 #[inline]
-#[side_effect_free_attr_full]
+#[side_effect_free_attr]
 fn is_leap_year(year: i32) -> bool {
     year % 400 == 0 || (year % 4 == 0 && year % 100 != 0)
 }

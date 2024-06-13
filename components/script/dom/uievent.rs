@@ -18,7 +18,7 @@ use std::cell::Cell;
 use std::default::Default;
 
 use keyboard_wrapper::*;
-use secret_structs::info_flow_block_declassify_dynamic_all;
+use secret_structs::trusted_secure_block_dynamic_all;
 use secret_structs::secret::*;
 use secret_structs::integrity_lattice as int_lat;
 use secret_structs::ternary_lattice as sec_lat;
@@ -98,8 +98,8 @@ impl UIEvent {
             return;
         }
         //Carapace: DECLASSIFY
-        let new_type_: DOMString = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, type_.get_dynamic_secret_label_reference(), type_.get_dynamic_integrity_label_reference(), {
-            unwrap_secret(type_)
+        let new_type_: DOMString = trusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, type_.get_dyn_sec_label_ref(), type_.get_dyn_int_label_ref(), {
+            unwrap(type_)
         });
         event.init_event(Atom::from(new_type_), can_bubble, cancelable);
         //event.init_event(Atom::from(type_), can_bubble, cancelable);

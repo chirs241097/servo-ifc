@@ -84,10 +84,10 @@ use time::{now, Duration, Tm};
 use crate::dom::bindings::codegen::Bindings::NodeBinding::{NodeConstants, NodeMethods};
 
 use keyboard_wrapper::*;
-use secret_macros::side_effect_free_attr_full;
-use secret_macros::info_flow_block_dynamic_all;
-use secret_structs::info_flow_block_declassify_dynamic_all;
-use secret_structs::info_flow_block_no_return_dynamic_all;
+use secret_macros::side_effect_free_attr;
+use secret_macros::untrusted_secure_block_dynamic_all;
+use secret_structs::trusted_secure_block_dynamic_all;
+use secret_structs::untrusted_secure_block_no_return_dynamic_all;
 use secret_structs::secret::*;
 use secret_structs::integrity_lattice as int_lat;
 use secret_structs::ternary_lattice as sec_lat;
@@ -669,8 +669,8 @@ impl HTMLFormElement {
     // https://html.spec.whatwg.org/multipage/#text/plain-encoding-algorithm
     fn encode_plaintext(&self, form_data: &mut Vec<FormDatum>) -> ServoSecureDynamic<String> {
         // Step 1
-        let mut result = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynamicLabel::<Sec>::default_ref(), DynamicLabel::<Int>::default_ref(), {
-            wrap_secret(std::string::String::new())
+        let mut result = untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynLabel::<Sec>::default_ref(), DynLabel::<Int>::default_ref(), {
+            wrap(std::string::String::new())
         });
 
         // Step 2
@@ -678,23 +678,23 @@ impl HTMLFormElement {
             let value = match &entry.value {
                 FormDatumValue::File(f) => {
                     let s = f.name().clone();
-                    info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynamicLabel::<Sec>::default_ref(), DynamicLabel::<Int>::default_ref(), {
-                        wrap_secret(s)
+                    untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynLabel::<Sec>::default_ref(), DynLabel::<Int>::default_ref(), {
+                        wrap(s)
                     })
                 },
                 FormDatumValue::String(s) => {
                     let s2 = s.clone();
-                    info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynamicLabel::<Sec>::default_ref(), DynamicLabel::<Int>::default_ref(), {
-                        wrap_secret(s2)
+                    untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynLabel::<Sec>::default_ref(), DynLabel::<Int>::default_ref(), {
+                        wrap(s2)
                     })
                 },
                 FormDatumValue::SecretString(ss) => ss.clone(),
             };
             let entname = entry.name.to_string();
-            info_flow_block_no_return_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All,
-            value.get_dynamic_secret_label_reference(), value.get_dynamic_integrity_label_reference(), {
-                let r = unwrap_secret_mut_ref(&mut result);
-                let v = unwrap_secret_ref(&value);
+            untrusted_secure_block_no_return_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All,
+            value.get_dyn_sec_label_ref(), value.get_dyn_int_label_ref(), {
+                let r = unwrap_mut_ref(&mut result);
+                let v = unwrap_ref(&value);
                 //Chris: the original probably won't work, replaced with something much uglier
                 //r.push_str(&format!("{}={}\r\n", entry.name, v));
                 std::string::String::push_str(r, std::string::String::as_str(&entname));
@@ -951,7 +951,7 @@ impl HTMLFormElement {
                     .headers
                     .typed_insert(ContentType::from(mime::TEXT_PLAIN));
                 let encsec = self.encode_plaintext(form_data);
-                MaybeSecret::Secret(info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, encsec.get_dynamic_secret_label_reference(), encsec.get_dynamic_integrity_label_reference(), { wrap_secret(std::string::String::into_bytes(unwrap_secret(encsec))) }))
+                MaybeSecret::Secret(untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, encsec.get_dyn_sec_label_ref(), encsec.get_dyn_int_label_ref(), { wrap(std::string::String::into_bytes(unwrap(encsec))) }))
             },
         };
 
@@ -961,12 +961,12 @@ impl HTMLFormElement {
             Ok(u) => DOMString::from_string(u.host_str().unwrap_or_default().to_owned()),
             Err(_) => DOMString::from_string(String::from(""))
         };
-        let dec_sec_label = DynamicLabel::<Sec>::new_size_one(ScriptThread::get_secrecy_tag_for_domain(host).unwrap());
-        let dec_int_label = DynamicLabel::<Int>::new_default();
+        let dec_sec_label = DynLabel::<Sec>::new_size_one(ScriptThread::get_secrecy_tag_for_domain(host).unwrap());
+        let dec_int_label = DynLabel::<Int>::new_default();
 
         let unwrapped_bytes = match bytes {
             MaybeSecret::NonSecret(b) => b,
-            MaybeSecret::Secret(sb) => info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, &dec_sec_label, &dec_int_label, { unwrap_secret(sb) })
+            MaybeSecret::Secret(sb) => trusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, &dec_sec_label, &dec_int_label, { unwrap(sb) })
         };
 
         let request_body = unwrapped_bytes
@@ -989,13 +989,13 @@ impl HTMLFormElement {
             Ok(u) => DOMString::from_string(u.host_str().unwrap_or_default().to_owned()),
             Err(_) => DOMString::from_string(String::from(""))
         };
-        let dec_sec_label = DynamicLabel::<Sec>::new_size_one(ScriptThread::get_secrecy_tag_for_domain(host).unwrap());
-        let dec_int_label = DynamicLabel::<Int>::new_default();
+        let dec_sec_label = DynLabel::<Sec>::new_size_one(ScriptThread::get_secrecy_tag_for_domain(host).unwrap());
+        let dec_int_label = DynLabel::<Int>::new_default();
         let encoding = self.pick_encoding();
         let declassified_pairs = pairs.map(|(k, v)| {
             match v {
                 MaybeSecret::NonSecret(vs) => (k, vs),
-                MaybeSecret::Secret(svs) => (k, info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, &dec_sec_label, &dec_int_label, { unwrap_secret(svs) }))
+                MaybeSecret::Secret(svs) => (k, trusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, &dec_sec_label, &dec_int_label, { unwrap(svs) }))
             }
         });
         url.as_mut_url()
@@ -1218,7 +1218,7 @@ impl HTMLFormElement {
         submitter: Option<FormSubmitter>,
         encoding: Option<&'static Encoding>,
     ) -> Option<Vec<FormDatum>> {
-        #[side_effect_free_attr_full]
+        #[side_effect_free_attr]
         fn clean_crlf(s: &str) -> String {
             // Step 4
             let mut buf = std::string::String::from("");
@@ -1250,9 +1250,9 @@ impl HTMLFormElement {
             buf
         }
         fn clean_crlf_sec(s: &ServoSecureDynamic<DOMString>) -> ServoSecureDynamic<DOMString> {
-            info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, s.get_dynamic_secret_label_reference(), s.get_dynamic_integrity_label_reference(), {
-                let ss : &str = DOMString::to_str_ref(unwrap_secret_ref(s));
-                wrap_secret(DOMString::from_string(clean_crlf(ss)))
+            untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, s.get_dyn_sec_label_ref(), s.get_dyn_int_label_ref(), {
+                let ss : &str = DOMString::to_str_ref(unwrap_ref(s));
+                wrap(DOMString::from_string(clean_crlf(ss)))
             })
         }
 
@@ -1405,12 +1405,12 @@ impl FormDatum {
             FormDatumValue::File(ref f) => MaybeSecret::NonSecret(String::from(f.name().clone())),
             FormDatumValue::String(ref s) => MaybeSecret::NonSecret(String::from(s.clone())),
             FormDatumValue::SecretString(ref ss) => MaybeSecret::Secret(
-                info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All,
-                ss.get_dynamic_secret_label_reference(), ss.get_dynamic_integrity_label_reference(), {
-                    let s = unwrap_secret_ref(ss);
+                untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All,
+                ss.get_dyn_sec_label_ref(), ss.get_dyn_int_label_ref(), {
+                    let s = unwrap_ref(ss);
                     let sc = DOMString::from_string(std::string::String::clone(DOMString::to_string_ref(&s)));
                     //let sc = std::clone::Clone::clone(s);
-                    wrap_secret(DOMString::to_owned(sc))
+                    wrap(DOMString::to_owned(sc))
                 })
             )
         }
@@ -1850,12 +1850,12 @@ pub fn encode_multipart_form_data(
             {
                 let content_disposition = format!("form-data; name=\"{}\"", entry.name);
                 let bytes =
-                info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, ss.get_dynamic_secret_label_reference(), ss.get_dynamic_integrity_label_reference(), {
+                untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, ss.get_dyn_sec_label_ref(), ss.get_dyn_int_label_ref(), {
                     let mut r = std::string::String::from("Content-Dispopsition: ");
                     std::string::String::push_str(&mut r, &content_disposition);
                     std::string::String::push_str(&mut r, "\r\n\r\n");
-                    std::string::String::push_str(&mut r, DOMString::to_str_ref(unwrap_secret_ref(ss)));
-                    wrap_secret(std::string::String::into_bytes(r))
+                    std::string::String::push_str(&mut r, DOMString::to_str_ref(unwrap_ref(ss)));
+                    wrap(std::string::String::into_bytes(r))
                 });
                 result = result.concat(MaybeSecret::Secret(bytes));
             },

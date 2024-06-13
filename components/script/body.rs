@@ -51,8 +51,8 @@ use url::form_urlencoded;
 
 //Carapace: Add imports
 use keyboard_wrapper::*;
-use secret_macros::info_flow_block_dynamic_all;
-use secret_macros::info_flow_block_declassify_dynamic_all;
+use secret_macros::untrusted_secure_block_dynamic_all;
+use secret_macros::trusted_secure_block_dynamic_all;
 use secret_structs::secret::*;
 use secret_structs::integrity_lattice as int_lat;
 use secret_structs::ternary_lattice as sec_lat;
@@ -72,39 +72,39 @@ impl MaybeSecret<Vec<u8>> {
                 match other
                 {
                     MaybeSecret::Secret(secother) => {
-                        let sla = secself.get_dynamic_secret_label_clone();
-                        let slb = secother.get_dynamic_secret_label_clone();
-                        let sl = sla.union(&slb);
-                        let ila = secself.get_dynamic_integrity_label_clone();
-                        let ilb = secother.get_dynamic_integrity_label_clone();
-                        let il = ila.union(&ilb);
+                        let sla = secself.get_dyn_sec_label();
+                        let slb = secother.get_dyn_sec_label();
+                        let sl = sla.join(&slb);
+                        let ila = secself.get_dyn_int_label();
+                        let ilb = secother.get_dyn_int_label();
+                        let il = ila.join(&ilb);
                         MaybeSecret::Secret(
-                        info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, &sl, &il, {
-                            let mut uself = unwrap_secret(secself);
-                            let mut uother = unwrap_secret(secother);
+                        untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, &sl, &il, {
+                            let mut uself = unwrap(secself);
+                            let mut uother = unwrap(secother);
                             std::vec::Vec::append(&mut uself, &mut uother);
-                            wrap_secret(uself)
+                            wrap(uself)
                         }))
                     },
                     MaybeSecret::NonSecret(nother) => MaybeSecret::Secret(
-                        info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All,
-                        secself.get_dynamic_secret_label_reference(), secself.get_dynamic_integrity_label_reference(), {
-                            let mut uself = unwrap_secret(secself);
+                        untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All,
+                        secself.get_dyn_sec_label_ref(), secself.get_dyn_int_label_ref(), {
+                            let mut uself = unwrap(secself);
                             let mut moved_other = nother;
                             std::vec::Vec::append(&mut uself, &mut moved_other);
-                            wrap_secret(uself)
+                            wrap(uself)
                         }))
                 },
             MaybeSecret::NonSecret(mut nself) =>
                 match other
                 {
                     MaybeSecret::Secret(secother) => MaybeSecret::Secret(
-                        info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All,
-                        secother.get_dynamic_secret_label_reference(), secother.get_dynamic_integrity_label_reference(), {
+                        untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All,
+                        secother.get_dyn_sec_label_ref(), secother.get_dyn_int_label_ref(), {
                             let mut moved_self = nself;
-                            let mut uother = unwrap_secret(secother);
+                            let mut uother = unwrap(secother);
                             std::vec::Vec::append(&mut moved_self, &mut uother);
-                            wrap_secret(moved_self)
+                            wrap(moved_self)
                         })),
                     MaybeSecret::NonSecret(mut nother) => {
                         nself.append(&mut nother);
@@ -615,7 +615,7 @@ impl Extractable for FormData {
         //Carapace: Explicit declassify of secret data here.
         let unwrapped_bytes = match bytes {
             MaybeSecret::NonSecret(b) => b,
-            MaybeSecret::Secret(sb) => info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, sb.get_dynamic_secret_label_reference(), sb.get_dynamic_integrity_label_reference(), { unwrap_secret(sb) })
+            MaybeSecret::Secret(sb) => trusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, sb.get_dyn_sec_label_ref(), sb.get_dyn_int_label_ref(), { unwrap(sb) })
         };
         let total_bytes = unwrapped_bytes.len();
         let content_type = Some(DOMString::from(format!(

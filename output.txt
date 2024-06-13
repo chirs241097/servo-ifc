@@ -1,0 +1,71 @@
+ 0:05.58 wptserve INFO Starting http server on http://127.0.0.1:8000
+ 0:05.98 wptserve INFO Starting http server on http://127.0.0.1:8001
+ 0:06.39 wptserve INFO Starting http server on http://127.0.0.1:8002
+ 0:06.85 wptserve INFO Starting http server on http://127.0.0.1:8003
+ 0:07.37 wptserve INFO Starting https server on https://127.0.0.1:8443
+ 0:07.76 wptserve INFO Starting https server on https://127.0.0.1:8444
+ 0:08.19 wptserve INFO Starting https server on https://127.0.0.1:8445
+ 0:08.59 wptserve INFO Starting https server on https://127.0.0.1:8446
+ 0:08.97 wptserve INFO Create socket on: (<AddressFamily.AF_INET6: 30>, <SocketKind.SOCK_STREAM: 1>, '', '', '')
+ 0:08.97 wptserve INFO Create socket on: (<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_STREAM: 1>, '', '', '')
+ 0:08.97 wptserve INFO Bind on: (<AddressFamily.AF_INET6: 30>, <SocketKind.SOCK_STREAM: 1>, '', '', '')
+ 0:08.97 wptserve INFO Bind on: (<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_STREAM: 1>, '', '', '')
+ 0:08.97 wptserve INFO Skip by failure: OSError(48, 'Address already in use')
+ 0:08.97 wptserve INFO Listen on: (<AddressFamily.AF_INET6: 30>, <SocketKind.SOCK_STREAM: 1>, '', '', '')
+ 0:09.50 wptserve INFO Create socket on: (<AddressFamily.AF_INET6: 30>, <SocketKind.SOCK_STREAM: 1>, '', '', '')
+ 0:09.50 wptserve INFO Create socket on: (<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_STREAM: 1>, '', '', '')
+ 0:09.50 wptserve INFO Bind on: (<AddressFamily.AF_INET6: 30>, <SocketKind.SOCK_STREAM: 1>, '', '', '')
+ 0:09.50 wptserve INFO Bind on: (<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_STREAM: 1>, '', '', '')
+ 0:09.51 wptserve INFO Skip by failure: OSError(48, 'Address already in use')
+ 0:09.51 wptserve INFO Listen on: (<AddressFamily.AF_INET6: 30>, <SocketKind.SOCK_STREAM: 1>, '', '', '')
+ 0:09.98 wptserve INFO Starting http2 server on https://127.0.0.1:9000
+ 0:10.39 SUITE_START: web-platform-test - running 1 tests
+ 0:10.39 INFO Using 1 child processes
+ 0:10.40 INFO Starting runner
+ 0:10.95 TEST_START: /html/semantics/forms/the-input-element/type-change-state.html
+ 0:10.95 WARNING Got command init_succeeded in state running
+ 0:13.63 pid:1105 Full command: /Users/vincentbeardsley/Desktop/servo-ifc.nosync/target/release/servo --hard-fail -u Servo/wptrunner http://web-platform.test:8000/html/semantics/forms/the-input-element/type-change-state.html -Z replace-surrogates --user-stylesheet /Users/vincentbeardsley/Desktop/servo-ifc.nosync/resources/ahem.css --pref dom.imagebitmap.enabled=true --certificate-path /Users/vincentbeardsley/Desktop/servo-ifc.nosync/tests/wpt/web-platform-tests/tools/certs/cacert.pem -o junk
+pid:1105 Shutting down the Constellation after generating an output file or exit flag specified
+ 0:13.69 pid:1105 Elapsed time: 2 s, 692203764 ns
+ 0:13.70 pid:1105 total blocks: 12731
+ 0:13.70 pid:1105 untrusted blocks: 7405
+ 0:13.70 pid:1105 trusted blocks: 5326
+ 0:13.70 pid:1105 wraps: 5903
+ 0:13.70 pid:1105 unwraps: 12901
+ 0:13.70 pid:1105 unchecked operations: 793
+ 0:13.70 pid:1105 joins: 4
+ 0:13.70 pid:1105 new tags: 2
+ 0:13.70 pid:1105 new labels: 384
+ 0:13.70 pid:1105 cloned labels: 37672
+ 0:13.70 pid:1105 cloned ifc structs: 3316
+ 0:13.70 pid:1105 subset checks: 33450
+ 0:13.70 pid:1105 equal checks: 3004
+ 0:13.70 pid:1105 label difference calculations: 0
+ 0:13.74 INFO Pausing until the browser exits
+ 0:13.76 TEST_END: Test OK. Subtests passed 380/380. Unexpected 0
+ 0:13.76 INFO Pausing until the browser exits
+ 0:13.76 INFO No more tests
+ 0:13.76 INFO Closing logging queue
+ 0:13.76 INFO queue closed
+ 0:13.83 SUITE_END
+
+web-platform-test
+~~~~~~~~~~~~~~~~~
+Ran 381 checks (380 subtests, 1 tests)
+Expected results: 381
+Unexpected results: 0
+OK
+ 0:13.83 INFO Got 0 unexpected results, with 0 unexpected passes
+ 0:13.85 wptserve INFO Stopped http server on 127.0.0.1:8000
+ 0:13.89 wptserve INFO Stopped http server on 127.0.0.1:8002
+ 0:13.89 wptserve INFO Stopped http server on 127.0.0.1:8003
+ 0:13.89 wptserve INFO Stopped http server on 127.0.0.1:8001
+ 0:13.89 wptserve INFO Stopped http server on 127.0.0.1:8444
+ 0:13.90 wptserve INFO Stopped http server on 127.0.0.1:8443
+ 0:13.90 wptserve INFO Stopped http server on 127.0.0.1:8445
+ 0:13.91 wptserve INFO Stopped http server on 127.0.0.1:8446
+ 0:13.91 wptserve INFO Stopped http server on 127.0.0.1:9000
+ 0:13.93 wptserve INFO Close on: (<AddressFamily.AF_INET6: 30>, <SocketKind.SOCK_STREAM: 1>, '', '', '')
+ 0:13.93 wptserve INFO Close on: (<AddressFamily.AF_INET6: 30>, <SocketKind.SOCK_STREAM: 1>, '', '', '')
+ 0:14.18 INFO Closing logging queue
+ 0:14.18 INFO queue closed

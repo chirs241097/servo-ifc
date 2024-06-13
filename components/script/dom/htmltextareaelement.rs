@@ -45,9 +45,9 @@ use style::attr::AttrValue;
 use style::element_state::ElementState;
 
 use crate::script_thread::ScriptThread;
-use secret_structs::info_flow_block_declassify_dynamic_all;
-use secret_structs::info_flow_block_no_return_dynamic_all;
-use secret_structs::info_flow_block_dynamic_all;
+use secret_structs::trusted_secure_block_dynamic_all;
+use secret_structs::untrusted_secure_block_no_return_dynamic_all;
+use secret_structs::untrusted_secure_block_dynamic_all;
 use secret_structs::secret::*;
 use secret_structs::integrity_lattice as int_lat;
 use secret_structs::ternary_lattice as sec_lat;
@@ -101,12 +101,12 @@ impl<'dom> LayoutDom<'dom, HTMLTextAreaElement> {
 impl LayoutHTMLTextAreaElementHelpers for LayoutDom<'_, HTMLTextAreaElement> {
     fn value_for_layout(self) -> String {
         let text = self.textinput_content();
-        let boolean_test = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, text.get_dynamic_secret_label_reference(), text.get_dynamic_integrity_label_reference(), {
-            let unwrapped = unwrap_secret_ref(&text);
-            wrap_secret(std::string::String::is_empty(DOMString::to_string_ref(unwrapped)))
+        let boolean_test = untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, text.get_dyn_sec_label_ref(), text.get_dyn_int_label_ref(), {
+            let unwrapped = unwrap_ref(&text);
+            wrap(std::string::String::is_empty(DOMString::to_string_ref(unwrapped)))
         });
-        if info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, boolean_test.get_dynamic_secret_label_reference(), boolean_test.get_dynamic_integrity_label_reference(), {
-            unwrap_secret(boolean_test)
+        if trusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, boolean_test.get_dyn_sec_label_ref(), boolean_test.get_dyn_int_label_ref(), {
+            unwrap(boolean_test)
         }) {
             // FIXME(nox): Would be cool to not allocate a new string if the
             // placeholder is single line, but that's an unimportant detail.
@@ -115,8 +115,8 @@ impl LayoutHTMLTextAreaElementHelpers for LayoutDom<'_, HTMLTextAreaElement> {
                 .replace("\r", "\n")
                 .into()
         } else {
-            info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, text.get_dynamic_secret_label_reference(), text.get_dynamic_integrity_label_reference(), {
-                unwrap_secret(text)
+            trusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, text.get_dyn_sec_label_ref(), text.get_dyn_int_label_ref(), {
+                unwrap(text)
             }).into()
         }
     }
@@ -333,10 +333,10 @@ impl HTMLTextAreaElementMethods for HTMLTextAreaElement {
     // https://html.spec.whatwg.org/multipage/#dom-textarea-value
     fn Value(&self) -> DOMString {
         /*let v = self.textinput.borrow().get_content();
-        info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, v.get_dynamic_secret_label_clone(), v.get_dynamic_integrity_label_clone(), {
-            unwrap_secret(v)
+        info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, v.get_dyn_sec_label(), v.get_dyn_int_label(), {
+            unwrap(v)
         })*/
-        println!("declassify not allowed for JavaScript binding, returning a placeholder value");
+        //println!("declassify not allowed for JavaScript binding, returning a placeholder value");
         String::from("(secret value)").into()
     }
 
@@ -348,8 +348,8 @@ impl HTMLTextAreaElementMethods for HTMLTextAreaElement {
         let old_value = textinput.get_content();
 
         // Step 2
-        let secnewval = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, old_value.get_dynamic_secret_label_reference(), old_value.get_dynamic_integrity_label_reference(), {
-            wrap_secret(value)
+        let secnewval = untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, old_value.get_dyn_sec_label_ref(), old_value.get_dyn_int_label_ref(), {
+            wrap(value)
         });
         textinput.set_content(secnewval);
 
@@ -358,13 +358,13 @@ impl HTMLTextAreaElementMethods for HTMLTextAreaElement {
 
         let new_value = textinput.get_content();
 
-        let boolean_test = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, old_value.get_dynamic_secret_label_reference(), old_value.get_dynamic_integrity_label_reference(), {
-            let unwrapped_old = unwrap_secret_ref(&old_value);
-            let unwrapped_new = unwrap_secret_ref(&new_value);
-            wrap_secret(*DOMString::to_str_ref(unwrapped_old) != *DOMString::to_str_ref(unwrapped_new))
+        let boolean_test = untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, old_value.get_dyn_sec_label_ref(), old_value.get_dyn_int_label_ref(), {
+            let unwrapped_old = unwrap_ref(&old_value);
+            let unwrapped_new = unwrap_ref(&new_value);
+            wrap(*DOMString::to_str_ref(unwrapped_old) != *DOMString::to_str_ref(unwrapped_new))
         });
-        if info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, boolean_test.get_dynamic_secret_label_reference(), boolean_test.get_dynamic_integrity_label_reference(), {
-            unwrap_secret(boolean_test)
+        if trusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, boolean_test.get_dyn_sec_label_ref(), boolean_test.get_dyn_int_label_ref(), {
+            unwrap(boolean_test)
         }) {
             // Step 4
             textinput.clear_selection_to_limit(Direction::Forward);
@@ -476,11 +476,11 @@ impl HTMLTextAreaElement {
     pub fn reset(&self) {
         // https://html.spec.whatwg.org/multipage/#the-textarea-element:concept-form-reset-control
         let domain_tag = self.upcast::<HTMLElement>().get_domain_secrecy_tag().unwrap();
-        let dynamic_sec_label = DynamicLabel::<Sec>::new_size_one(domain_tag);
-        let dynamic_int_label = DynamicLabel::<Int>::new_default();
+        let dynamic_sec_label = DynLabel::<Sec>::new_size_one(domain_tag);
+        let dynamic_int_label = DynLabel::<Int>::new_default();
         let val = self.DefaultValue();
-        let secdefval = info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, &dynamic_sec_label, &dynamic_int_label, {
-            wrap_secret(val)
+        let secdefval = untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, &dynamic_sec_label, &dynamic_int_label, {
+            wrap(val)
         });
 
         let mut textinput = self.textinput.borrow_mut();

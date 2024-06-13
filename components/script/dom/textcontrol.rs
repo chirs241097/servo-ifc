@@ -19,7 +19,7 @@ use crate::textinput::{SelectionDirection, SelectionState, TextInput, UTF8Bytes}
 use script_traits::ScriptToConstellationChan;
 
 //Vincent: Add imports
-use secret_structs::info_flow_block_dynamic_all;
+use secret_structs::untrusted_secure_block_dynamic_all;
 use secret_structs::secret::*;
 use secret_structs::ternary_lattice as sec_lat;
 use secret_structs::integrity_lattice as int_lat;
@@ -217,8 +217,8 @@ impl<'a, E: TextControlElement> TextControlSelection<'a, E> {
             textinput.set_selection_range(start, end, SelectionDirection::None);
             //Vincent: FIX LABEL
             let r: String = (*replacement).to_string();
-            textinput.replace_selection(info_flow_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynamicLabel::<Sec>::default_ref(), DynamicLabel::<Int>::default_ref(), {
-                wrap_secret(DOMString::from_string(r))
+            textinput.replace_selection(untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynLabel::<Sec>::default_ref(), DynLabel::<Int>::default_ref(), {
+                wrap(DOMString::from_string(r))
             }) /*replacement*/);
         }
 

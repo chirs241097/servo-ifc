@@ -253,9 +253,10 @@ where
 }
 
 //Carapace: add impls for Carapace structs
-impl<T, L1, L2, D1, D2> MallocSizeOf for InfoFlowStruct<T, L1, L2, D1, D2>
+//Carapace: Have to add unsafe behavior to achieve matching behavior of Servo.
+impl<T, L1, L2, D1, D2> MallocSizeOf for SecureValue<T, L1, L2, D1, D2>
 where
-    T: SecretValueSafe + MallocSizeOf,
+    T: SecureValueSafe + MallocSizeOf,
     L1: Label + MallocSizeOf,
     L2: Label + MallocSizeOf,
     D1: DynField<Sec> + MallocSizeOf,
@@ -264,13 +265,13 @@ where
     #[inline]
     #[allow(unused_variables, unused_mut, unreachable_code)]
     fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
-        MallocSizeOf::size_of(unsafe { self.unwrap_unsafe_dynamic_all::<L1, L2>() }, ops) +
-            MallocSizeOf::size_of(self.get_dynamic_secret_label_reference(), ops) +
-            MallocSizeOf::size_of(self.get_dynamic_integrity_label_reference(), ops)
+        MallocSizeOf::size_of(unsafe { self.unwrap_unsafe2::<L1, L2>() }, ops) +
+            MallocSizeOf::size_of(self.get_dyn_sec_label_ref(), ops) +
+            MallocSizeOf::size_of(self.get_dyn_int_label_ref(), ops)
     }
 }
 
-impl MallocSizeOf for DynamicLabel<Sec> {
+impl MallocSizeOf for DynLabel<Sec> {
     #[inline]
     #[allow(unused_variables, unused_mut, unreachable_code)]
     fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
@@ -278,7 +279,7 @@ impl MallocSizeOf for DynamicLabel<Sec> {
     }
 }
 
-impl MallocSizeOf for DynamicLabel<Int> {
+impl MallocSizeOf for DynLabel<Int> {
     #[inline]
     #[allow(unused_variables, unused_mut, unreachable_code)]
     fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {

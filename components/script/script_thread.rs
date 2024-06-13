@@ -170,7 +170,7 @@ use secret_structs::secret::*;
 
 use secret_structs::integrity_lattice as int_lat;
 use secret_structs::ternary_lattice as sec_lat;
-use secret_structs::info_flow_block_dynamic_all_partial_declassify_dynamic_all;
+use secret_structs::partial_trusted_secure_block_dynamic_all;
 
 use keyboard_wrapper::*;
 
@@ -3623,43 +3623,43 @@ impl ScriptThread {
                         he.get_domain()
                     } else { DOMString::from("") }
                 } else { DOMString::from("") };
-                let dynamic_sec_label = DynamicLabel::<Sec>::new_size_one(self.get_secrecy_tag_for_domain_impl(focused_element_domain));
-                let dynamic_sec_label_old = DynamicLabel::<Sec>::new_default();
-                let dynamic_int_label = DynamicLabel::<Int>::new_default();
-                let state = info_flow_block_dynamic_all_partial_declassify_dynamic_all!(
+                let dynamic_sec_label = DynLabel::<Sec>::new_size_one(self.get_secrecy_tag_for_domain_impl(focused_element_domain));
+                let dynamic_sec_label_old = DynLabel::<Sec>::new_default();
+                let dynamic_int_label = DynLabel::<Int>::new_default();
+                let state: SecureValue<KeyStateWrapper, sec_lat::Label_Empty, int_lat::Label_All, DynLabel<Sec>, DynLabel<Int>> = partial_trusted_secure_block_dynamic_all!(
                     sec_lat::Label_A, int_lat::Label_All, &dynamic_sec_label_old, &dynamic_int_label,
                     sec_lat::Label_Empty, int_lat::Label_All, &dynamic_sec_label, &dynamic_int_label, {
-                        wrap_secret(custom_clone_key_state_wrapper(unwrap_secret_ref(&key_event.state)))
+                        wrap(custom_clone_key_state_wrapper(unwrap_ref(&key_event.state)))
                 });
-                let key = info_flow_block_dynamic_all_partial_declassify_dynamic_all!(
+                let key = partial_trusted_secure_block_dynamic_all!(
                     sec_lat::Label_A, int_lat::Label_All, &dynamic_sec_label_old, &dynamic_int_label,
                     sec_lat::Label_Empty, int_lat::Label_All, &dynamic_sec_label, &dynamic_int_label, {
-                        wrap_secret(custom_clone_key_wrapper(unwrap_secret_ref(&key_event.key)))
+                        wrap(custom_clone_key_wrapper(unwrap_ref(&key_event.key)))
                 });
-                let code = info_flow_block_dynamic_all_partial_declassify_dynamic_all!(
+                let code = partial_trusted_secure_block_dynamic_all!(
                     sec_lat::Label_A, int_lat::Label_All, &dynamic_sec_label_old, &dynamic_int_label,
                     sec_lat::Label_Empty, int_lat::Label_All, &dynamic_sec_label, &dynamic_int_label, {
-                        wrap_secret(custom_clone_code_wrapper(unwrap_secret_ref(&key_event.code)))
+                        wrap(custom_clone_code_wrapper(unwrap_ref(&key_event.code)))
                 });
-                let location = info_flow_block_dynamic_all_partial_declassify_dynamic_all!(
+                let location = partial_trusted_secure_block_dynamic_all!(
                     sec_lat::Label_A, int_lat::Label_All, &dynamic_sec_label_old, &dynamic_int_label,
                     sec_lat::Label_Empty, int_lat::Label_All, &dynamic_sec_label, &dynamic_int_label, {
-                        wrap_secret(custom_clone_location_wrapper(unwrap_secret_ref(&key_event.location)))
+                        wrap(custom_clone_location_wrapper(unwrap_ref(&key_event.location)))
                 });
-                let modifiers = info_flow_block_dynamic_all_partial_declassify_dynamic_all!(
+                let modifiers = partial_trusted_secure_block_dynamic_all!(
                     sec_lat::Label_A, int_lat::Label_All, &dynamic_sec_label_old, &dynamic_int_label,
                     sec_lat::Label_Empty, int_lat::Label_All, &dynamic_sec_label, &dynamic_int_label, {
-                        wrap_secret(custom_clone_modifiers_wrapper(unwrap_secret_ref(&key_event.modifiers)))
+                        wrap(custom_clone_modifiers_wrapper(unwrap_ref(&key_event.modifiers)))
                 });
-                let repeat = info_flow_block_dynamic_all_partial_declassify_dynamic_all!(
+                let repeat = partial_trusted_secure_block_dynamic_all!(
                     sec_lat::Label_A, int_lat::Label_All, &dynamic_sec_label_old, &dynamic_int_label,
                     sec_lat::Label_Empty, int_lat::Label_All, &dynamic_sec_label, &dynamic_int_label, {
-                        wrap_secret(*unwrap_secret_ref(&key_event.repeat))
+                        wrap(*unwrap_ref(&key_event.repeat))
                 });
-                let is_composing = info_flow_block_dynamic_all_partial_declassify_dynamic_all!(
+                let is_composing = partial_trusted_secure_block_dynamic_all!(
                     sec_lat::Label_A, int_lat::Label_All, &dynamic_sec_label_old, &dynamic_int_label,
                     sec_lat::Label_Empty, int_lat::Label_All, &dynamic_sec_label, &dynamic_int_label, {
-                        wrap_secret(*unwrap_secret_ref(&key_event.is_composing))
+                        wrap(*unwrap_ref(&key_event.is_composing))
                 });
                 let key_event_dl = SecKeyboardEvent::<sec_lat::Label_Empty, int_lat::Label_All>{state, key, code, location, modifiers, repeat, is_composing};
                 document.dispatch_key_event(key_event_dl);

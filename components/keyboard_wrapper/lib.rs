@@ -19,29 +19,29 @@ use malloc_size_of_derive::MallocSizeOf;
 
 unsafe impl<L1, L2> InvisibleSideEffectFree for SecKeyboardEvent<L1, L2> {}
 
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct SecKeyboardEvent<L1, L2> {
     /// Whether the key is pressed or released.
-    pub state: StaticDynamicAll<KeyStateWrapper, L1, L2, DynamicLabel<Sec>, DynamicLabel<Int>>,
+    pub state: StaticDynamicAll<KeyStateWrapper, L1, L2, DynLabel<Sec>, DynLabel<Int>>,
     /// Logical key value.
-    pub key: StaticDynamicAll<KeyWrapper, L1, L2, DynamicLabel<Sec>, DynamicLabel<Int>>,
+    pub key: StaticDynamicAll<KeyWrapper, L1, L2, DynLabel<Sec>, DynLabel<Int>>,
     /// Physical key position.
-    pub code: StaticDynamicAll<CodeWrapper, L1, L2, DynamicLabel<Sec>, DynamicLabel<Int>>,
+    pub code: StaticDynamicAll<CodeWrapper, L1, L2, DynLabel<Sec>, DynLabel<Int>>,
     /// Location for keys with multiple instances on common keyboards.
     pub location:
-        StaticDynamicAll<LocationWrapper, L1, L2, DynamicLabel<Sec>, DynamicLabel<Int>>,
+        StaticDynamicAll<LocationWrapper, L1, L2, DynLabel<Sec>, DynLabel<Int>>,
     /// Flags for pressed modifier keys.
     pub modifiers:
-        StaticDynamicAll<ModifiersWrapper, L1, L2, DynamicLabel<Sec>, DynamicLabel<Int>>,
+        StaticDynamicAll<ModifiersWrapper, L1, L2, DynLabel<Sec>, DynLabel<Int>>,
     /// True if the key is currently auto-repeated.
-    pub repeat: StaticDynamicAll<bool, L1, L2, DynamicLabel<Sec>, DynamicLabel<Int>>,
+    pub repeat: StaticDynamicAll<bool, L1, L2, DynLabel<Sec>, DynLabel<Int>>,
     /// Events with this flag should be ignored in a text editor
     /// and instead composition events should be used.
-    pub is_composing: StaticDynamicAll<bool, L1, L2, DynamicLabel<Sec>, DynamicLabel<Int>>,
+    pub is_composing: StaticDynamicAll<bool, L1, L2, DynLabel<Sec>, DynLabel<Int>>,
 }
 
 impl<L1, L2> SecKeyboardEvent<L1, L2> where L1: secret_structs::ternary_lattice::Label, L2: secret_structs::ternary_lattice::Label {
-    pub fn wrap(ke: KeyboardEvent, sl: DynamicLabel<Sec>, il: DynamicLabel<Int>) -> Self {
+    pub fn wrap(ke: KeyboardEvent, sl: DynLabel<Sec>, il: DynLabel<Int>) -> Self {
         let kstw = KeyStateWrapper{k: ke.state};
         let kw = KeyWrapper{k: ke.key};
         let cw = CodeWrapper{c: ke.code};
@@ -50,13 +50,13 @@ impl<L1, L2> SecKeyboardEvent<L1, L2> where L1: secret_structs::ternary_lattice:
         let repeat = ke.repeat;
         let is_composing = ke.is_composing;
         SecKeyboardEvent {
-            state: info_flow_block_dynamic_all!(L1, L2, &sl, &il, { wrap_secret(kstw) }),
-            key: info_flow_block_dynamic_all!(L1, L2, &sl, &il, { wrap_secret(kw) }),
-            code: info_flow_block_dynamic_all!(L1, L2, &sl, &il, { wrap_secret(cw) }),
-            location: info_flow_block_dynamic_all!(L1, L2, &sl, &il, { wrap_secret(lw) }),
-            modifiers: info_flow_block_dynamic_all!(L1, L2, &sl, &il, { wrap_secret(mw) }),
-            repeat: info_flow_block_dynamic_all!(L1, L2, &sl, &il, { wrap_secret(repeat) }),
-            is_composing: info_flow_block_dynamic_all!(L1, L2, &sl, &il, { wrap_secret(is_composing) })
+            state: untrusted_secure_block_dynamic_all!(L1, L2, &sl, &il, { wrap(kstw) }),
+            key: untrusted_secure_block_dynamic_all!(L1, L2, &sl, &il, { wrap(kw) }),
+            code: untrusted_secure_block_dynamic_all!(L1, L2, &sl, &il, { wrap(cw) }),
+            location: untrusted_secure_block_dynamic_all!(L1, L2, &sl, &il, { wrap(lw) }),
+            modifiers: untrusted_secure_block_dynamic_all!(L1, L2, &sl, &il, { wrap(mw) }),
+            repeat: untrusted_secure_block_dynamic_all!(L1, L2, &sl, &il, { wrap(repeat) }),
+            is_composing: untrusted_secure_block_dynamic_all!(L1, L2, &sl, &il, { wrap(is_composing) })
         }
     }
 }
@@ -70,16 +70,16 @@ pub type ServoSecureStatic<T> = StaticDynamicAll<
     T,
     sec_lat::Label_A,
     int_lat::Label_All,
-    DynamicLabel<Sec>,
-    DynamicLabel<Int>,
+    DynLabel<Sec>,
+    DynLabel<Int>,
 >;
 
 pub type ServoSecureDynamic<T> = StaticDynamicAll<
     T,
     sec_lat::Label_Empty,
     int_lat::Label_All,
-    DynamicLabel<Sec>,
-    DynamicLabel<Int>,
+    DynLabel<Sec>,
+    DynLabel<Int>,
 >;
 
 unsafe impl InvisibleSideEffectFree for KeyStateWrapper {}
@@ -89,7 +89,7 @@ pub struct KeyWrapper {
     pub k: Key,
 }
 
-#[side_effect_free_attr_full]
+#[side_effect_free_attr]
 pub fn to_string(k: &KeyWrapper) -> String {
     match k.k {
         Key::Character(ref s) => std::string::String::from(s),
@@ -430,7 +430,7 @@ pub struct SecurePart<T> {
 }
 
 impl<T: InvisibleSideEffectFree> SecurePart<T> {
-    #[side_effect_free_attr_full(method)]
+    #[side_effect_free_attr(method)]
     pub fn new(t: T, k: KeyWrapper, c: T, l: u32, r: bool, ic: bool, m: ModifiersWrapper, cc: u32, kc: u32) -> SecurePart<T>{
         SecurePart{
             type_: t,
@@ -447,93 +447,93 @@ impl<T: InvisibleSideEffectFree> SecurePart<T> {
 }
 unsafe impl<T: InvisibleSideEffectFree> InvisibleSideEffectFree for SecurePart<T> {}
 
-#[side_effect_free_attr_full]
+#[side_effect_free_attr]
 pub fn custom_rev(self_: unicode_segmentation::UWordBounds) -> std::iter::Rev<unicode_segmentation::UWordBounds> {
     unchecked_operation(self_.rev())
 }
 
-#[side_effect_free_attr_full]
+#[side_effect_free_attr]
 pub fn custom_next_rev<'a>(self_: &mut std::iter::Rev<unicode_segmentation::UWordBounds<'a>>) -> Option<&'a str> {
     unchecked_operation(self_.next())
 }
 
-#[side_effect_free_attr_full]
+#[side_effect_free_attr]
 pub fn custom_next_uwordbounds<'a>(self_: &mut unicode_segmentation::UWordBounds<'a>) -> Option<&'a str> {
     unchecked_operation(self_.next())
 }
 
-#[side_effect_free_attr_full]
+#[side_effect_free_attr]
 pub fn custom_split_word_bounds<'a>(self_: &&'a str) -> unicode_segmentation::UWordBounds<'a> {
     unchecked_operation(self_.split_word_bounds())
 }
 
-#[side_effect_free_attr_full]
-pub fn custom_map<B, F: FnMut(&str) -> B, F2: Fn(char) -> bool>(self_: std::str::Split<'_, F2>, f: F) -> std::iter::Map<std::str::Split<'_, F2>, F> {
+#[side_effect_free_attr]
+pub fn custom_map<'a, B, F: FnMut(&'a str) -> B, F2: Fn(char) -> bool>(self_: std::str::Split<'a, F2>, f: F) -> std::iter::Map<std::str::Split<'_, F2>, F> {
     unchecked_operation(self_.map(f))
 }
 
-#[side_effect_free_attr_full]
+#[side_effect_free_attr]
 pub fn custom_graphemes(self_: &str, is_extended: bool) -> unicode_segmentation::Graphemes {
     unchecked_operation(self_.graphemes(is_extended))
 }
 
-#[side_effect_free_attr_full]
+#[side_effect_free_attr]
 pub fn custom_next_back<'a>(self_: &mut unicode_segmentation::Graphemes<'a>) -> Option<&'a str> {
     unchecked_operation(self_.next_back())
 }
 
-#[side_effect_free_attr_full]
+#[side_effect_free_attr]
 pub fn custom_take_graphemes<'a>(self_: unicode_segmentation::Graphemes<'a>, n: usize) -> std::iter::Take<unicode_segmentation::Graphemes<'a>> {
     unchecked_operation(self_.take(n))
 }
 
-#[side_effect_free_attr_full]
+#[side_effect_free_attr]
 pub fn custom_take_charindices<'a>(self_: std::str::CharIndices<'a>, n: usize) -> std::iter::Take<std::str::CharIndices<'a>> {
     unchecked_operation(self_.take(n))
 }
 
-#[side_effect_free_attr_full]
-pub fn custom_fold<'a, F: FnMut(usize, &str) -> usize>(self_: std::iter::Take<unicode_segmentation::Graphemes<'a>>, init: usize, f: F) -> usize {
+#[side_effect_free_attr]
+pub fn custom_fold<'a, F: FnMut(usize, &'a str) -> usize>(self_: std::iter::Take<unicode_segmentation::Graphemes<'a>>, init: usize, f: F) -> usize {
     unchecked_operation(self_.fold(init, f))
 }
 
 //Carapace: TODO: add to allowlist
-#[side_effect_free_attr_full]
+#[side_effect_free_attr]
 pub fn custom_last<'a>(self_: std::iter::Take<std::str::CharIndices<'a>>) -> Option<(usize, char)> {
     unchecked_operation(self_.last())
 }
 
-#[side_effect_free_attr_full]
+#[side_effect_free_attr]
 pub fn custom_contains(self_: &ModifiersWrapper, other: ModifiersWrapper) -> bool {
     unchecked_operation(self_.m.contains(other.m))
 }
 
-#[side_effect_free_attr_full]
+#[side_effect_free_attr]
 pub fn custom_remove(self_: &mut ModifiersWrapper, other: ModifiersWrapper) {
     unchecked_operation(self_.m.remove(other.m))
 }
 
-#[side_effect_free_attr_full]
+#[side_effect_free_attr]
 pub fn custom_clone_key_state_wrapper(self_: &KeyStateWrapper) -> KeyStateWrapper {
     unchecked_operation(self_.clone())
 }
 
-#[side_effect_free_attr_full]
+#[side_effect_free_attr]
 pub fn custom_clone_key_wrapper(self_: &KeyWrapper) -> KeyWrapper {
     unchecked_operation(self_.clone())
 }
 
-#[side_effect_free_attr_full]
+#[side_effect_free_attr]
 pub fn custom_clone_location_wrapper(self_: &LocationWrapper) -> LocationWrapper {
     unchecked_operation(self_.clone())
 }
 
-#[side_effect_free_attr_full]
+#[side_effect_free_attr]
 pub fn custom_clone_code_wrapper(self_: &CodeWrapper) -> CodeWrapper {
     unchecked_operation(self_.clone())
 }
 
-#[side_effect_free_attr_full]
+#[side_effect_free_attr]
 pub fn custom_clone_modifiers_wrapper(self_: &ModifiersWrapper) -> ModifiersWrapper {
     unchecked_operation(self_.clone())
 }
