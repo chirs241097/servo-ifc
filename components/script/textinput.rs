@@ -374,7 +374,7 @@ impl<T: ClipboardProvider> TextInput<T> {
             selection_direction: selection_direction,
             was_last_change_by_set_content: true,
         };
-        i.set_content(untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynLabel::<Sec>::default_ref(), DynLabel::<Int>::default_ref(), {wrap(initial)}));
+        i.set_content(untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynField::<Sec>::generate_dynamic_label(&()), DynField::<Int>::generate_dynamic_label(&()), {wrap(initial)}));
         i
     }
 
@@ -415,7 +415,7 @@ impl<T: ClipboardProvider> TextInput<T> {
             self.adjust_horizontal_by_one(dir, Selection::Selected);
         }
         //Vincent: FIX LABEL
-        self.replace_selection( untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynLabel::<Sec>::default_ref(), DynLabel::<Int>::default_ref(), {
+        self.replace_selection( untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynField::<Sec>::generate_dynamic_label(&()), DynField::<Int>::generate_dynamic_label(&()), {
             wrap(DOMString::from_string(std::string::String::from("")))
         }) /*DOMString::new()*/ );
     }
@@ -433,7 +433,7 @@ impl<T: ClipboardProvider> TextInput<T> {
         //Vincent: FIX LABEL  
         let s_new: String = s.into();
         //Vincent: PROBLEM HERE
-        self.replace_selection(untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynLabel::<Sec>::default_ref(), DynLabel::<Int>::default_ref(), {
+        self.replace_selection(untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynField::<Sec>::generate_dynamic_label(&()), DynField::<Int>::generate_dynamic_label(&()), {
             wrap(DOMString::from_string(s_new))
         }) /*DOMString::from(s.into())*/);
     }
@@ -546,7 +546,7 @@ impl<T: ClipboardProvider> TextInput<T> {
     }
 
     pub fn get_selection_text(&self) -> Option<SecureValue<String, sec_lat::Label_Empty, int_lat::Label_All, DynLabel<Sec>, DynLabel<Int>>> {
-        let new = untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynLabel::<Sec>::default_ref(), DynLabel::<Int>::default_ref(), {
+        let new = untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynField::<Sec>::generate_dynamic_label(&()), DynField::<Int>::generate_dynamic_label(&()), {
             wrap(std::string::String::new())
         });
 
@@ -571,7 +571,7 @@ impl<T: ClipboardProvider> TextInput<T> {
 
     /// The length of the selected text in UTF-16 code units.
     fn selection_utf16_len(&self) -> UTF16CodeUnits {
-        let new_acc = untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynLabel::<Sec>::default_ref(), DynLabel::<Int>::default_ref(), {
+        let new_acc = untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynField::<Sec>::generate_dynamic_label(&()), DynField::<Int>::generate_dynamic_label(&()), {
             wrap(UTF16CodeUnits::zero())
         });
         //Vincent: changed function
@@ -582,8 +582,8 @@ impl<T: ClipboardProvider> TextInput<T> {
                 let mut unwrapped_mut = unwrap_mut_ref(len);
                 let unwrapped = unwrap_ref(&slice);
                 let added1 = core::primitive::str::chars(unwrapped);
-                let mapped = std::str::Chars::map(added1, core::primitive::char::len_utf16);
-                let added2 = unchecked_operation(mapped.sum::<usize>());
+                //let mapped = std::str::Chars::map(added1, core::primitive::char::len_utf16);
+                let added2 = unchecked_operation(added1.map(core::primitive::char::len_utf16).sum::<usize>());
                 unchecked_operation(*unwrapped_mut += UTF16CodeUnits{value: added2});
                 //map(char::len_utf16)
                 //str::chars(unwrapped)
@@ -623,7 +623,7 @@ impl<T: ClipboardProvider> TextInput<T> {
                 }); //Vincent: EXPERIMENTAL RETURN REFERENCE TO SECRET
                 f(&mut acc, a/*&self.lines[start.line][start_offset..]*/);
                 for line in &self.lines[start.line + 1..end.line] {
-                    let a = untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynLabel::<Sec>::default_ref(), DynLabel::<Int>::default_ref(), {
+                    let a = untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynField::<Sec>::generate_dynamic_label(&()), DynField::<Int>::generate_dynamic_label(&()), {
                         wrap("\n")
                     });
                     let b = untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, self.lines[start.line].get_dyn_sec_label_ref(), self.lines[start.line].get_dyn_int_label_ref(), {
@@ -633,7 +633,7 @@ impl<T: ClipboardProvider> TextInput<T> {
                     f(&mut acc, a/*"\n"*/);
                     f(&mut acc, b/*line*/);
                 }
-                let a = untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynLabel::<Sec>::default_ref(), DynLabel::<Int>::default_ref(), {
+                let a = untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynField::<Sec>::generate_dynamic_label(&()), DynField::<Int>::generate_dynamic_label(&()), {
                     wrap("\n")
                 });
                 f(&mut acc, a/*"\n"*/);
@@ -688,8 +688,7 @@ impl<T: ClipboardProvider> TextInput<T> {
                 untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, to_insert.get_dyn_sec_label_ref(), to_insert.get_dyn_int_label_ref(), {
                     let unwrapped = unwrap_ref(&to_insert);
                     let splits = core::primitive::str::split(unwrapped, |c| c == '\n');
-                    let mapped = custom_map(splits, |s| DOMString::from_string(std::string::String::from(s)));
-                    let collected = custom_collect_unwrapped(mapped);
+                    let collected = unchecked_operation(splits.map(|s| DOMString::from_string(std::string::String::from(s))).collect());
                     wrap(collected)
                 })
                 //to_insert.split('\n').map(|s| DOMString::from(s)).collect()
@@ -713,7 +712,7 @@ impl<T: ClipboardProvider> TextInput<T> {
                     returned.insert(0, untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, initial_insert_lines.get_dyn_sec_label_ref(), initial_insert_lines.get_dyn_int_label_ref(), {
                             let mut vec = unwrap_mut_ref(&mut initial_insert_lines);
                             let popped = std::vec::Vec::pop(vec);
-                            wrap(std::option::Option::unwrap(popped))
+                            wrap(popped.unwrap())
                             //wrap(popped.expect("Should be an actual element"))
                         })
                     );
@@ -759,11 +758,6 @@ impl<T: ClipboardProvider> TextInput<T> {
             // FIXME(ajeffrey): effecient append for DOMStrings
             let lines_ref = &self.lines;
             let to_unwrap = &mut insert_lines[last_insert_lines_index];
-            /*for i in 0..self.lines.len() {
-                eprintln!("textinput.rs 762: lines[{:?}]: {:?}", i, unsafe { self.lines[i].get_dyn_sec_label_ref().to_string() });
-            }*/
-            eprintln!("textinput.rs 764: to_unwrap: {:?}", unsafe { to_unwrap.get_dyn_sec_label_ref().to_string() });
-            eprintln!("textinput.rs 765: self.lines[end.line], end.line: {:?}, {:?}", unsafe { self.lines[end.line].get_dyn_sec_label_ref().to_string() }, end.line);
 
             let s_label = to_unwrap.get_dyn_sec_label_ref().join(self.lines[end.line].get_dyn_sec_label_ref());
             let i_label = to_unwrap.get_dyn_int_label_ref().join(self.lines[end.line].get_dyn_int_label_ref());
@@ -1476,8 +1470,8 @@ impl<T: ClipboardProvider> TextInput<T> {
             .fold(UTF16CodeUnits::zero(), |m, l| {
                 let len_chars_map = trusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, l.get_dyn_sec_label_ref(), l.get_dyn_int_label_ref(), {
                     let unwrapped_chars = core::primitive::str::chars(std::string::String::as_str(DOMString::to_string_ref(unwrap_ref(l))));
-                    let mapped = std::str::Chars::map(unwrapped_chars, core::primitive::char::len_utf16);
-                    unchecked_operation(mapped.sum::<usize>() + 1)
+                    //let mapped = std::str::Chars::map(unwrapped_chars, core::primitive::char::len_utf16);
+                    unchecked_operation(unwrapped_chars.map(core::primitive::char::len_utf16).sum::<usize>() + 1)
                 });
                 m + UTF16CodeUnits{value: len_chars_map /*l.chars().map(char::len_utf16).sum::<usize>() + 1*/}
                 // + 1 for the '\n'
@@ -1501,7 +1495,7 @@ impl<T: ClipboardProvider> TextInput<T> {
         if (self.lines.is_empty())
         {
             //TODO: use domain information from element owning this textinput
-            untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynLabel::<Sec>::default_ref(), DynLabel::<Int>::default_ref(), {
+            untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynField::<Sec>::generate_dynamic_label(&()), DynField::<Int>::generate_dynamic_label(&()), {
                 wrap(DOMString::from_string(std::string::String::from("")))
             })
         }
@@ -1535,12 +1529,12 @@ impl<T: ClipboardProvider> TextInput<T> {
     /// any \n encountered will be stripped and force a new logical line.
     pub fn set_content(&mut self, content: SecureValue<DOMString, sec_lat::Label_Empty, int_lat::Label_All, DynLabel<Sec>, DynLabel<Int>>) {
         self.lines = if self.multiline {
+            //let custom_closure = |s| secret_structs::untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, content.get_dyn_sec_label_ref(), content.get_dyn_int_label_ref(), { wrap(DOMString::from_string(core::primitive::str::to_string(s))) });
             let result = untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, content.get_dyn_sec_label_ref(), content.get_dyn_int_label_ref(), {
                 let unwrapped = unwrap_ref(&content);
                 let replaced: String = core::primitive::str::replace(DOMString::to_str_ref(unwrapped), "\r\n", "\n");
                 let split = core::primitive::str::split(&replaced, |c| c == '\n' || c == '\r');
-                let mapped = custom_map(split, |s| secret_structs::untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, content.get_dyn_sec_label_ref(), content.get_dyn_int_label_ref(), { wrap(DOMString::from_string(core::primitive::str::to_string(s))) }));
-                let collected = custom_collect_wrapped(mapped);
+                let collected = unchecked_operation(split.map(|s| untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, content.get_dyn_sec_label_ref(), content.get_dyn_int_label_ref(), { wrap(DOMString::from_string(core::primitive::str::to_string(s))) })).collect());
                 wrap(collected)
             });
             trusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, result.get_dyn_sec_label_ref(), result.get_dyn_int_label_ref(), {

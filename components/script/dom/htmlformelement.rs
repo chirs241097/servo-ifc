@@ -669,7 +669,7 @@ impl HTMLFormElement {
     // https://html.spec.whatwg.org/multipage/#text/plain-encoding-algorithm
     fn encode_plaintext(&self, form_data: &mut Vec<FormDatum>) -> ServoSecureDynamic<String> {
         // Step 1
-        let mut result = untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynLabel::<Sec>::default_ref(), DynLabel::<Int>::default_ref(), {
+        let mut result = untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynField::<Sec>::generate_dynamic_label(&()), DynField::<Int>::generate_dynamic_label(&()), {
             wrap(std::string::String::new())
         });
 
@@ -678,13 +678,13 @@ impl HTMLFormElement {
             let value = match &entry.value {
                 FormDatumValue::File(f) => {
                     let s = f.name().clone();
-                    untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynLabel::<Sec>::default_ref(), DynLabel::<Int>::default_ref(), {
+                    untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynField::<Sec>::generate_dynamic_label(&()), DynField::<Int>::generate_dynamic_label(&()), {
                         wrap(s)
                     })
                 },
                 FormDatumValue::String(s) => {
                     let s2 = s.clone();
-                    untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynLabel::<Sec>::default_ref(), DynLabel::<Int>::default_ref(), {
+                    untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynField::<Sec>::generate_dynamic_label(&()), DynField::<Int>::generate_dynamic_label(&()), {
                         wrap(s2)
                     })
                 },

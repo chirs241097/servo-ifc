@@ -468,11 +468,6 @@ pub fn custom_split_word_bounds<'a>(self_: &&'a str) -> unicode_segmentation::UW
 }
 
 #[side_effect_free_attr]
-pub fn custom_map<'a, B, F: FnMut(&'a str) -> B, F2: Fn(char) -> bool>(self_: std::str::Split<'a, F2>, f: F) -> std::iter::Map<std::str::Split<'_, F2>, F> {
-    unchecked_operation(self_.map(f))
-}
-
-#[side_effect_free_attr]
 pub fn custom_graphemes(self_: &str, is_extended: bool) -> unicode_segmentation::Graphemes {
     unchecked_operation(self_.graphemes(is_extended))
 }

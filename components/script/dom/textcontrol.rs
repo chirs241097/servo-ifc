@@ -217,7 +217,7 @@ impl<'a, E: TextControlElement> TextControlSelection<'a, E> {
             textinput.set_selection_range(start, end, SelectionDirection::None);
             //Vincent: FIX LABEL
             let r: String = (*replacement).to_string();
-            textinput.replace_selection(untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynLabel::<Sec>::default_ref(), DynLabel::<Int>::default_ref(), {
+            textinput.replace_selection(untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynField::<Sec>::generate_dynamic_label(&()), DynField::<Int>::generate_dynamic_label(&()), {
                 wrap(DOMString::from_string(r))
             }) /*replacement*/);
         }

@@ -25,17 +25,6 @@ use secret_structs::secret::*;
 use secret_structs::ternary_lattice as sec_lat;
 use secret_structs::integrity_lattice as int_lat;
 
-#[side_effect_free_attr]
-//Map<Split<'_, Fn(char) -> bool>, FnMut(&str) -> DOMString>
-pub fn custom_collect_unwrapped<'a, F1: Fn(char) -> bool, F2: FnMut(&'a str) -> DOMString>(self_: std::iter::Map<std::str::Split<'a, F1>, F2>) -> Vec<DOMString> {
-    unchecked_operation(self_.collect())
-}
-
-#[side_effect_free_attr]
-pub fn custom_collect_wrapped<'a, F1: Fn(char) -> bool, F2: FnMut(&'a str) -> SecureValue<DOMString, sec_lat::Label_Empty, int_lat::Label_All, DynLabel<Sec>, DynLabel<Int>>>(self_: std::iter::Map<std::str::Split<'a, F1>, F2>) -> Vec<SecureValue<DOMString, sec_lat::Label_Empty, int_lat::Label_All, DynLabel<Sec>, DynLabel<Int>>> {
-    unchecked_operation(self_.collect())
-}
-
 /// Encapsulates the IDL `ByteString` type.
 #[derive(Clone, Debug, Default, Eq, JSTraceable, MallocSizeOf, PartialEq)]
 pub struct ByteString(Vec<u8>);
@@ -324,7 +313,7 @@ impl DOMString {
             return;
         }
 
-        let first_non_whitespace = std::option::Option::unwrap(core::primitive::str::find(&self.s, |ref c| !core::primitive::char::is_ascii_whitespace(c)));
+        let first_non_whitespace = (core::primitive::str::find(&self.s, |ref c| !core::primitive::char::is_ascii_whitespace(c))).unwrap();
         let _ = std::string::String::replace_range(&mut self.s, 0..first_non_whitespace, "");
     }
 
@@ -471,7 +460,8 @@ impl DOMString {
         let week = std::option::Option::ok_or(str::Split::next(&mut iterator), ())?;
         let (week_first, week_last) = core::primitive::str::split_at(&week, 1);
         //if *week_first != "W"  {
-        if secret_structs::secret::SafePartialEq::safe_ne(week_first, "W") {
+        //if secret_structs::secret::SafePartialEq::safe_ne(week_first, "W") {
+        if week_first != "W" {
             return std::result::Result::Err(());
         }
 

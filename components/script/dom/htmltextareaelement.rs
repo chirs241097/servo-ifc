@@ -361,7 +361,7 @@ impl HTMLTextAreaElementMethods for HTMLTextAreaElement {
         let boolean_test = untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, old_value.get_dyn_sec_label_ref(), old_value.get_dyn_int_label_ref(), {
             let unwrapped_old = unwrap_ref(&old_value);
             let unwrapped_new = unwrap_ref(&new_value);
-            wrap(*DOMString::to_str_ref(unwrapped_old) != *DOMString::to_str_ref(unwrapped_new))
+            wrap(DOMString::to_str_ref(unwrapped_old) != DOMString::to_str_ref(unwrapped_new))
         });
         if trusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, boolean_test.get_dyn_sec_label_ref(), boolean_test.get_dyn_int_label_ref(), {
             unwrap(boolean_test)
