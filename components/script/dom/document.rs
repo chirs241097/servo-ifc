@@ -175,7 +175,7 @@ use url::Host;
 use uuid::Uuid;
 use webrender_api::units::DeviceIntRect;
 
-//Vincent: Added imports
+//Carapace: Added imports
 use keyboard_wrapper::*;
 use secret_macros::side_effect_free_attr;
 use secret_structs::{untrusted_secure_block_dynamic_all, trusted_secure_block_dynamic_all};
@@ -1731,7 +1731,7 @@ impl Document {
 
     /// The entry point for all key processing for web content
     pub fn dispatch_key_event(&self, keyboard_event: SecKeyboardEvent<sec_lat::Label_Empty,int_lat::Label_All>) {
-        //Vincent: Massive overhaul of entire function
+        //Carapace: Massive overhaul of entire function
 
         let focused = self.get_focused_element();
         let body = self.GetBody();
@@ -1805,7 +1805,7 @@ impl Document {
             wrap(result)
         });
 
-        //Vincent: Changed below function signature to preserve secrecy
+        //Carapace: Changed below function signature to preserve secrecy
         let keyevent = KeyboardEvent::new(
             &self.window,
             //DOMString::from(key_event.state.to_string()),
@@ -1846,10 +1846,10 @@ impl Document {
             unwrap(cond)
         });
         // https://w3c.github.io/uievents/#keys-cancelable-keys
-        if conditional //Vincent: Computed conditional in above block and used it here. 
+        if conditional //Carapace: Computed conditional in above block and used it here. 
         {
             // https://w3c.github.io/uievents/#keypress-event-order
-            //Vincent: Changed below function signature to preserve secrecy
+            //Carapace: Changed below function signature to preserve secrecy
             let event = KeyboardEvent::new(
                 &self.window,
                 //DOMString::from("keypress"),
@@ -1873,7 +1873,7 @@ impl Document {
         }
 
         if cancel_state == EventDefault::Allowed {
-            //Chris: commented out because this may need another rewrapping (back to static secrecy label)
+            //Carapace: commented out because this may need another rewrapping (back to static secrecy label)
             //let msg = EmbedderMsg::Keyboard(keyboard_event.clone());
             //self.send_to_embedder(msg);
             let label_s = keyboard_event.key.get_dyn_sec_label_ref().join(keyboard_event.code.get_dyn_sec_label_ref()).join(keyboard_event.state.get_dyn_sec_label_ref());
@@ -1884,7 +1884,7 @@ impl Document {
             // however *when* we do it is up to us.
             // Here, we're dispatching it after the key event so the script has a chance to cancel it
             // https://www.w3.org/Bugs/Public/show_bug.cgi?id=27337
-            //Vincent: Computed conditional here instead of inline.
+            //Carapace: Computed conditional here instead of inline.
             let k = &keyboard_event.key;
             let c = &keyboard_event.code;
             let s = &keyboard_event.state;
@@ -1897,7 +1897,7 @@ impl Document {
             let conditional2 = trusted_secure_block_dynamic_all!(sec_lat::Label_A, int_lat::Label_All, &label_s, &label_i, {
                 unwrap(cond)
             });
-            if conditional2 //Vincent: Computed conditional in above block and used it here
+            if conditional2 //Carapace: Computed conditional in above block and used it here
             {
                 if let Some(elem) = target.downcast::<Element>() {
                     elem.upcast::<Node>()
@@ -2980,7 +2980,7 @@ impl Document {
     }
 }
 
-//Vincent: Tagged this function as side_effect_free_attr
+//Carapace: Tagged this function as side_effect_free_attr
 #[side_effect_free_attr]
 fn is_character_value_key(key: &KeyWrapper) -> bool {
     match key.k {

@@ -178,7 +178,7 @@ use webgpu::{
 use webrender_api::{DocumentId, ExternalImageId, ImageKey};
 use webxr_api::{Finger, Hand, Ray, View};
 
-//Vincent: Added import
+//Carapace: Added import
 use secret_structs::ternary_lattice::Label;
 use secret_structs::secret::StaticDynamicAll;
 use keyboard_wrapper::KeyWrapper;
@@ -327,7 +327,7 @@ unsafe impl<T: JSTraceable> JSTraceable for [T] {
     }
 }
 
-//Vincent: Added the following specific implementations
+//Carapace: Added the following specific implementations
 unsafe impl<L1, L2> JSTraceable for SecureValue<DOMString, L1, L2, DynLabel<Sec>, DynLabel<Int>>
     where L1: Label, L2: Label {
     unsafe fn trace(&self, trc: *mut JSTracer) { /* does nothing (same as unsafe_no_jsmanaged_fields) */ }

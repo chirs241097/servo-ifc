@@ -18,7 +18,7 @@ use crate::dom::node::{window_from_node, Node, NodeDamage};
 use crate::textinput::{SelectionDirection, SelectionState, TextInput, UTF8Bytes};
 use script_traits::ScriptToConstellationChan;
 
-//Vincent: Add imports
+//Carapace: Add imports
 use secret_structs::untrusted_secure_block_dynamic_all;
 use secret_structs::secret::*;
 use secret_structs::ternary_lattice as sec_lat;
@@ -184,7 +184,7 @@ impl<'a, E: TextControlElement> TextControlSelection<'a, E> {
         // change the selection state in order to replace the text in the range.
         let original_selection_state = self.textinput.borrow().selection_state();
 
-        //Vincent: Changed struct to have named fields
+        //Carapace: Changed struct to have named fields
         let content_length = self.textinput.borrow().len_utf8().value;
         //let UTF8Bytes(content_length) = self.textinput.borrow().len_utf8();
         let content_length = content_length as u32;
@@ -215,7 +215,6 @@ impl<'a, E: TextControlElement> TextControlSelection<'a, E> {
 
             // Steps 9-10
             textinput.set_selection_range(start, end, SelectionDirection::None);
-            //Vincent: FIX LABEL
             let r: String = (*replacement).to_string();
             textinput.replace_selection(untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynField::<Sec>::generate_dynamic_label(&()), DynField::<Int>::generate_dynamic_label(&()), {
                 wrap(DOMString::from_string(r))
@@ -276,14 +275,14 @@ impl<'a, E: TextControlElement> TextControlSelection<'a, E> {
     }
 
     fn start(&self) -> u32 {
-        //Vincent: Changed struct to have named fields
+        //Carapace: Changed struct to have named fields
         let offset = self.textinput.borrow().selection_start_offset().value;
         //let UTF8Bytes(offset) = self.textinput.borrow().selection_start_offset();
         offset as u32
     }
 
     fn end(&self) -> u32 {
-        //Vincent: Changed struct to have named fields
+        //Carapace: Changed struct to have named fields
         let offset = self.textinput.borrow().selection_end_offset().value;
         //let UTF8Bytes(offset) = self.textinput.borrow().selection_end_offset();
         offset as u32

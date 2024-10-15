@@ -48,7 +48,7 @@ use winapi;
 use winit::dpi::{LogicalPosition, PhysicalPosition, PhysicalSize};
 use winit::event::ModifiersState;
 
-//Vincent: Add imports
+//Carapace: Add imports
 use keyboard_wrapper::SecKeyboardEvent;
 use secret_structs::secret::*;
 use secret_structs::ternary_lattice as sec_lat;
@@ -64,7 +64,7 @@ pub struct Window {
     primary_monitor: winit::monitor::MonitorHandle,
     event_queue: RefCell<Vec<WindowEvent>>,
     mouse_pos: Cell<Point2D<i32, DevicePixel>>,
-    //Vincent: Changed type signature
+    //Carapace: Changed type signature
     last_pressed: Cell<Option<(/*Sec*/KeyboardEvent/*<sec_lat::Label_A, int_lat::Label_All>*/, Option<VirtualKeyCode>)>>,
     /// A map of winit's key codes to key values that are interpreted from
     /// winit's ReceivedChar events.
@@ -186,7 +186,7 @@ impl Window {
         } else {
             // For combined characters like the letter e with an acute accent
             // no keyboard event is emitted. A dummy event is created in this case.
-            //Vincent: changed return type
+            //Carapace: changed return type
             (/*Sec*/KeyboardEvent::default(), None)
         };
         event.key = Key::Character(ch.to_string());

@@ -18,7 +18,7 @@ use dom_struct::dom_struct;
 use keyboard_types::{Key, Modifiers};
 //use std::cell::Cell;
 
-//Vincent: Added imports
+//Carapace: Added imports
 use keyboard_wrapper::*;
 use secret_structs::ternary_lattice as sec_lat;
 use secret_structs::integrity_lattice as int_lat;
@@ -172,7 +172,7 @@ impl KeyboardEvent {
         );
         *ev.typed_key.borrow_mut() = key;
         *ev.code.borrow_mut() = code;
-        //Vincent: Changed below function calls to use DomRefCell API instead of Cell
+        //Carapace: Changed below function calls to use DomRefCell API instead of Cell
         *ev.modifiers.borrow_mut() = modifiers;
         *ev.is_composing.borrow_mut() = is_composing;
         *ev.char_code.borrow_mut() = char_code;
@@ -181,7 +181,7 @@ impl KeyboardEvent {
     }
 
 
-    //Vincent: Removed this function to see what other compile errors come up because this function interacts with no other code I could find
+    //Carapace: Removed this function to see what other compile errors come up because this function interacts with no other code I could find
     
     #[allow(non_snake_case)]
     pub fn Constructor(
@@ -194,7 +194,7 @@ impl KeyboardEvent {
         modifiers.set(Modifiers::ALT, init.parent.altKey);
         modifiers.set(Modifiers::SHIFT, init.parent.shiftKey);
         modifiers.set(Modifiers::META, init.parent.metaKey);
-        //Vincent: Created new SecurePart in order to compensate for the modified funciton signature.
+        //Carapace: Created new SecurePart in order to compensate for the modified funciton signature.
         let result: SecurePart<DOMString> = SecurePart{
             type_: DOMString::from_string(std::string::String::from(type_)),
             key: KeyWrapper{k: Key::Unidentified},
@@ -237,7 +237,7 @@ impl KeyboardEvent {
     
 }
 
-//Vincent: Defined copy of function to get around binding limiting type signatures
+//Carapace: Defined copy of function to get around binding limiting type signatures
 impl KeyboardEvent {
     fn InitKeyboardEvent2(
         &self,
@@ -281,8 +281,8 @@ impl KeyboardEventMethods for KeyboardEvent {
             return;
         }
 
-        //Vincent: Modified function so it compiles, but this function shouldn't ever be called.
-        panic!("Vincent: Can't call method InitKeyboardEvent");
+        //Carapace: Modified function so it compiles, but this function shouldn't ever be called.
+        panic!("Carapace: Can't call method InitKeyboardEvent");
         self.upcast::<UIEvent>()
         .InitUIEvent(type_arg, can_bubble_arg, cancelable_arg, view_arg, 0);
         let ka = DOMString::from_string(key_arg.to_string());

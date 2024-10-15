@@ -530,7 +530,7 @@ impl VirtualMethods for HTMLTextAreaElement {
                     if value < 0 {
                         textinput.set_max_length(None);
                     } else {
-                        //Vincent: Changed struct to have named fields
+                        //Carapace: Changed struct to have named fields
                         textinput.set_max_length(Some(UTF16CodeUnits{value: value as usize}))
                     }
                 },
@@ -543,7 +543,7 @@ impl VirtualMethods for HTMLTextAreaElement {
                     if value < 0 {
                         textinput.set_min_length(None);
                     } else {
-                        //Vincent: Changed struct to have named fields
+                        //Carapace: Changed struct to have named fields
                         textinput.set_min_length(Some(UTF16CodeUnits{value: value as usize}))
                     }
                 },
@@ -749,7 +749,7 @@ impl Validatable for HTMLTextAreaElement {
     fn perform_validation(&self, validate_flags: ValidationFlags) -> ValidationFlags {
         let mut failed_flags = ValidationFlags::empty();
         let textinput = self.textinput.borrow();
-        //Vincent: Changed struct to have named fields
+        //Carapace: Changed struct to have named fields
         let value_len = textinput.utf16_len().value;
         //let UTF16CodeUnits(value_len) = textinput.utf16_len();
         let last_edit_by_user = !textinput.was_last_change_by_set_content();

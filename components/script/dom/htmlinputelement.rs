@@ -909,7 +909,7 @@ impl HTMLInputElement {
         }
 
         let mut failed_flags = ValidationFlags::empty();
-        //Vincent: Changed struct to have named fields
+        //Carapace: Changed struct to have named fields
         let value_len = textinput.utf16_len().value;
         //let UTF16CodeUnits(value_len) = textinput.utf16_len();
         let min_length = self.MinLength();
@@ -995,7 +995,7 @@ pub trait LayoutHTMLInputElementHelpers<'dom> {
 
 #[allow(unsafe_code)]
 impl<'dom> LayoutDom<'dom, HTMLInputElement> {
-    //Chris: existing uses of this function never leaks actual text content of the input
+    //Carapace: existing uses of this function never leaks actual text content of the input
     //(only other attributes derived from the content, e.g. length, are used)
     //for this reason, it's declassified in-place
     //TODO: maybe push declassification later?
@@ -1276,7 +1276,7 @@ impl HTMLInputElementMethods for HTMLInputElement {
     make_atomic_setter!(SetType, "type");
 
     // https://html.spec.whatwg.org/multipage/#dom-input-value
-    // Chris: JavaScript bindings, can't change signature
+    // Carapace: JavaScript bindings, can't change signature
     // Have to either declassify in-place or return a placeholder value
     fn Value(&self) -> DOMString {
         match self.value_mode() {
@@ -2614,7 +2614,7 @@ impl VirtualMethods for HTMLInputElement {
                     if value < 0 {
                         textinput.set_max_length(None);
                     } else {
-                        //Vincent: Changed struct to have named fields
+                        //Carapace: Changed struct to have named fields
                         textinput.set_max_length(Some(UTF16CodeUnits{value: value as usize}))
                     }
                 },
@@ -2627,7 +2627,7 @@ impl VirtualMethods for HTMLInputElement {
                     if value < 0 {
                         textinput.set_min_length(None);
                     } else {
-                        //Vincent: Changed struct to have named fields
+                        //Carapace: Changed struct to have named fields
                         textinput.set_min_length(Some(UTF16CodeUnits{value: value as usize}))
                     }
                 },

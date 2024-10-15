@@ -5,7 +5,7 @@
 use winit::event::{ElementState, KeyboardInput, ModifiersState, VirtualKeyCode};
 use keyboard_types::{Code, Key, KeyState, KeyboardEvent, Location, Modifiers};
 
-//Vincent: Add imports
+//Carapace: Add imports
 use keyboard_wrapper::{SecKeyboardEvent, KeyStateWrapper, KeyWrapper, CodeWrapper, ModifiersWrapper, ServoSecureStatic, LocationWrapper};
 use secret_structs::secret::*;
 use secret_structs::ternary_lattice as sec_lat;
@@ -270,7 +270,7 @@ pub fn keyboard_event_from_winit(input: KeyboardInput, state: ModifiersState) ->
         repeat: false,
         is_composing: false,
     }
-    //Vincent: Original code above, altered card below
+    //Carapace: Original code above, altered card below
     /*info!("winit keyboard input: {:?}", input);
     SecKeyboardEvent {
         state: {let s = match input.state {

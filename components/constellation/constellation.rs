@@ -4057,7 +4057,6 @@ where
         }
     }
 
-    //Chris: (TODO) verify signature
     //Carapace: Change function signature to take a secret value
     fn handle_key_msg(&mut self, event: SecKeyboardEvent<sec_lat::Label_A, int_lat::Label_All>) {
         // Send to the focused browsing contexts' current pipeline.  If it
@@ -4411,7 +4410,7 @@ where
                     let event = match event {
                         WebDriverInputEvent::Keyboard(event) => {
                             //Carapace: Generate a dummy event in place of a KeyboardEvent, since WebDriver isn't important for our purpose.
-                            // Chris: Ignore this for now, WebDriver isn't important for our purpose
+                            // Carapace: Ignore this for now, WebDriver isn't important for our purpose
                             // Generate a dummy event instead
                             // CompositorEvent::KeyboardEvent(event)
                             CompositorEvent::IMEDismissedEvent
@@ -4440,7 +4439,7 @@ where
                     Some(pipeline) => pipeline.event_loop.clone(),
                     None => return warn!("Pipeline {} KeyboardAction after closure.", pipeline_id),
                 };
-                // Chris: ignoring -- see last case for rationale
+                // Carapace: ignoring -- see last case for rationale
                 //Carapace: Generate a dummy event in place of a CompositorEvent, since WebDriver isn't important for our purpose.
                 let control_msg = ConstellationControlMsg::SendEvent(
                     pipeline_id,

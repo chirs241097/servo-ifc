@@ -42,7 +42,7 @@ pub enum SelectionDirection {
 
 #[derive(Clone, Copy, Debug, Default, Eq, JSTraceable, MallocSizeOf, Ord, PartialEq, PartialOrd)]
 pub struct UTF8Bytes{pub value: usize}
-//Vincent: impl secretblocksafe for type
+//Carapace: impl secretblocksafe for type
 unsafe impl InvisibleSideEffectFree for UTF8Bytes {}
 impl UTF8Bytes {
     #[side_effect_free_attr(method)]
@@ -119,7 +119,7 @@ fn len_utf8_str(a: &str) -> UTF8Bytes {
 
 #[derive(Clone, Copy, Debug, Default, JSTraceable, MallocSizeOf, PartialEq, PartialOrd)]
 pub struct UTF16CodeUnits{pub value: usize}
-//Vincent: impl secretblocksafe for utf16
+//Carapace: impl secretblocksafe for utf16
 unsafe impl InvisibleSideEffectFree for UTF16CodeUnits {}
 
 impl UTF16CodeUnits {
@@ -362,7 +362,6 @@ impl<T: ClipboardProvider> TextInput<T> {
         min_length: Option<UTF16CodeUnits>,
         selection_direction: SelectionDirection,
     ) -> TextInput<T> {
-        //Vincent: TODO: replace every instance of new_dynamic_secret_label and new_dynamic_integrity_label
         let mut i = TextInput {
             lines: vec![],
             edit_point: Default::default(),
@@ -414,7 +413,6 @@ impl<T: ClipboardProvider> TextInput<T> {
         if self.selection_origin.is_none() || self.selection_origin == Some(self.edit_point) {
             self.adjust_horizontal_by_one(dir, Selection::Selected);
         }
-        //Vincent: FIX LABEL
         self.replace_selection( untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynField::<Sec>::generate_dynamic_label(&()), DynField::<Int>::generate_dynamic_label(&()), {
             wrap(DOMString::from_string(std::string::String::from("")))
         }) /*DOMString::new()*/ );
@@ -430,15 +428,13 @@ impl<T: ClipboardProvider> TextInput<T> {
         if self.selection_origin.is_none() {
             self.selection_origin = Some(self.edit_point);
         }
-        //Vincent: FIX LABEL  
         let s_new: String = s.into();
-        //Vincent: PROBLEM HERE
         self.replace_selection(untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynField::<Sec>::generate_dynamic_label(&()), DynField::<Int>::generate_dynamic_label(&()), {
             wrap(DOMString::from_string(s_new))
         }) /*DOMString::from(s.into())*/);
     }
 
-    //Vincent: added new function
+    //Carapace: added new function
     pub fn insert_secret_string<S: Into<String> + SecureValueSafe + VisibleSideEffectFree>(&mut self, s: ServoSecureDynamic<S>) {
         if self.selection_origin.is_none() {
             self.selection_origin = Some(self.edit_point);
@@ -574,7 +570,7 @@ impl<T: ClipboardProvider> TextInput<T> {
         let new_acc = untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynField::<Sec>::generate_dynamic_label(&()), DynField::<Int>::generate_dynamic_label(&()), {
             wrap(UTF16CodeUnits::zero())
         });
-        //Vincent: changed function
+        //Carapace: changed function
         let result = self.fold_selection_slices(new_acc, |len, slice| {
             let s_label = len.get_dyn_sec_label_ref().join(slice.get_dyn_sec_label_ref());
             let i_label = len.get_dyn_int_label_ref().join(slice.get_dyn_int_label_ref());
@@ -612,7 +608,7 @@ impl<T: ClipboardProvider> TextInput<T> {
                     let a: &DOMString = unwrap_ref(&lines_ref[start.line]);
                     let b: &str = DOMString::to_str_ref(a);
                     wrap(&b[start_offset..end_offset])
-                }); //Vincent: EXPERIMENTAL RETURN REFERENCE TO SECRET
+                }); 
                 f(&mut acc, a/*&self.lines[start.line][start_offset..end_offset]*/)
             } else {
                 let lines_ref = &self.lines;
@@ -620,7 +616,7 @@ impl<T: ClipboardProvider> TextInput<T> {
                     let a = unwrap_ref(&lines_ref[start.line]);
                     let b = &DOMString::to_str_ref(a)[start_offset..];
                     wrap(b)
-                }); //Vincent: EXPERIMENTAL RETURN REFERENCE TO SECRET
+                }); 
                 f(&mut acc, a/*&self.lines[start.line][start_offset..]*/);
                 for line in &self.lines[start.line + 1..end.line] {
                     let a = untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, DynField::<Sec>::generate_dynamic_label(&()), DynField::<Int>::generate_dynamic_label(&()), {
@@ -629,7 +625,7 @@ impl<T: ClipboardProvider> TextInput<T> {
                     let b = untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, self.lines[start.line].get_dyn_sec_label_ref(), self.lines[start.line].get_dyn_int_label_ref(), {
                         let a = unwrap_ref(&line);
                         wrap(DOMString::to_str_ref(&a))
-                    }); //Vincent: EXPERIMENTAL RETURN REFERENCE TO SECRET
+                    }); 
                     f(&mut acc, a/*"\n"*/);
                     f(&mut acc, b/*line*/);
                 }
@@ -642,7 +638,7 @@ impl<T: ClipboardProvider> TextInput<T> {
                     let a = unwrap_ref(&lines_ref[end.line]);
                     let b = &DOMString::to_str_ref(a)[..end_offset];
                     wrap(b)
-                }); //Vincent: EXPERIMENTAL RETURN REFERENCE TO SECRET
+                }); 
                 f(&mut acc, a/*&self.lines[end.line][..end_offset]*/)
             }
         }
@@ -721,7 +717,7 @@ impl<T: ClipboardProvider> TextInput<T> {
             };
 
             // FIXME(ajeffrey): effecient append for DOMStrings
-            //Vincent: deleted prefix and new_line initializations to instead have one initialization for secret new_line
+            //Carapace: deleted prefix and new_line initializations to instead have one initialization for secret new_line
             let lines_ref = &self.lines;
             let merged_sec_label = self.lines[start.line].get_dyn_sec_label_ref().join(insert_lines[0].get_dyn_sec_label_ref());
             let merged_int_label = self.lines[start.line].get_dyn_int_label_ref().join(insert_lines[0].get_dyn_int_label_ref());
@@ -1231,7 +1227,7 @@ impl<T: ClipboardProvider> TextInput<T> {
     }
 
     /// Process a given `KeyboardEvent` and return an action for the caller to execute.
-    //Vincent: Changed function to preserve secrecy
+    //Carapace: Changed function to preserve secrecy
     pub fn handle_keydown(&mut self, event: &KeyboardEvent) -> KeyReaction {
         //let key_stage_1 = event.get_typed_key();
         //let key_wrapper: KeyWrapper = info_flow_block_declassify_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, key_stage_1.get_dyn_sec_label(), key_stage_1.get_dyn_int_label(), {
@@ -1252,7 +1248,7 @@ impl<T: ClipboardProvider> TextInput<T> {
 
     // This function exists for easy unit testing.
     // To test Mac OS shortcuts on other systems a flag is passed.
-    //Vincent: Modified function to preserve secrecy.
+    //Carapace: Modified function to preserve secrecy.
     pub fn handle_keydown_aux(
         &mut self,
         key: ServoSecureDynamic<KeyWrapper>,
@@ -1405,7 +1401,6 @@ impl<T: ClipboardProvider> TextInput<T> {
                 KeyReaction::RedrawSelection
             })
             .otherwise(|| {
-                //Vincent: TODO UNDO
                 let cond_wrapped = untrusted_secure_block_dynamic_all!(sec_lat::Label_Empty, int_lat::Label_All, key.get_dyn_sec_label_ref(), key.get_dyn_int_label_ref(), {
                     let unwrapped = unwrap_ref(&key);
                     let mut val = false;

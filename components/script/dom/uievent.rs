@@ -83,7 +83,7 @@ impl UIEvent {
     }
 }
 
-//Vincent: Defined copy of function to get around binding limiting type signatures
+//Carapace: Defined copy of function to get around binding limiting type signatures
 impl UIEvent {
     pub fn InitUIEvent2(
         &self,
